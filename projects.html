@@ -92,55 +92,58 @@
         </div>
     </div>
 
-            <!--
-    <div class="card mb-3">
-        <img src="imgs/diffusion_models_example.png" class="card-img-top" alt="Example diffusion models">
-        <div class="card-body">
-          <h5 class="card-title">How diffusion models can be used for generative modeling?</h5>
-          
-          <p class="card-text">Diffusion models are rapidly becoming popular for generative modeling of high-dimensional data. They have shown impressive results on various tasks in the domain of computer vision and are gaining popularity in the natural language processing and sound processing community.</p>
-          <p class="card-text"><small class="text-muted">2022-09-01</small></p>
+
+
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [
+                    ['$', '$'],
+                ],
+            },
+        }
+    </script>
+
+    <script>
+        function search() {
+            var input, filter, list_posts, li, a, i, txtValue;
+            input = document.getElementById("search_bar");
+            filter = input.value.toUpperCase();
+            list_posts = document.getElementById("list_posts");
+            posts = list_posts.getElementsByClassName("post");
+            for (i = 0; i < posts.length; i++) {
+                a = posts[i].getElementsByClassName("title")[0];
+                txtValue = a.textContent || a.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    posts[i].style.display = "";
+                } else {
+                    posts[i].style.display = "none";
+                }
+            }
+        }
+    </script>
+
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script async src="prism/prism.js"></script>
+
+    <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+
+    <hr>
+    <div class="footer">
+        <br>
+        <p class="horizontal-center"><b>Copyright:</b> Moreno La Quatra</p>
+        <p class="horizontal-center"><b>Acknowledgements:</b> <a href="https://latex.vercel.app/">LaTeX-css</a></p>
+        <br>
+        <div class="container horizontal-center">
+            <button onclick="location.href='https://twitter.com/MorenoLaQuatra';">🐦 Twitter</button>
+            <button onclick="location.href='https://scholar.google.com/citations?user=JyN-kZsAAAAJ';">🎓 Scholar</button>
+            <button onclick="location.href='https://www.linkedin.com/in/moreno-la-quatra/';">💼 LinkedIn</button>
+            <button onclick="location.href='https://github.com/MorenoLaQuatra';">💻 GitHub</button>
         </div>
-      </div>
-    -->
-
-
-
-
-            <script>
-                MathJax = {
-                    tex: {
-                        inlineMath: [
-                            ['$', '$'],
-                        ],
-                    },
-                }
-            </script>
-
-            <script>
-                function search() {
-                    var input, filter, list_posts, li, a, i, txtValue;
-                    input = document.getElementById("search_bar");
-                    filter = input.value.toUpperCase();
-                    list_posts = document.getElementById("list_posts");
-                    posts = list_posts.getElementsByClassName("post");
-                    for (i = 0; i < posts.length; i++) {
-                        a = posts[i].getElementsByClassName("title")[0];
-                        txtValue = a.textContent || a.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            posts[i].style.display = "";
-                        } else {
-                            posts[i].style.display = "none";
-                        }
-                    }
-                }
-            </script>
-
-            <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-            <script async src="prism/prism.js"></script>
-
-            <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+        <br>
+    </div>
+    
 </body>
 
 </html>
