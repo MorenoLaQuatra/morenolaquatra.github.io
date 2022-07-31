@@ -704,3 +704,7 @@ h6 {
 .course_description>h2 {
     margin-top: 10px !important;
 }
+
+.footer {
+    background-color: #EAEAEA !important;
+}
