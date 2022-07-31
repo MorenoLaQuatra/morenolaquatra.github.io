@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-site-verification" content="" />
+    <title>Blog - Moreno La Quatra</title>
+
+    <meta name="description" content="Moreno La Quatra personal website" />
+    <meta name="keywords" content="moreno la quatra, deep learning, machine listening, natural language processing, research blog" />
+    <meta property="og:title" content="Blog - Moreno La Quatra" />
+    <meta property="og:url" content="https://mlaquatra.me" />
+    <meta property="og:description" content="Moreno La Quatra personal website" />
+    <meta property="og:type" content="website" />
+    <link rel="stylesheet" href="src/style.css" />
+    <link rel="stylesheet" href="prism/prism.css" />
+
+</head>
+
+<body id="top" class="libertinus">
+
+    <div class="container horizontal-center">
+        <button onclick="location.href='index.html';">🏠 Home</button>
+        <button onclick="location.href='cv.html';">📄 CV</button>
+        <button onclick="location.href='projects.html';">🏗️ Projects</button>
+        <button onclick="location.href='publications.html';">📜 Publications</button>
+        <button onclick="location.href='teaching.html';">🏫 Teaching</button>
+        <button onclick="location.href='blog.html';">🖊️ Blog</button>
+    </div>
+    <br>
+    <br>
+
+    <header>
+        <h1><span class="latex">Projects</h1>
+        <p class="author">
+            Interesting projects worth mentioning.
+        </p>
+    </header>
+
+    <input type="text" 
+            style="width: 100%" 
+            id="search_bar" 
+            onkeyup="search()" 
+            placeholder="Search projects..."
+    >
+    <br>
+    <br>
+
+    <div class="main-container ">
+        <div class="cards" id="list_posts">
+
+            <div class="post_card">
+                <div class="card_title">
+                    <a href="projects/emimic.html" style="text-decoration: none !important;">
+                        E-MIMIC: Empowering Multilingual Inclusive Communication
+                    </a>
+                </div>
+                <div class="card_excerpt">
+                    Inclusive communication is essential for the development of a democratic society, as it ensures social cohesion and guarantees equal opportunities for all, especially in an increasingly diversified society. However, most languages in the world do not include stereotypes, do not have a gender-neutral form or do not allow to address people with disabilities in an inclusive way.
+                </div>
+                <div class="card_date">
+                    <small class="text-muted">2022-09-01</small>
+                </div>
+                <div class="card_link">
+                    <a href="projects/emimic.html">Read more</a>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="post_card">
+                <div class="card_title">
+                    <a href="projects/dlu.html" style="text-decoration: none !important;">
+                        Deep Learning Updates
+                    </a>
+                </div>
+                <div class="card_excerpt">
+                    Current research scenario is very fast and a lot of publications are released every day. It is very difficult for people to read all the papers/publications and hence it becomes necessary to summarize all these papers to some extent. This project aims at generating a daily selection and digest of the deep learning publications on arXiv.
+                </div>
+                <div class="card_date">
+                    <small class="text-muted">2022-07-31</small>
+                </div>
+                <div class="card_link">
+                    <a href="projects/dlu.html">Read more</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+            <!--
+    <div class="card mb-3">
+        <img src="imgs/diffusion_models_example.png" class="card-img-top" alt="Example diffusion models">
+        <div class="card-body">
+          <h5 class="card-title">How diffusion models can be used for generative modeling?</h5>
+          
+          <p class="card-text">Diffusion models are rapidly becoming popular for generative modeling of high-dimensional data. They have shown impressive results on various tasks in the domain of computer vision and are gaining popularity in the natural language processing and sound processing community.</p>
+          <p class="card-text"><small class="text-muted">2022-09-01</small></p>
+        </div>
+      </div>
+    -->
+
+
+
+
+            <script>
+                MathJax = {
+                    tex: {
+                        inlineMath: [
+                            ['$', '$'],
+                        ],
+                    },
+                }
+            </script>
+
+            <script>
+                function search() {
+                    var input, filter, list_posts, li, a, i, txtValue;
+                    input = document.getElementById("search_bar");
+                    filter = input.value.toUpperCase();
+                    list_posts = document.getElementById("list_posts");
+                    posts = list_posts.getElementsByClassName("post");
+                    for (i = 0; i < posts.length; i++) {
+                        a = posts[i].getElementsByClassName("title")[0];
+                        txtValue = a.textContent || a.innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            posts[i].style.display = "";
+                        } else {
+                            posts[i].style.display = "none";
+                        }
+                    }
+                }
+            </script>
+
+            <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+            <script async src="prism/prism.js"></script>
+
+            <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+</body>
+
+</html>

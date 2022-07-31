@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-site-verification" content="" />
+    <title>Moreno La Quatra</title>
+
+    <meta name="description" content="Moreno La Quatra personal website" />
+    <meta name="keywords" content="moreno la quatra, deep learning, machine listening, natural language processing" />
+    <meta property="og:title" content="Moreno La Quatra" />
+    <meta property="og:url" content="https://mlaquatra.me" />
+    <meta property="og:description" content="Moreno La Quatra personal website" />
+    <meta property="og:type" content="website" />
+    <link rel="stylesheet" href="src/style.css" />
+    <link rel="stylesheet" href="prism/prism.css" />
+</head>
+
+<body id="top" class="libertinus">
+    <div class="container horizontal-center">
+        <button onclick="location.href='index.html';">🏠 Home</button>
+        <button onclick="location.href='cv.html';">📄 CV</button>
+        <button onclick="location.href='projects.html';">🏗️ Projects</button>
+        <button onclick="location.href='publications.html';">📜 Publications</button>
+        <button onclick="location.href='teaching.html';">🏫 Teaching</button>
+        <button onclick="location.href='blog.html';">🖊️ Blog</button>
+    </div>
+    <br>
+    <br>
+    <header>
+        <h1><span class="latex">Teaching</h1>
+        <p class="author">
+            Educational activities within the <a href="https://dbdmg.polito.it/">DBDMG</a> group
+        </p>
+    </header>
+
+    <nav role="navigation" class="toc">
+        <ol>
+            <li><a href="#dnlp">Deep Natural Language Processing</a></li>
+            <li><a href="#db">Fundamentals of Databases</a></li>
+        </ol>
+    </nav>
+
+    <div class="course_description">
+        <h2 id="dnlp">Deep Natural Language Processing</h2>
+        <p>
+            <b>Level:</b> Master <br>
+            <b>Language:</b> English <br>
+            <b>Degree:</b> Data Science and Engineering <br>
+            <b>Period:</b> 2021-ongoing <br>
+            <b>Semester:</b> Winter (September/January) <br>
+            <b>More info:</b>  <a href="https://github.com/MorenoLaQuatra/DeepNLP">https://github.com/MorenoLaQuatra/DeepNLP</a>
+        </p>
+        <p>
+            Teaching assistant both for in-class and lab practices. 
+            An unextensive list of course's topics is reported below:
+            <ul>
+                <li>Fundamentals of text processing</li>
+                <li>Word- and Sentence-level vector spaces</li>
+                <li>Deep learning architectures (ELMo, BERT and beyond)</li>
+                <li>Overview and practices with NLP tasks: Machine Translation, Sentiment Analysis, Text Summarization, IR, Chatbots</li>
+            </ul>
+
+            The final exam also include a final project:
+            <ul>
+                <li><a href="https://github.com/stars/MorenoLaQuatra/lists/dnlp-projects-2021-2022">Student projects 2021-2022</a></li>
+            </ul>
+        </p>
+    </div>
+    
+    <br>
+
+    <div class="course_description">
+        <h2 id="db">Fundamentals of Databases</h2>
+        <p>
+            <b>Level:</b> Bachelor <br>
+            <b>Language:</b> Italian <br>
+            <b>Degree:</b> Computer and Management Engineering<br>
+            <b>Period:</b> 2019-ongoing <br>
+            <b>Semester:</b> Winter (September/January)<br>
+            <b>More info:</b> <a href="https://dbdmg.polito.it/dbdmg_web/index.php/2021/09/24/basi-di-dati-ing-gestionale/">Course website</a>
+        </p> <br>
+
+        This course is an introduction to databases for undergraduate students.
+        The training activities include the following topics:
+        <ul>
+            <li>Relational Algebra</li>
+            <li>SQL language</li>
+            <li>No-SQL concepts (Mongo DB)</li>
+            <li>Dashboard generation with Google Data Studio</li>
+        </ul>
+    </div>
+
+
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [
+                    ['$', '$'],
+                ],
+            },
+        }
+        const toggle = document.getElementById('typeface-toggle')
+        const typeface = document.getElementById('typeface')
+        toggle.addEventListener('click', () => {
+            document.body.classList.toggle('libertinus')
+            typeface.textContent = document.body.classList.contains('libertinus') ? 'Libertinus' : 'Latin Modern'
+        })
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script async src="prism/prism.js"></script>
+
+    <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+</body>
+
+</html>

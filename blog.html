@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-site-verification" content="" />
+    <title>Blog - Moreno La Quatra</title>
+
+    <meta name="description" content="Moreno La Quatra personal website" />
+    <meta name="keywords" content="moreno la quatra, deep learning, machine listening, natural language processing, research blog" />
+    <meta property="og:title" content="Blog - Moreno La Quatra" />
+    <meta property="og:url" content="https://mlaquatra.me" />
+    <meta property="og:description" content="Moreno La Quatra personal website" />
+    <meta property="og:type" content="website" />
+    <link rel="stylesheet" href="src/style.css" />
+    <link rel="stylesheet" href="prism/prism.css" />
+
+</head>
+
+<body id="top" class="libertinus">
+
+    <div class="container horizontal-center">
+        <button onclick="location.href='index.html';">🏠 Home</button>
+        <button>📄 CV</button>
+        <button onclick="location.href='projects.html';">🏗️ Projects</button>
+        <button onclick="location.href='publications.html';">📜 Publications</button>
+        <button onclick="location.href='teaching.html';">🏫 Teaching</button>
+        <button onclick="location.href='blog.html';">🖊️ Blog</button>
+    </div>
+    <br>
+    <br>
+
+    <header>
+        <h1><span class="latex">Blog posts</h1>
+        <p class="author">
+            Free thoughts, mostly about interesting research
+        </p>
+    </header>
+
+    <input type="text" 
+            style="width: 100%" 
+            id="search_bar" 
+            onkeyup="search()" 
+            placeholder="Search blog posts..."
+    >
+    <br>
+    <br>
+
+    <div class="main-container ">
+        <div class="cards" id="list_posts">
+            <!--
+            <div class="post_card">
+                <div class="card_title">
+                    #2 - Sound In-Painting will make you crazy!
+                </div>
+                <div class="card_excerpt">
+                    Diffusion models are rapidly becoming popular for generative modeling of high-dimensional data. They have shown impressive results on various tasks in the domain of computer vision and are gaining popularity in the natural language processing and sound
+                    processing community.
+                </div>
+                <div class="card_date">
+                    <small class="text-muted">2022-09-01</small>
+                </div>
+                <div class="card_link">
+                    <a href="#">Read more</a>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="post_card">
+                <div class="card_title">
+                    #1 - How diffusion models can be used for generative modeling?
+                </div>
+                <div class="card_excerpt">
+                    Diffusion models are rapidly becoming popular for generative modeling of high-dimensional data. They have shown impressive results on various tasks in the domain of computer vision and are gaining popularity in the natural language processing and sound
+                    processing community.
+                </div>
+                <div class="card_date">
+                    <small class="text-muted">2022-09-01</small>
+                </div>
+                <div class="card_link">
+                    <a href="#">Read more</a>
+                </div>
+            </div>
+-->
+        </div>
+    </div>
+
+            <script>
+                MathJax = {
+                    tex: {
+                        inlineMath: [
+                            ['$', '$'],
+                        ],
+                    },
+                }
+            </script>
+
+            <script>
+                function search() {
+                    var input, filter, list_posts, li, a, i, txtValue;
+                    input = document.getElementById("search_bar");
+                    filter = input.value.toUpperCase();
+                    list_posts = document.getElementById("list_posts");
+                    posts = list_posts.getElementsByClassName("post");
+                    for (i = 0; i < posts.length; i++) {
+                        a = posts[i].getElementsByClassName("title")[0];
+                        txtValue = a.textContent || a.innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            posts[i].style.display = "";
+                        } else {
+                            posts[i].style.display = "none";
+                        }
+                    }
+                }
+            </script>
+
+            <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+            <script async src="prism/prism.js"></script>
+
+            <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+</body>
+
+</html>
