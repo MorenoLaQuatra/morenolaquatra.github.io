@@ -15,21 +15,13 @@
     <meta property="og:type" content="website" />
     <link rel="stylesheet" href="src/style.css" />
     <link rel="stylesheet" href="prism/prism.css" />
+    <script src="src/jquery-3.6.0.min.js"></script>
 
 </head>
 
 <body id="top" class="libertinus">
 
-    <div class="container horizontal-center">
-        <button onclick="location.href='index.html';">🏠 Home</button>
-        <button onclick="location.href='cv.html';">📄 CV</button>
-        <button onclick="location.href='projects.html';">🏗️ Projects</button>
-        <button onclick="location.href='publications.html';">📜 Publications</button>
-        <button onclick="location.href='teaching.html';">🏫 Teaching</button>
-        <button onclick="location.href='blog.html';">🖊️ Blog</button>
-    </div>
-    <br>
-    <br>
+    <div data-include="header"></div>
 
     <header>
         <h1><span class="latex">Projects</h1>
@@ -129,20 +121,17 @@
     <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
 
-    <hr>
-    <div class="footer">
-        <br>
-        <p class="horizontal-center"><b>Copyright:</b> Moreno La Quatra</p>
-        <p class="horizontal-center"><b>Acknowledgements:</b> <a href="https://latex.vercel.app/">LaTeX-css</a></p>
-        <br>
-        <div class="container horizontal-center">
-            <button onclick="location.href='https://twitter.com/MorenoLaQuatra';">🐦 Twitter</button>
-            <button onclick="location.href='https://scholar.google.com/citations?user=JyN-kZsAAAAJ';">🎓 Scholar</button>
-            <button onclick="location.href='https://www.linkedin.com/in/moreno-la-quatra/';">💼 LinkedIn</button>
-            <button onclick="location.href='https://github.com/MorenoLaQuatra';">💻 GitHub</button>
-        </div>
-        <br>
-    </div>
+    <div data-include="footer"></div>
+
+    <script>
+        $(function () {
+            var includes = $('[data-include]')
+            $.each(includes, function () {
+              var file = 'components/' + $(this).data('include') + '.html'
+              $(this).load(file)
+            })
+          })
+    </script>
     
 </body>
 
