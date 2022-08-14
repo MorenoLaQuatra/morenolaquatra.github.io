@@ -1,4 +1,4 @@
 This is a Brave Rewards publisher verification file.
 
 Domain: mlaquatra.me
-Token: 02e97950083634ae47bb8cbad03296c7a4d74216390d64863dc04e9e39f57829
+Token: 173ac923b16fe015fe8da0ed967549b03d5c1532f0d6ab955f2e041585807af3
