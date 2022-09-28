@@ -37,7 +37,7 @@
         <ol>
             <li><a href="#buzzes">Mosquito detection</a></li>
             <li><a href="#vocalisations">Vocalisations</a></li>
-            <li><a href="#faces">Emotion in your faces</a></li>
+            <li><a href="#faces">Emotion in your faces (?)</a></li>
         </ol>
     </nav>
 
@@ -58,6 +58,24 @@
             </figcaption>
             <br>
 
+            <p>
+                A few takeaways from the results:
+                <ul>
+                    <li>
+                        <b>Contextual information</b>: experimenting with different context windows, we found that the model is able to leverage the contextual information in the audio recordings to improve the performance. However, longer context windows
+                        may introduce noisy or irrelevant information, which can negatively affect the performance.
+                    </li>
+                    <li>
+                        <b>Multi-class labeling scheme</b>: the proposed labeling schemes allows the system to better model the temporal dependencies between the audio frames. In particular, the multi-class labeling scheme outperforms the binary labeling
+                        scheme in all cases.
+                    </li>
+                    <li>
+                        <b>Pitfall in evaluation metrics</b>: thanks to the organizers, we found that our model tends to predict short-lasting backgrounds within long-lasting mosquito events. Not all evaluation metrics are able to capture this behavior,
+                        and we aim at investigating this issue in the future.
+                    </li>
+                </ul>
+            </p>
+
             <h4 id="vocalisations">Transformer-based Non-Verbal Emotion Recognition: Exploring Model Portability across Speakers’ Genders</h4>
             <p>
                 A considerable body of research in the field of automatic emotion recognition from speech has been developed in the last years. However, most of the existing systems are designed and trained on a single dataset, usually collected from a specific geographical
@@ -65,8 +83,8 @@
             </p>
 
             <p>
-                In this work, we address another challenge at <a href="http://www.compare.openaudio.eu/2022-2/">ComParE 2022</a>. The vocalisation challenge aims at building systems that automatically recognise emotions from short vocalisations. The peculiarity
-                of this challenge is that the training dataset is composed of female-only recordings while the test set includes male-only recordings.
+                In this work, we address the vocalisation challenge at <a href="http://www.compare.openaudio.eu/2022-2/">ComParE 2022</a>. It aims at building systems that automatically recognise emotions from short vocalisations. The peculiarity of this
+                challenge is that the training dataset is composed of female-only recordings while the test set includes male-only recordings.
             </p>
 
             <p>
@@ -107,7 +125,7 @@
                         <b>Text embeddings</b>: leveraging a set of manually defined templates, we extract face captions from the video frames and use a RoBERTa<label for="sn-6" class="sidenote-toggle sidenote-number"></label><span class="sidenote">Liu, Y., Goyal, N., Gupta, P., Levy, O., & Rush, A. M. (2020). RoBERTa: A robustly optimized BERT pretraining approach. arXiv preprint arXiv:1907.11692. <a href="https://arxiv.org/abs/1907.11692">On arXiv</a>.</span>                        model to extract text embeddings.
                     </li>
                     <li>
-                        <b>FAU</b>: we use as features the Facial Action Units (FAU) extracted from the video frames.
+                        <b>FAUs</b>: we use as features the Facial Action Units (FAUs) extracted from the video frames.
                     </li>
                 </ul>
             </p>
@@ -123,10 +141,10 @@
             <h4 id="wrap-up">Wrap-up</h4>
             <p>
                 This post describes three papers that will be presented at the ACM Multimedia 2022 conference. Each of them address a different challenge in the field of audio or multimodal processing. Complete information could be found in the papers that will be linked
-                as soon as they are available.
+                as soon as they are available. The details of each methodology are described in the papers, while this post provides only a high-level overview of the proposed solutions.
             </p>
             <p>
-                I also want to thank my co-authors <i>Lorenzo Vaiani, Alkis Koudounas, Luca Cagliero, Paolo Garza and Elena Baralis</i> for their contributions to this work.
+                I want to thank my co-authors <i>Lorenzo Vaiani, Alkis Koudounas, Luca Cagliero, Paolo Garza and Elena Baralis</i> for their contributions to this works.
             </p>
 
 
