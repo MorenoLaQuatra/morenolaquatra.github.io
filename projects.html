@@ -43,7 +43,7 @@
         <div class="cards" id="list_posts">
 
             <div class="post_card search_element">
-                <div class="card_title">
+                <div class="card_title search_title">
                     <a href="projects/dlu.html" style="text-decoration: none !important;">
                         Deep Learning Updates
                     </a>
@@ -104,7 +104,7 @@
             list_posts = document.getElementById("list_posts");
             posts = list_posts.getElementsByClassName("search_element");
             for (i = 0; i < posts.length; i++) {
-                a = posts[i].getElementsByClassName("title")[0];
+                a = posts[i].getElementsByClassName("search_title")[0];
                 txtValue = a.textContent || a.innerText;
                 if (txtValue.toUpperCase().indexOf(filter) > -1) {
                     posts[i].style.display = "";
