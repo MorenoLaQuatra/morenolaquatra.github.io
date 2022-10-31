@@ -42,7 +42,7 @@
     <div class="main-container ">
         <div class="cards" id="list_posts">
 
-            <div class="post_card">
+            <div class="post_card search_element">
                 <div class="card_title">
                     <a href="posts/acm_mm_22_publications.html">Buzzes, vocalisations and faces @ ACM Multimedia 2022</a>
                 </div>
@@ -95,7 +95,7 @@
             input = document.getElementById("search_bar");
             filter = input.value.toUpperCase();
             list_posts = document.getElementById("list_posts");
-            posts = list_posts.getElementsByClassName("post");
+            posts = list_posts.getElementsByClassName("search_element");
             for (i = 0; i < posts.length; i++) {
                 a = posts[i].getElementsByClassName("title")[0];
                 txtValue = a.textContent || a.innerText;
