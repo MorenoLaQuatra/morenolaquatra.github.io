@@ -105,7 +105,7 @@
             posts = list_posts.getElementsByClassName("search_element");
             for (i = 0; i < posts.length; i++) {
                 a = posts[i].getElementsByClassName("search_title")[0];
-                txtValue = a.textContent || a.innerText;
+                txtValue = a.innerText;
                 if (txtValue.toUpperCase().indexOf(filter) > -1) {
                     posts[i].style.display = "";
                 } else {
