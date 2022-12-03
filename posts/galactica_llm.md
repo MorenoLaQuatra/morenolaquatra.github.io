@@ -2,7 +2,7 @@
 marp: true
 ---
 
-# Galactica: A Large Language Model for Science 🪐
+# [Galactica: A Large Language Model for Science](https://arxiv.org/abs/2211.09085v1) 🪐
 
 🖊️ Authors: Ross Taylor, Marcin Kardas, Guillem Cucurull, Thomas Scialom, Anthony Hartshorn, Elvis Saravia, Andrew Poulton, Viktor Kerkez, Robert Stojnic
 
@@ -33,11 +33,8 @@ where $(G)$ is the gravitational constant, $(M)$ is the mass of the black hole, 
 2. Do you want to try a demo of Galactica with your own prompt?
 
 <center>
-    <a href="https://form.jotform.com/morenolaquatra/galactica-rg">https://form.jotform.com/morenolaquatra/galactica-rg</a>
+    <a href="https://huggingface.co/spaces/morenolq/galactica-base">https://huggingface.co/spaces/morenolq/galactica-base</a>
 </center>
-
-<br>
-At the end of the talk, we will evaluate the prompt you have chosen and show you the results.
 
 ---
 
