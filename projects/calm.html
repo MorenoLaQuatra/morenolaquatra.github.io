@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-site-verification" content="" />
+    <title>CALM</title>
+
+    <meta name="description" content="Moreno La Quatra personal website" />
+    <meta name="keywords" content="contrastive alignment, multimodal learning, nlp, audio signal processing" />
+    <meta property="og:title" content="DLU - Moreno La Quatra" />
+    <meta property="og:url" content="https://mlaquatra.me/projects/calm.html" />
+    <meta property="og:description" content="CALM - Contrastive Alignment of Language and Music" />
+    <meta property="og:type" content="website" />
+    <link rel="stylesheet" href="../src/style.css" />
+    <link rel="stylesheet" href="../prism/prism.css" />
+    <script src="../src/jquery-3.6.0.min.js"></script>
+</head>
+
+<body id="top" class="libertinus">
+    <div data-include="header-nested-1"></div>
+    <header>
+        <h1><span class="latex">CALM - Contrastive Alignment of Language and Music</h1>
+        <p class="author">
+            July, 2022
+        </p>
+    </header>
+
+    <div class="abstract">
+        <h2>TL;DR</h2>
+        <p>
+            <b>CALM</b> is a multimodal learning framework that aims to learn a joint representation of language and music. The framework is based on the CLIP model and it is trained on a large-scale dataset of music and tags.
+            Find out more at <a href="https://github.com/ALM-LAB/CALM">https://github.com/ALM-LAB/CALM</a>
+        </p>
+    </div>
+
+    <nav role="navigation" class="toc">
+        <ol>
+            <li><a href="#why">Why this project?</a></li>
+            <li><a href="#how">How it works?</a></li>
+        </ol>
+    </nav>
+
+    <h4 id="why">Why this project?</h4>
+    <p>
+        The project has started as an hackathon project during the <a href="https://musikalkemist.github.io/thesoundofaihackathon/"><i>1st Sound of AI Hackathon</i></a>. The project has been nominated as the <i>most marketable solution</i> by the hackathon jury.
+        <br>
+        The aim of the project is to learn a joint representation of language and music to enable multimodal learning tasks (e.g., text-to-music retrieval and zero-shot music classification).
+    </p>
+
+    <h4 id="how">How it works?</h4>
+    <p>
+        The framework leverages the contrastive learning paradigm to align the language and music modalities. The framework is based on the <a href="https://openai.com/blog/clip/">CLIP</a> model and it is trained on a large-scale dataset of music and tags.
+        <br>
+        The framework is composed of two main components:
+        <ul>
+            <li><b>Music embedding model</b>: using <a href="https://arxiv.org/abs/2010.11929">ViT - Vision Transformer</a> architecture, the mel-spectrogram of the music is encoded into a fixed-length vector.</li>
+            <li><b>Language embedding model</b>: using <a href="https://arxiv.org/abs/1810.04805>">BERT</a> architecture, the captions (obtained from the tags) are encoded into a fixed-length vector.</li>
+        </ul>
+        The two models are trained in a contrastive learning fashion, where the goal is to maximize the cosine similarity between the embeddings of the same music and the goal is to minimize the cosine similarity between the embeddings of different music recordings (i.e., the embeddings of the music and the captions are aligned).
+    </p>
+
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [
+                    ['$', '$'],
+                ],
+            },
+        }
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script async src="../prism/prism.js"></script>
+
+    <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+
+    <div data-include="footer"></div>
+
+    <script>
+        $(function () {
+            var includes = $('[data-include]')
+            $.each(includes, function () {
+              var file = '../components/' + $(this).data('include') + '.html'
+              $(this).load(file)
+            })
+          })
+    </script>
+
+    
+</body>
+
+</html>
