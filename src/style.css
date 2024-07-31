@@ -708,3 +708,84 @@ h6 {
 .footer {
     background-color: #EAEAEA !important;
 }
+
+
+
+/* Other */
+
+.footer {
+    text-align: center;
+}
+.footer p {
+    margin: 5px 0;
+}
+.footer .container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.footer button {
+    margin: 5px;
+    padding: 10px 20px;
+    border: none;
+    background-color: #f1f1f1;
+    cursor: pointer;
+    font-size: 16px;
+}
+.footer button:hover {
+    background-color: #ddd;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.container button {
+    margin: 5px;
+    padding: 10px 20px;
+    border: none;
+    background-color: #f1f1f1;
+    cursor: pointer;
+    font-size: 16px;
+    position: relative;
+}
+.container button:hover {
+    background-color: #ddd;
+}
+.horizontal-center {
+    text-align: center;
+}
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+.dropdown button::after {
+    content: '▼';
+    font-size: 12px;
+    color: #000;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
