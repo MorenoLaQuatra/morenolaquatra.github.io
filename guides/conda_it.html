@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-site-verification" content="" />
+    <title>(Mini)Conda su Ubuntu - Moreno La Quatra</title>
+
+    <meta name="description" content="Guida dettagliata su come installare e utilizzare Conda su Ubuntu" />
+    <meta name="keywords" content="Conda, Python, Linux, Ubuntu, Installazione, Comandi" />
+    <meta property="og:title" content="Guida Conda su Ubuntu - Moreno La Quatra" />
+    <meta property="og:url" content="https://mlaquatra.me/guides/conda_it.html" />
+    <meta property="og:description" content="Guida sull'installazione e utilizzo di Miniconda su Ubuntu" />
+    <meta property="og:type" content="website" />
+    <link rel="stylesheet" href="../src/style.css" />
+    <link rel="stylesheet" href="../prism/prism.css" />
+    <script src="../src/jquery-3.6.0.min.js"></script>
+    <style>
+        pre code {
+            background: black;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body id="top" class="libertinus">
+    <div data-include="header-nested-1"></div>
+    <header>
+        <h2 style="text-align: center;"><span class="latex">Guida - (Mini)Conda su Ubuntu</h2>
+    </header>
+
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Conda_logo.svg/2560px-Conda_logo.svg.png" alt="Conda logo" width="50%" style="margin: 0 auto; display: block;">
+
+    <div class="abstract">
+        <p>
+            Conda è un gestore di pacchetti open source e un sistema di gestione degli environment che funziona su Windows, macOS e Linux. 
+            <b>Miniconda</b> è una versione minimale di Conda che include solo Conda e i pacchetti necessari per farlo funzionare.
+            Questo strumento permette di creare environment isolati per gestire diverse versioni di pacchetti e dipendenze software senza conflitti.
+        </p>
+    </div>
+
+    <nav role="navigation" class="toc">
+        <ol>
+            <li><a href="#installazione_conda">Installazione di Conda su Ubuntu</a></li>
+            <li><a href="#gestione_environment">Gestione degli Environment</a></li>
+            <li><a href="#gestione_pacchetti">Gestione dei Pacchetti</a></li>
+            <li><a href="#esempio_completo">Esempio Completo</a></li>
+            <li><a href="#comandi_utili">Comandi Utili</a></li>
+        </ol>
+    </nav>
+
+    <h4 id="installazione_conda"> 📥 Installazione di Conda su Ubuntu</h4>
+    <p>
+        Per installare Conda su Ubuntu, segui questi passaggi:
+    </p>
+    <ol>
+        <li>Scarica il programma di installazione di Miniconda dal sito ufficiale:
+            <pre><code class="language-bash">wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh</code></pre>
+        </li>
+        <li>Esegui il programma di installazione:
+            <pre><code class="language-bash">bash Miniconda3-latest-Linux-x86_64.sh</code></pre>
+        </li>
+        <li>Segui le istruzioni a schermo e accetta il contratto di licenza. Alla fine dell'installazione, chiudi e riapri il terminale o esegui:
+            <pre><code class="language-bash">source ~/.bashrc</code></pre>
+        </li>
+    </ol>
+
+    <h4 id="gestione_environment"> 🌐 Gestione degli Environment</h4>
+    <p>
+        Gli environment Conda ti permettono di creare e gestire diversi environment di sviluppo. Ecco alcuni comandi essenziali:
+    </p>
+    <ul>
+        <li>Creare un nuovo environment:
+            <pre><code class="language-bash">conda create --name mio_environment</code></pre>
+        </li>
+        <li>Attivare un environment:
+            <pre><code class="language-bash">conda activate mio_environment</code></pre>
+        </li>
+        <li>Disattivare un environment:
+            <pre><code class="language-bash">conda deactivate</code></pre>
+        </li>
+        <li>Elencare tutti gli environment:
+            <pre><code class="language-bash">conda env list</code></pre>
+        </li>
+        <li>Rimuovere un environment:
+            <pre><code class="language-bash">conda remove --name mio_environment --all</code></pre>
+        </li>
+    </ul>
+
+    <h4 id="gestione_pacchetti"> 📦 Gestione dei Pacchetti</h4>
+    <p>
+        Conda facilita l'installazione e la gestione dei pacchetti. Ecco come farlo:
+    </p>
+    <ul>
+        <li>Installare un pacchetto:
+            <pre><code class="language-bash">conda install nome_pacchetto</code></pre>
+        </li>
+        <li>Aggiornare un pacchetto:
+            <pre><code class="language-bash">conda update nome_pacchetto</code></pre>
+        </li>
+        <li>Rimuovere un pacchetto:
+            <pre><code class="language-bash">conda remove nome_pacchetto</code></pre>
+        </li>
+        <li>Elencare i pacchetti installati:
+            <pre><code class="language-bash">conda list</code></pre>
+        </li>
+        <li>Cercare un pacchetto:
+            <pre><code class="language-bash">conda search nome_pacchetto</code></pre>
+        </li>
+    </ul>
+
+    <h4 id="esempio_completo"> 📋 Esempio Completo: Creazione e Gestione di un Environment con pip</h4>
+    <p>
+        Di seguito è riportato un esempio su come creare un environment Conda, attivarlo e installare pacchetti utilizzando pip:
+    </p>
+    <ol>
+        <li>Creare un nuovo environment chiamato <code>esempio_environment</code> con Python 3.10:
+            <pre><code class="language-bash">conda create --name esempio_environment python=3.10</code></pre>
+        </li>
+        <li>Attivare l'environment appena creato:
+            <pre><code class="language-bash">conda activate esempio_environment</code></pre>
+            <p>Il prompt del terminale dovrebbe cambiare in:</p>
+            <pre style="background-color: black; color: white;"><code class="language-bash" style="background-color: black; color: white;">(esempio_environment) user@hostname:~$</code></pre>
+        </li>
+        <li>Installare pacchetti utilizzando pip (ad esempio, numpy e pandas):
+            <pre><code class="language-bash">pip install numpy pandas</code></pre>
+        </li>
+        <li>Verificare che i pacchetti siano stati installati correttamente:
+            <pre><code class="language-bash">python -c "import numpy; import pandas; print('Numpy e Pandas installati correttamente')" </code></pre>
+        </li>
+        <li>Disattivare l'environment quando hai finito di lavorare:
+            <pre><code class="language-bash">conda deactivate</code></pre>
+        </li>
+    </ol>
+
+    <h4 id="comandi_utili"> 🔍 Comandi Utili</h4>
+    <p>
+        Di seguito alcuni comandi Conda utili per varie operazioni:
+    </p>
+    <ul>
+        <li>Mostrare informazioni sull'environment attivo:
+            <pre><code class="language-bash">conda info</code></pre>
+        </li>
+        <li>Salvare l'elenco dei pacchetti in un file:
+            <pre><code class="language-bash">conda list --export > elenco_pacchetti.txt</code></pre>
+        </li>
+        <li>Creare un environment da un file:
+            <pre><code class="language-bash">conda create --name mio_environment --file elenco_pacchetti.txt</code></pre>
+        </li>
+    </ul>
+
+    <p style="text-align: center;">
+        <button onclick="location.href='https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html';">📄 Documentazione Ufficiale</button>
+        <button onclick="location.href='https://github.com/conda/conda';">💻 Repository GitHub</button>
+    </p>
+
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [
+                    ['$', '$'],
+                ],
+            },
+        }
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script async src="../prism/prism.js"></script>
+
+    <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+
+    <div data-include="footer"></div>
+
+    <script>
+        $(function() {
+            var includes = $('[data-include]')
+            $.each(includes, function() {
+                var file = '../components/' + $(this).data('include') + '.html'
+                $(this).load(file)
+            })
+        })
+    </script>
+</body>
+
+</html>
