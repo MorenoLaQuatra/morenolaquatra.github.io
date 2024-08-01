@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-site-verification" content="" />
+    <title>(Mini)Conda on Ubuntu - Moreno La Quatra</title>
+
+    <meta name="description" content="Detailed guide on how to install and use Conda on Ubuntu" />
+    <meta name="keywords" content="Conda, Python, Linux, Ubuntu, Installation, Commands" />
+    <meta property="og:title" content="Conda Guide on Ubuntu - Moreno La Quatra" />
+    <meta property="og:url" content="https://mlaquatra.me/posts/guida_conda.html" />
+    <meta property="og:description" content="Guide on installing and using Miniconda on Ubuntu" />
+    <meta property="og:type" content="website" />
+    <link rel="stylesheet" href="../src/style.css" />
+    <link rel="stylesheet" href="../prism/prism.css" />
+    <script src="../src/jquery-3.6.0.min.js"></script>
+    <style>
+        pre code {
+            background: black;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body id="top" class="libertinus">
+    <div data-include="header-nested-1"></div>
+    <header>
+        <h2 style="text-align: center;"><span class="latex">Guide - (Mini)Conda on Ubuntu</h2>
+    </header>
+
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Conda_logo.svg/2560px-Conda_logo.svg.png" alt="Conda logo" width="50%" style="margin: 0 auto; display: block;">
+
+    <div class="abstract">
+        <p>
+            Conda is an open-source package manager and environment management system that runs on Windows, macOS, and Linux. 
+            <b>Miniconda</b> is a minimal version of Conda that includes only Conda and its dependencies.
+            This tool allows you to create isolated environments to manage different versions of packages and software dependencies without conflicts.
+        </p>
+    </div>
+
+    <nav role="navigation" class="toc">
+        <ol>
+            <li><a href="#install_conda">Installing Conda on Ubuntu</a></li>
+            <li><a href="#manage_environments">Managing Environments</a></li>
+            <li><a href="#manage_packages">Managing Packages</a></li>
+            <li><a href="#complete_example">Complete Example</a></li>
+            <li><a href="#useful_commands">Useful Commands</a></li>
+        </ol>
+    </nav>
+
+    <h4 id="install_conda"> 📥 Installing Conda on Ubuntu</h4>
+    <p>
+        To install Conda on Ubuntu, follow these steps:
+    </p>
+    <ol>
+        <li>Download the Miniconda installer from the official website:
+            <pre><code class="language-bash">wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh</code></pre>
+        </li>
+        <li>Run the installer:
+            <pre><code class="language-bash">bash Miniconda3-latest-Linux-x86_64.sh</code></pre>
+        </li>
+        <li>Follow the on-screen instructions and accept the license agreement. After the installation is complete, close and reopen the terminal or run:
+            <pre><code class="language-bash">source ~/.bashrc</code></pre>
+        </li>
+    </ol>
+
+    <h4 id="manage_environments"> 🌐 Managing Environments</h4>
+    <p>
+        Conda environments allow you to create and manage different development environments. Here are some essential commands:
+    </p>
+    <ul>
+        <li>Create a new environment:
+            <pre><code class="language-bash">conda create --name my_environment</code></pre>
+        </li>
+        <li>Activate an environment:
+            <pre><code class="language-bash">conda activate my_environment</code></pre>
+        </li>
+        <li>Deactivate an environment:
+            <pre><code class="language-bash">conda deactivate</code></pre>
+        </li>
+        <li>List all environments:
+            <pre><code class="language-bash">conda env list</code></pre>
+        </li>
+        <li>Remove an environment:
+            <pre><code class="language-bash">conda remove --name my_environment --all</code></pre>
+        </li>
+    </ul>
+
+    <h4 id="manage_packages"> 📦 Managing Packages</h4>
+    <p>
+        Conda makes it easy to install and manage packages. Here's how to do it:
+    </p>
+    <ul>
+        <li>Install a package:
+            <pre><code class="language-bash">conda install package_name</code></pre>
+        </li>
+        <li>Update a package:
+            <pre><code class="language-bash">conda update package_name</code></pre>
+        </li>
+        <li>Remove a package:
+            <pre><code class="language-bash">conda remove package_name</code></pre>
+        </li>
+        <li>List installed packages:
+            <pre><code class="language-bash">conda list</code></pre>
+        </li>
+        <li>Search for a package:
+            <pre><code class="language-bash">conda search package_name</code></pre>
+        </li>
+    </ul>
+
+    <h4 id="complete_example"> 📋 Complete Example: Creating and Managing an Environment with pip</h4>
+    <p>
+        Below is an example of how to create a Conda environment, activate it, and install packages using pip:
+    </p>
+    <ol>
+        <li>Create a new environment called <code>example_environment</code> with Python 3.10:
+            <pre><code class="language-bash">conda create --name example_environment python=3.10</code></pre>
+        </li>
+        <li>Activate the newly created environment:
+            <pre><code class="language-bash">conda activate example_environment</code></pre>
+            <p>The terminal prompt should change to:</p>
+            <pre style="background-color: black; color: white;"><code class="language-bash" style="background-color: black; color: white;">(example_environment) user@hostname:~$</code></pre>
+        </li>
+        <li>Install packages using pip (e.g., numpy and pandas):
+            <pre><code class="language-bash">pip install numpy pandas</code></pre>
+        </li>
+        <li>Verify that the packages were installed correctly:
+            <pre><code class="language-bash">python -c "import numpy; import pandas; print('Numpy and Pandas installed correctly')" </code></pre>
+        </li>
+        <li>Deactivate the environment when you are done working:
+            <pre><code class="language-bash">conda deactivate</code></pre>
+        </li>
+    </ol>
+
+    <h4 id="useful_commands"> 🔍 Useful Commands</h4>
+    <p>
+        Here are some useful Conda commands for various operations:
+    </p>
+    <ul>
+        <li>Show information about the active environment:
+            <pre><code class="language-bash">conda info</code></pre>
+        </li>
+        <li>Save the list of packages to a file:
+            <pre><code class="language-bash">conda list --export > package_list.txt</code></pre>
+        </li>
+        <li>Create an environment from a file:
+            <pre><code class="language-bash">conda create --name my_environment --file package_list.txt</code></pre>
+        </li>
+    </ul>
+
+    <p style="text-align: center;">
+        <button onclick="location.href='https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html';">📄 Official Documentation</button>
+        <button onclick="location.href='https://github.com/conda/conda';">💻 GitHub Repository</button>
+    </p>
+
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [
+                    ['$', '$'],
+                ],
+            },
+        }
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script async src="../prism/prism.js"></script>
+
+    <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+
+    <div data-include="footer"></div>
+
+    <script>
+        $(function() {
+            var includes = $('[data-include]')
+            $.each(includes, function() {
+                var file = '../components/' + $(this).data('include') + '.html'
+                $(this).load(file)
+            })
+        })
+    </script>
+</body>
+
+</html>
