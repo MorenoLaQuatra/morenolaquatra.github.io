@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="google-site-verification" content="" />
     <title>Blog - Moreno La Quatra</title>
 
     <meta name="description" content="Moreno La Quatra personal website" />
@@ -17,6 +16,90 @@
     <link rel="stylesheet" href="prism/prism.css" />
     <script src="src/jquery-3.6.0.min.js"></script>
 
+    <style>
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .post_card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            width: 280px;
+            background-color: #fafafa;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .card_title a {
+            font-weight: bold;
+            color: #333;
+            text-decoration: none;
+            font-size: 1.2em;
+        }
+
+        .card_excerpt {
+            color: #555;
+            margin-top: 10px;
+            font-size: 0.95em;
+        }
+
+        .card_date,
+        .tags {
+            font-size: 0.85em;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            padding: 2px 8px;
+            color: #333;
+            font-size: 0.8em;
+            border: 1px solid #ddd;
+        }
+
+        .card_link {
+            margin-top: auto;
+        }
+
+        .card_link a {
+            font-weight: bold;
+            color: #0066cc;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .flag-icon {
+            margin-right: 4px;
+            font-size: 1em;
+        }
+
+        br {
+            line-height: 1.8;
+        }
+    </style>
+
 </head>
 
 <body id="top" class="libertinus">
@@ -24,128 +107,155 @@
     <div data-include="header"></div>
 
     <header>
-        <h1><span class="latex">Blog posts</h1>
+        <h1><span class="latex">Blog</h1>
         <p class="author">
-            Free thoughts, mostly about interesting research
+            Insights, research, and practical programming guides
         </p>
     </header>
 
-    <input type="text" 
-            style="width: 100%" 
-            id="search_bar" 
-            onkeyup="search()" 
-            placeholder="Search blog posts..."
-    >
-    <br>
-    <br>
+    <input type="text" style="width: 100%" id="search_bar" onkeyup="search()" placeholder="Search blog posts..." />
+    <br><br>
 
-    <div class="main-container ">
-        <div class="cards" id="list_posts">
+    <!-- Research Posts Section -->
+    <section>
+        <header>
+            <h2>Research Blog Posts</h2>
+        </header>
+        <br>
+        <div class="main-container" id="list_research_posts">
 
             <div class="post_card search_element">
                 <div class="card_title search_title">
                     <a href="posts/arch_at_sasb24.html">ARCH - Audio Representations benCHmark</a>
                 </div>
                 <div class="card_excerpt">
-                    Audio representation learning (ARL) has seen significant advancements in recent years, with the development of various models and datasets aimed at encoding audio signals into meaningful high-level feature representations. This post covers the introduction of ARCH (Audio Representations benCHmark), our work on a comprehensive benchmark designed to evaluate ARL methods published at <a href="https://sites.google.com/view/icasspsasb2024/home">SASB 2024</a> workshop co-located with <a href="https://2024.ieeeicassp.org/">ICASSP 2024</a>.
+                    Introduction to ARCH, a benchmark for evaluating audio representation learning models, presented at ICASSP Workshop 2024.
                 </div>
                 <div class="card_date">
                     <small class="text-muted">2024-03-10</small>
+                </div>
+                <div class="tags">
+                    <span class="tag">Audio</span>
+                    <span class="tag">Benchmark</span>
+                    <span class="tag">ICASSPW 2024</span>
                 </div>
                 <div class="card_link">
                     <a href="posts/arch_at_sasb24.html">Read more</a>
                 </div>
             </div>
 
-            <br>
-
             <div class="post_card search_element">
                 <div class="card_title search_title">
                     <a href="posts/galactica_llm_slides.html">Galactica 🪐 - Science LLM (?)</a>
                 </div>
                 <div class="card_excerpt">
-                    This post contains the discussion for the paper "Galactica: A Large Language Model for Science" by by <a href="https://www.paperswithcode.com">Papers with Code</a> and <a href="https://www.meta.com/">Meta</a>.
-                    It has been written for the reading group of the <a href="https://dbdmg.polito.it/">dbdmg</a> at the <a href="https://www.polito.it/">Politecnico di Torino</a>.
+                    Analysis of "Galactica: A Large Language Model for Science" by Papers with Code and Meta.
                 </div>
                 <div class="card_date">
                     <small class="text-muted">2022-12-02</small>
+                </div>
+                <div class="tags">
+                    <span class="tag">LLM</span>
+                    <span class="tag">Science</span>
+                    <span class="tag">Meta</span>
                 </div>
                 <div class="card_link">
                     <a href="posts/galactica_llm_slides.html">Read more</a>
                 </div>
             </div>
 
-            <br>
-
             <div class="post_card search_element">
                 <div class="card_title search_title">
-                    <a href="posts/acm_mm_22_publications.html">Buzzes, vocalisations and faces @ ACM Multimedia 2022</a>
+                    <a href="posts/acm_mm_22_publications.html">Buzzes, Vocalisations and Faces @ ACM Multimedia 2022</a>
                 </div>
                 <div class="card_excerpt">
-                    This post contains a short preview of what we are going to present at ACM Multimedia 2022.
-                    It covers the work we have done on the automatic detection of Mosquitoes, the classification of short vocalisations and the emotion recognition from video reactions.
+                    Preview of work on mosquito detection, vocalization classification, and emotion recognition for ACM Multimedia 2022.
                 </div>
                 <div class="card_date">
                     <small class="text-muted">2022-09-28</small>
+                </div>
+                <div class="tags">
+                    <span class="tag">ACM Multimedia</span>
+                    <span class="tag">Emotion Recognition</span>
+                    <span class="tag">Audio</span>
                 </div>
                 <div class="card_link">
                     <a href="posts/acm_mm_22_publications.html">Read more</a>
                 </div>
             </div>
 
-            <br>
-            <!--
-            <div class="post_card">
-                <div class="card_title">
-                    #1 - How diffusion models can be used for generative modeling?
+        </div>
+    </section>
+
+    <br><br>
+
+    <!-- Guides Section -->
+    <section>
+        <header>
+            <h2>Guides & Practical Programming</h2>
+        </header>
+        <br>
+        <div class="main-container" id="list_guides">
+
+            <div class="post_card search_element">
+                <div class="card_title search_title">
+                    <a href="guides/conda_en.html">(Mini) Conda on Linux</a>
                 </div>
                 <div class="card_excerpt">
-                    Diffusion models are rapidly becoming popular for generative modeling of high-dimensional data. They have shown impressive results on various tasks in the domain of computer vision and are gaining popularity in the natural language processing and sound
-                    processing community.
+                    Quick guide to setting up Conda and Miniconda on Linux for environment management.
                 </div>
                 <div class="card_date">
-                    <small class="text-muted">2022-09-01</small>
+                    <small class="text-muted">Guide</small>
+                </div>
+                <div class="tags">
+                    <span class="tag">Conda</span>
+                    <span class="tag">Linux</span>
+                    <span class="tag">Environment Management</span>
                 </div>
                 <div class="card_link">
-                    <a href="#">Read more</a>
+                    <a href="guides/conda_en.html">🇬🇧 English</a> | <a href="guides/conda_it.html">🇮🇹 Italian</a>
                 </div>
             </div>
-            -->
+
+            <div class="post_card search_element">
+                <div class="card_title search_title">
+                    <a href="guides/streaming_datasets.html">Streaming Hugging Face Datasets in PyTorch</a>
+                </div>
+                <div class="card_excerpt">
+                    Guide to using Hugging Face’s streaming datasets in PyTorch for efficient data handling.
+                </div>
+                <div class="card_date">
+                    <small class="text-muted">Guide</small>
+                </div>
+                <div class="tags">
+                    <span class="tag">Hugging Face</span>
+                    <span class="tag">Streaming</span>
+                    <span class="tag">PyTorch</span>
+                </div>
+                <div class="card_link">
+                    <a href="guides/streaming_datasets.html">Read more</a>
+                </div>
+            </div>
+
         </div>
-    </div>
+    </section>
 
-    <script>
-        MathJax = {
-            tex: {
-                inlineMath: [
-                    ['$', '$'],
-                ],
-            },
-        }
-    </script>
-
+    <!-- JavaScript for Search Filtering -->
     <script>
         function search() {
-            var input, filter, list_posts, li, a, i, txtValue;
-            input = document.getElementById("search_bar");
-            filter = input.value.toUpperCase();
-            list_posts = document.getElementById("list_posts");
-            posts = list_posts.getElementsByClassName("search_element");
-            for (i = 0; i < posts.length; i++) {
-                a = posts[i].getElementsByClassName("title")[0];
-                txtValue = a.innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    posts[i].style.display = "";
-                } else {
-                    posts[i].style.display = "none";
+            var input = document.getElementById("search_bar").value.toUpperCase();
+            var lists = [document.getElementById("list_research_posts"), document.getElementById("list_guides")];
+            lists.forEach(list => {
+                let posts = list.getElementsByClassName("search_element");
+                for (let i = 0; i < posts.length; i++) {
+                    let title = posts[i].getElementsByClassName("search_title")[0].innerText;
+                    posts[i].style.display = title.toUpperCase().includes(input) ? "" : "none";
                 }
-            }
+            });
         }
     </script>
 
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script async src="prism/prism.js"></script>
-
     <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
 
@@ -153,14 +263,11 @@
 
     <script>
         $(function () {
-            var includes = $('[data-include]')
-            $.each(includes, function () {
-              var file = 'components/' + $(this).data('include') + '.html'
-              $(this).load(file)
-            })
-          })
+            $('[data-include]').each(function () {
+                $(this).load('components/' + $(this).data('include') + '.html');
+            });
+        });
     </script>
-
 </body>
 
 </html>
