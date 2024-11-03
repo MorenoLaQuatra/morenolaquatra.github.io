@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-site-verification" content="" />
+    <title>Streaming Hugging Face Datasets in PyTorch - Moreno La Quatra</title>
+
+    <meta name="description" content="Guide to using Hugging Face's streaming datasets in PyTorch for efficient large-scale data handling" />
+    <meta name="keywords" content="PyTorch, Hugging Face, Streaming Datasets, Machine Learning, Large Datasets" />
+    <meta property="og:title" content="Streaming Hugging Face Datasets in PyTorch - Moreno La Quatra" />
+    <meta property="og:url" content="https://mlaquatra.me/posts/streaming_datasets.html" />
+    <meta property="og:description" content="Efficiently work with large Hugging Face datasets in PyTorch using streaming mode." />
+    <meta property="og:type" content="website" />
+    <link rel="stylesheet" href="../src/style.css" />
+
+    <!-- Highlight.js CSS and JS for Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+
+    <style>
+        pre code {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .warning-box {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-left: 6px solid #ffeeba;
+            margin: 0;
+            border-radius: 5px;
+        }
+        .warning-box p {
+            padding-bottom: 10px;
+        }
+
+        .info-box {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border-left: 6px solid #bee5eb;
+            margin: 0;
+            border-radius: 5px;
+        }
+        .info-box p {
+            padding-bottom: 10px;
+        }
+
+        .code-box {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            border-left: 6px solid #cce5ff;
+            color: #004085;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body id="top" class="libertinus">
+    <div data-include="header-nested-1"></div>
+    <header>
+        <h2 style="text-align: center;">Streaming Hugging Face Datasets in PyTorch</h2>
+    </header>
+
+    <img src="https://huggingface.co/front/assets/huggingface_logo.svg" alt="Hugging Face Logo" width="40%" style="display: block; margin: 0 auto;">
+
+    <div class="abstract">
+        <p>
+            When working with massive datasets in machine learning, handling storage and processing efficiency is crucial. In this guide, we will explore how to use <b>Hugging Face’s streaming datasets</b> in PyTorch, enabling you to load only the data you need, without downloading everything.
+            This guide will focus on using <code>collabora/librilight-webdataset</code> (4TB dataset) to demonstrate the streaming mode in Hugging Face’s <code>datasets</code> library and integrate it into PyTorch.
+        </p>
+    </div>
+
+    <nav role="navigation" class="toc">
+        <ol>
+            <li><a href="#streaming_setup">Setting Up Streaming in Hugging Face</a></li>
+            <li><a href="#custom_dataset">Creating a Custom PyTorch Dataset</a></li>
+            <li><a href="#dataloader_parallel">Using DataLoader with Parallel Workers</a></li>
+            <li><a href="#audio_handling">Bonus: Handling Audio Data Efficiently</a></li>
+        </ol>
+    </nav>
+
+    <h4 id="streaming_setup"> 🛠️ Setting Up Streaming in Hugging Face</h4>
+    <p>To load a streaming dataset, simply enable the <code>streaming=True</code> parameter when calling <code>load_dataset</code>. This avoids downloading the entire dataset, only loading data as needed.</p>
+    <pre class="code-box"><code class="language-python">
+from datasets import load_dataset
+
+# Load the dataset in streaming mode
+dataset = load_dataset('collabora/librilight-webdataset', split='train', streaming=True)
+    </code></pre>
+
+    <div class="info-box">
+        <p><strong>Note:</strong> Streaming datasets like this do not have a fixed length because they process data in real-time. Length-based operations may not be directly applicable.</p>
+    </div>
+
+    <h4 id="custom_dataset"> 📂 Creating a Custom PyTorch Dataset</h4>
+    <p>We’ll create a PyTorch dataset class to wrap the streaming data. Since we know the dataset length, <code>__len__</code> can return this value. The <code>__getitem__</code> method retrieves items directly from the stream, without holding them in memory.</p>
+
+    <pre class="code-box"><code class="language-python">
+import torch
+from torch.utils.data import Dataset
+from datasets import load_dataset
+
+class MyAudioDataset(Dataset):
+    def __init__(self, dataset_name, split, dataset_length, max_length=10.0):
+        self.dataset = load_dataset(dataset_name, split=split, streaming=True)
+        self.dataset_length = dataset_length
+        self.max_length = max_length  # max length in seconds
+
+    def __len__(self):
+        return self.dataset_length  # Approximate length known
+
+    def __getitem__(self, idx):
+        if idx >= self.dataset_length:
+            raise IndexError("Index out of range")
+
+        iterator = iter(self.dataset)
+        for i, item in enumerate(iterator):
+            if i == idx:
+                audio = item['flac']['array']
+                sample_rate = item['flac']['sampling_rate']
+
+                # Limit audio to max_length in seconds
+                max_samples = int(self.max_length * sample_rate)
+                if len(audio) > max_samples:
+                    start_idx = torch.randint(0, len(audio) - max_samples, (1,)).item()
+                    audio = audio[start_idx:start_idx + max_samples]
+
+                return {
+                    "language": item['json']['book_meta']['language'],
+                    "sample_rate": sample_rate,
+                    "audio": audio
+                }
+
+        raise IndexError("Index out of range")
+    </code></pre>
+
+    <div class="warning-box">
+        <p><strong>Warning:</strong> Iterable datasets do not inherently support length-based indexing due to their real-time processing nature.</p>
+    </div>
+
+    <h4 id="dataloader_parallel"> ⏩ Using DataLoader with Parallel Workers</h4>
+    <p>To efficiently load data in parallel, PyTorch’s <code>DataLoader</code> supports the <code>num_workers</code> parameter. This allows multiple processes to retrieve data concurrently, ideal for large streaming datasets.</p>
+
+    <pre class="code-box"><code class="language-python">
+from torch.utils.data import DataLoader
+
+dataset_length = 219041  # Known length
+audio_dataset = MyAudioDataset('collabora/librilight-webdataset', 'train', dataset_length)
+
+# DataLoader with parallel loading
+dataloader = DataLoader(audio_dataset, batch_size=8, num_workers=4)
+
+# Iterate over DataLoader
+for batch in dataloader:
+    print(batch)
+    break  # Display only the first batch
+    </code></pre>
+
+    <h4 id="audio_handling"> 🎙️ Bonus: Efficient Handling of Audio Data</h4>
+    <p>When working with audio, setting a <code>max_length</code> helps standardize the length of audio samples. In our example, we use 10 seconds as the default. This ensures consistency, which is beneficial for model training.</p>
+
+    <pre class="code-box"><code class="language-python">
+class MyAudioDataset(Dataset):
+    def __init__(self, dataset_name, split, dataset_length, max_length=10.0):
+        self.dataset = load_dataset(dataset_name, split=split, streaming=True)
+        self.dataset_length = dataset_length
+        self.max_length = max_length  # Default 10 seconds
+
+    def __getitem__(self, idx):
+        iterator = iter(self.dataset)
+        for i, item in enumerate(iterator):
+            if i == idx:
+                audio = item['flac']['array']
+                sample_rate = item['flac']['sampling_rate']
+
+                max_samples = int(self.max_length * sample_rate)
+                if len(audio) > max_samples:
+                    start_idx = torch.randint(0, len(audio) - max_samples, (1,)).item()
+                    audio = audio[start_idx:start_idx + max_samples]
+
+                return {
+                    "language": item['json']['book_meta']['language'],
+                    "sample_rate": sample_rate,
+                    "audio": audio
+                }
+    </code></pre>
+
+    <div class="info-box">
+        <p><strong>Tip:</strong> You can customize the returned dictionary to include additional metadata fields depending on your requirements.</p>
+    </div>
+
+    <p style="text-align: center;">
+        <button onclick="location.href='https://huggingface.co/docs/datasets/stream';">📖 Official Hugging Face Streaming Documentation</button>
+        <button onclick="location.href='https://pytorch.org/docs/stable/data.html';">🔍 PyTorch Data Documentation</button>
+    </p>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            hljs.highlightAll();
+        });
+    </script>
+
+    <script src="../src/jquery-3.6.0.min.js"></script>
+
+    <div data-include="footer"></div>
+
+    <script>
+        $(function() {
+            var includes = $('[data-include]')
+            $.each(includes, function() {
+                var file = '../components/' + $(this).data('include') + '.html'
+                $(this).load(file)
+                // log file in console
+                console.log(file)
+            })
+        })
+    </script>
+</body>
+
+</html>
