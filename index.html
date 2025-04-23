@@ -16,6 +16,55 @@
     <link rel="stylesheet" href="src/style.css" />
     <link rel="stylesheet" href="prism/prism.css" />
     <script src="src/jquery-3.6.0.min.js"></script>
+    <style>
+        /* Additional styling for better visual structure */
+        .news-item {
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+            border-bottom: 1px dotted #eee;
+        }
+        .news-item:last-child {
+            border-bottom: none;
+        }
+        .news-date {
+            font-weight: bold;
+            color: #333;
+        }
+        .news-emoji {
+            margin-right: 2px;
+            margin-left: 2px;
+        }
+        .news-content {
+            margin-left: 1px;
+        }
+        .location {
+            font-style: italic;
+            color: #555;
+        }
+        .paper-link {
+            display: inline-block;
+            margin: 0 5px;
+        }
+        .paper-link:hover {
+            text-decoration: underline;
+        }
+        .section-heading {
+            margin-top: 30px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 2px;
+        }
+        h4 {
+            font-size: 1.3em;
+        }
+        .sub-items {
+            margin-top: 2px;
+            margin-left: 25px;
+            list-style-type: circle;
+        }
+        .sub-items li {
+            margin-bottom: 2px;
+        }
+    </style>
 </head>
 
 <body id="top" class="libertinus">
@@ -23,7 +72,7 @@
     <div data-include="header"></div>
 
     <header>
-        <h1><span class="latex">Moreno La Quatra</h1>
+        <h1><span class="latex">Moreno La Quatra</span></h1>
         <p class="author">
             Assistant Professor (RTD-A), Kore University of Enna <br>
             Enna, Italy
@@ -32,29 +81,60 @@
 
     <div class="abstract">
         <h2>Who I am?</h2>
-        <p> 👋 I’m Moreno La Quatra, Assistant Professor (RTD-A) at University Kore of Enna. My main reseach interests include Natural Language and Speech Understading through the use of Deep Learning. </p>
+        <p> 👋 I'm Moreno La Quatra, Assistant Professor (RTD-A) at University Kore of Enna. My main reseach interests include Natural Language and Speech Understading through the use of Deep Learning. </p>
     </div>
 
-    <h4>News</h4>
-    <ul>
-        <li><b>2024-12-01</b> 🎯 Co-organizing the <a href="https://mcmi2024.unikore.it/">MCMI Workshop</a> on Multimodal and Cross-Modal Information at ICPR 2024 - Kolkata 🇮🇳</li>
-        <li><b>2024-10</b> 🌍 Visiting Researcher and Lecturer at <a href="https://www.ucam.edu/">Universidad Católica San Antonio de Murcia (UCAM)</a> - Murcia 🇪🇸.</li>
-        <li><b>2024-08-28</b> 🧑‍💼️ Keynote Speech: <a href="posts/kdd-edi-2024/slides_preview.html">"Promoting Inclusivity through Natural Language Processing"</a> at <a href="https://edi-kdd2024.github.io/">Equity, Diversity & Inclusion</a> Special Day at <a href="https://kdd2024.kdd.org/">KDD 2024</a> - Barcelona 🇪🇸.
-        <li><b>2024-05-22</b> 🎤️ Presenting the paper <a href="https://aclanthology.org/2024.lrec-main.1317/">Speech Analysis of Language Varieties in Italy</a> at LREC-COLING 2024 - Turin 🇮🇹.</li>
-        <li><b>2024-04-14</b> 📝 Attending ICASSP and presenting our paper at <a href="https://sites.google.com/view/icasspsasb2024/description">ICASSP SASB 2024</a> - Seoul 🇰🇷. More info <a href="https://www.mlaquatra.me/posts/arch_at_sasb24.html">in the dedicated blog post</a>.
-        <li><b>2024-02-01</b> 🎓 I'm now a Research Fellow at <a href="www.unikore.it">Kore University of Enna</a>. I'm part of the <a href="https://unikore.it/ricerca/strutture-di-ricerca-laboratori/kore-platform/laboratorio-stmlab-laboratory-for-speech-technology-research-and-machine-learning/">Speech Technologies and Machine Learning Lab</a>.</li>
-        <li><b>2023</b> To check what I did in 2023, check my <a href="https://mlaquatra.me/news_2023.html">2023 page</a>.</li>
-        <li><b>2022</b> To check what I did in 2022, check my <a href="https://mlaquatra.me/news_2022.html">2022 page</a>.</li>
+    <h4 class="section-heading">News</h4>
+    <ul class="news-list">
+        <li class="news-item">
+            <span class="news-date">2025-04-06</span>
+            <span class="news-emoji">🎤</span>
+            <span class="news-content">
+                At ICASSP 2025: 
+                <ul class="sub-items">
+                    <li>co-organizing the <a href="https://spadeworkshop.github.io/">SPADE workshop</a> on Speech Pathology Analysis and DEtection</li>
+                    <li><a href="https://doi.org/10.1109/ICASSP49660.2025.10890672" class="paper-link">voc2vec</a> - A new foundation model for non-verbal vocalizations</li>
+                    <li><a href="https://doi.org/10.1109/ICASSP49660.2025.10889445" class="paper-link">BDHPD</a> - A multilingual model for Parkinson's detection from speech (<a href="posts/BDHPD-ICASSP25/BDHPD-2.html">presentation slides</a>)</li>
+                </ul>
+                <span class="location">- Hyderabad, India 🇮🇳</span>
+            </span>
+        </li>
+        <li class="news-item">
+            <span class="news-date">2024-12-01</span>
+            <span class="news-emoji">🎯</span>
+            <span class="news-content">
+                Co-organizing the <a href="https://mcmi2024.unikore.it/">MCMI Workshop</a> on Multimodal and Cross-Modal Information at ICPR 2024
+                <span class="location">- Kolkata, India 🇮🇳</span>
+            </span>
+        </li>
+        <li class="news-item">
+            <span class="news-date">2023</span>
+            <span class="news-content">
+                To check what I did in 2024, check my <a href="news_2024.html">2024 page</a>.
+            </span>
+        </li>
+        <li class="news-item">
+            <span class="news-date">2023</span>
+            <span class="news-content">
+                To check what I did in 2023, check my <a href="news_2023.html">2023 page</a>.
+            </span>
+        </li>
+        <li class="news-item">
+            <span class="news-date">2022</span>
+            <span class="news-content">
+                To check what I did in 2022, check my <a href="news_2022.html">2022 page</a>.
+            </span>
+        </li>
     </ul>
 
-    <h4>Research focus</h4>
+    <h4 class="section-heading">Research focus</h4>
     <p>
       I focus on the development of computational models for the analysis of both audio and text data. 
-      I’m currently focusing on the applications of these models to the fields of 🎙️ speech processing, 📝 natural language understanding and 🎹 music analysis.
+      I'm currently focusing on the applications of these models to the fields of 🎙️ speech processing, 📝 natural language understanding and 🎹 music analysis.
     </p>
 
 
-    <h4>Master Thesis Supervision</h4>
+    <h4 class="section-heading">Master Thesis Supervision</h4>
     <p>
         If you are a student and you are looking for a thesis topic in the field of <b>multimodal learning</b>, <b>audio</b> or <b>natural language processing</b> feel free to contact me or take a look at this <a href="https://github.com/MorenoLaQuatra/master-thesis-proposals">repository</a> containing updated proposals.
     </p>
