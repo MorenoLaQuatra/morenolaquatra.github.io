@@ -223,6 +223,88 @@
             font-weight: 500;
             color: #475569;
         }
+        
+        .piano-section {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .piano {
+            position: relative;
+            display: inline-flex;
+            height: 180px;
+        }
+        
+        .key {
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.1s;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 10px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .white-key {
+            width: 60px;
+            height: 180px;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 0 0 4px 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            margin-right: 0;
+        }
+        
+        .white-key:hover {
+            background: #f1f5f9;
+        }
+        
+        .white-key:active, .white-key.active {
+            background: #e2e8f0;
+            transform: translateY(2px);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .black-key {
+            width: 36px;
+            height: 110px;
+            background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
+            border: 1px solid #020617;
+            border-radius: 0 0 3px 3px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            position: absolute;
+            z-index: 2;
+            color: white;
+        }
+        
+        .black-key:hover {
+            background: linear-gradient(to bottom, #334155 0%, #1e293b 100%);
+        }
+        
+        .black-key:active, .black-key.active {
+            background: linear-gradient(to bottom, #475569 0%, #334155 100%);
+            transform: translateY(2px);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .note-label {
+            opacity: 0.6;
+        }
+        
+        .freq-label-key {
+            font-size: 10px;
+            opacity: 0.5;
+        }
     </style>
 </head>
 <body>
@@ -236,8 +318,8 @@
             <div class="controls">
                 <div class="control-group">
                     <label for="frequency">Frequency (Pitch)</label>
-                    <input type="range" id="frequency" min="100" max="2000" value="440" step="10">
-                    <div class="value-display"><span id="freqValue">440</span> Hz</div>
+                    <input type="range" id="frequency" min="100" max="2500" value="880" step="10">
+                    <div class="value-display"><span id="freqValue">880</span> Hz</div>
                 </div>
                 
                 <div class="control-group">
@@ -250,6 +332,10 @@
             <div class="buttons">
                 <button id="playBtn">Play Sound</button>
                 <button id="stopBtn" disabled>Stop Sound</button>
+            </div>
+            
+            <div class="piano-section">
+                <div class="piano" id="piano"></div>
             </div>
             
             <div class="visualization">
@@ -269,7 +355,7 @@
         </div>
         
         <div class="footer">
-            <div class="copyright">© 2025 Moreno La Quatra</div>
+            <div class="copyright">Moreno La Quatra</div>
             <div class="institution">Kore University of Enna</div>
         </div>
     </div>
@@ -289,7 +375,7 @@
         const specCtx = spectrogramCanvas.getContext('2d');
         
         // Spectrogram settings
-        const MAX_FREQ_DISPLAY = 5000; // Show frequencies up to 5kHz
+        const MAX_FREQ_DISPLAY = 3000; // Show frequencies up to 3kHz
         
         // Set canvas sizes
         function resizeCanvases() {
@@ -306,7 +392,7 @@
         function updateFrequencyLabels() {
             const container = document.getElementById('freqLabels');
             container.innerHTML = '';
-            const labels = [5000, 4000, 3000, 2000, 1000, 0];
+            const labels = [3000, 2500, 2000, 1500, 1000, 500, 0];
             labels.forEach(freq => {
                 const div = document.createElement('div');
                 div.className = 'freq-label';
@@ -324,12 +410,113 @@
         const playBtn = document.getElementById('playBtn');
         const stopBtn = document.getElementById('stopBtn');
         
-        let frequency = 440;
+        let frequency = 880;
         let amplitude = 0.5;
         
         // Spectrogram data
         let spectrogramData = [];
         const spectrogramWidth = 200;
+        
+        // Piano notes (C5 to C6 - one proper octave)
+        const pianoNotes = [
+            { note: 'C5', freq: 524, type: 'white', label: 'C' },
+            { note: 'C#5', freq: 554, type: 'black', label: 'C#', offset: 42 },
+            { note: 'D5', freq: 588, type: 'white', label: 'D' },
+            { note: 'D#5', freq: 622, type: 'black', label: 'D#', offset: 102 },
+            { note: 'E5', freq: 660, type: 'white', label: 'E' },
+            { note: 'F5', freq: 698, type: 'white', label: 'F' },
+            { note: 'F#5', freq: 740, type: 'black', label: 'F#', offset: 222 },
+            { note: 'G5', freq: 784, type: 'white', label: 'G' },
+            { note: 'G#5', freq: 830, type: 'black', label: 'G#', offset: 282 },
+            { note: 'A5', freq: 880, type: 'white', label: 'A' },
+            { note: 'A#5', freq: 932, type: 'black', label: 'A#', offset: 342 },
+            { note: 'B5', freq: 988, type: 'white', label: 'B' },
+            { note: 'C6', freq: 1046, type: 'white', label: 'C' }
+        ];
+        
+        // Create piano keyboard
+        function createPiano() {
+            const piano = document.getElementById('piano');
+            let whiteKeyIndex = 0;
+            
+            // Create all keys in order
+            pianoNotes.forEach(noteData => {
+                if (noteData.type === 'white') {
+                    const key = document.createElement('div');
+                    key.className = 'key white-key';
+                    key.innerHTML = `
+                        <span class="note-label">${noteData.label}</span>
+                        <span class="freq-label-key">${noteData.freq}Hz</span>
+                    `;
+                    key.addEventListener('mousedown', () => playNote(noteData.freq, key));
+                    key.addEventListener('mouseup', () => key.classList.remove('active'));
+                    key.addEventListener('mouseleave', () => key.classList.remove('active'));
+                    piano.appendChild(key);
+                    whiteKeyIndex++;
+                } else {
+                    const key = document.createElement('div');
+                    key.className = 'key black-key';
+                    // Calculate position: previous white key position + offset to center
+                    const leftPosition = (whiteKeyIndex - 1) * 60 + 42;
+                    key.style.left = `${leftPosition}px`;
+                    key.innerHTML = `
+                        <span class="note-label">${noteData.label}</span>
+                        <span class="freq-label-key">${noteData.freq}Hz</span>
+                    `;
+                    key.addEventListener('mousedown', () => playNote(noteData.freq, key));
+                    key.addEventListener('mouseup', () => key.classList.remove('active'));
+                    key.addEventListener('mouseleave', () => key.classList.remove('active'));
+                    piano.appendChild(key);
+                }
+            });
+        }
+        
+        // Play a note from piano
+        function playNote(freq, keyElement) {
+            keyElement.classList.add('active');
+            
+            // Update frequency variable and UI
+            frequency = freq;
+            frequencySlider.value = freq;
+            freqValue.textContent = freq;
+            
+            // Force immediate waveform update with animation frame
+            requestAnimationFrame(() => {
+                updateWaveform();
+            });
+            
+            // If not already playing, start audio
+            if (!isPlaying) {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                oscillator = audioContext.createOscillator();
+                gainNode = audioContext.createGain();
+                analyser = audioContext.createAnalyser();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(amplitude * 0.3, audioContext.currentTime);
+                
+                analyser.fftSize = 4096;
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(analyser);
+                analyser.connect(audioContext.destination);
+                
+                oscillator.start();
+                isPlaying = true;
+                
+                playBtn.disabled = true;
+                stopBtn.disabled = false;
+                
+                animate();
+            } else {
+                // If already playing, just update frequency smoothly
+                oscillator.frequency.setTargetAtTime(frequency, audioContext.currentTime, 0.01);
+            }
+        }
         
         // Update values
         frequencySlider.addEventListener('input', (e) => {
@@ -338,7 +525,8 @@
             if (oscillator) {
                 oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
             }
-            updateWaveform();
+            // Force waveform update
+            requestAnimationFrame(() => updateWaveform());
         });
         
         amplitudeSlider.addEventListener('input', (e) => {
@@ -347,7 +535,8 @@
             if (gainNode) {
                 gainNode.gain.setValueAtTime(amplitude * 0.3, audioContext.currentTime);
             }
-            updateWaveform();
+            // Force waveform update
+            requestAnimationFrame(() => updateWaveform());
         });
         
         // Play sound
@@ -396,14 +585,19 @@
             const height = waveformCanvas.height;
             const centerY = height / 2;
             
+            // Clear canvas
             waveCtx.fillStyle = '#ffffff';
             waveCtx.fillRect(0, 0, width, height);
             
+            // Draw waveform
             waveCtx.strokeStyle = '#3b82f6';
             waveCtx.lineWidth = 2;
             waveCtx.beginPath();
             
-            const cycles = 3;
+            // Continuous calculation of cycles based on frequency
+            // This ensures smooth visual updates at every frequency value
+            const cycles = (frequency / 150);
+            
             const points = width;
             
             for (let x = 0; x < points; x++) {
@@ -513,6 +707,9 @@
         
         // Initial draw
         updateWaveform();
+        
+        // Initialize piano
+        createPiano();
     </script>
 </body>
 </html>
