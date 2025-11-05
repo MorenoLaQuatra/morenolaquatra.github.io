@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sinusoid Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8fafc;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #1e40af;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .control-group {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #2d3748;
+            font-size: 16px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            outline: none;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .value-display {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: #1e40af;
+            margin-top: 5px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        #playBtn {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        #playBtn:hover:not(:disabled) {
+            background: #2563eb;
+        }
+        
+        #stopBtn {
+            background: #dc2626;
+            color: white;
+        }
+        
+        #stopBtn:hover:not(:disabled) {
+            background: #b91c1c;
+        }
+        
+        button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+        
+        .visualization {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .viz-title {
+            font-weight: 500;
+            color: #1e40af;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .canvas-container {
+            position: relative;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        canvas {
+            width: 100%;
+            display: block;
+            border-radius: 8px;
+        }
+        
+        #waveformCanvas {
+            height: 200px;
+        }
+        
+        #spectrogramCanvas {
+            height: 300px;
+        }
+        
+        .freq-labels {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px 5px;
+            font-size: 11px;
+            color: #64748b;
+            background: rgba(248, 250, 252, 0.95);
+            border-radius: 8px 0 0 8px;
+            pointer-events: none;
+        }
+        
+        .freq-label {
+            text-align: right;
+            padding-right: 5px;
+        }
+        
+        .footer {
+            background: #f8fafc;
+            padding: 20px 30px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        .copyright {
+            margin-bottom: 5px;
+        }
+        
+        .institution {
+            font-weight: 500;
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sinusoid Amplitude & Frequency Visualizer</h1>
+            <div class="subtitle">Explore Amplitude (Loudness) and Frequency (Pitch)</div>
+        </div>
+        
+        <div class="content">
+            <div class="controls">
+                <div class="control-group">
+                    <label for="frequency">Frequency (Pitch)</label>
+                    <input type="range" id="frequency" min="100" max="2000" value="440" step="10">
+                    <div class="value-display"><span id="freqValue">440</span> Hz</div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="amplitude">Amplitude (Loudness)</label>
+                    <input type="range" id="amplitude" min="0" max="100" value="50" step="1">
+                    <div class="value-display"><span id="ampValue">50</span> %</div>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button id="playBtn">Play Sound</button>
+                <button id="stopBtn" disabled>Stop Sound</button>
+            </div>
+            
+            <div class="visualization">
+                <div class="viz-title">Waveform (Time Domain)</div>
+                <div class="canvas-container">
+                    <canvas id="waveformCanvas"></canvas>
+                </div>
+            </div>
+            
+            <div class="visualization">
+                <div class="viz-title">Spectrogram (Frequency over Time)</div>
+                <div class="canvas-container">
+                    <div class="freq-labels" id="freqLabels"></div>
+                    <canvas id="spectrogramCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="copyright">© 2025 Moreno La Quatra</div>
+            <div class="institution">Kore University of Enna</div>
+        </div>
+    </div>
+
+    <script>
+        // Audio context and nodes
+        let audioContext;
+        let oscillator;
+        let gainNode;
+        let analyser;
+        let isPlaying = false;
+        
+        // Canvas contexts
+        const waveformCanvas = document.getElementById('waveformCanvas');
+        const spectrogramCanvas = document.getElementById('spectrogramCanvas');
+        const waveCtx = waveformCanvas.getContext('2d');
+        const specCtx = spectrogramCanvas.getContext('2d');
+        
+        // Spectrogram settings
+        const MAX_FREQ_DISPLAY = 5000; // Show frequencies up to 5kHz
+        
+        // Set canvas sizes
+        function resizeCanvases() {
+            waveformCanvas.width = waveformCanvas.offsetWidth;
+            waveformCanvas.height = waveformCanvas.offsetHeight;
+            spectrogramCanvas.width = spectrogramCanvas.offsetWidth;
+            spectrogramCanvas.height = spectrogramCanvas.offsetHeight;
+            updateFrequencyLabels();
+        }
+        resizeCanvases();
+        window.addEventListener('resize', resizeCanvases);
+        
+        // Update frequency labels
+        function updateFrequencyLabels() {
+            const container = document.getElementById('freqLabels');
+            container.innerHTML = '';
+            const labels = [5000, 4000, 3000, 2000, 1000, 0];
+            labels.forEach(freq => {
+                const div = document.createElement('div');
+                div.className = 'freq-label';
+                div.textContent = `${freq} Hz`;
+                container.appendChild(div);
+            });
+        }
+        updateFrequencyLabels();
+        
+        // Controls
+        const frequencySlider = document.getElementById('frequency');
+        const amplitudeSlider = document.getElementById('amplitude');
+        const freqValue = document.getElementById('freqValue');
+        const ampValue = document.getElementById('ampValue');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        
+        let frequency = 440;
+        let amplitude = 0.5;
+        
+        // Spectrogram data
+        let spectrogramData = [];
+        const spectrogramWidth = 200;
+        
+        // Update values
+        frequencySlider.addEventListener('input', (e) => {
+            frequency = parseInt(e.target.value);
+            freqValue.textContent = frequency;
+            if (oscillator) {
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            }
+            updateWaveform();
+        });
+        
+        amplitudeSlider.addEventListener('input', (e) => {
+            amplitude = parseInt(e.target.value) / 100;
+            ampValue.textContent = e.target.value;
+            if (gainNode) {
+                gainNode.gain.setValueAtTime(amplitude * 0.3, audioContext.currentTime);
+            }
+            updateWaveform();
+        });
+        
+        // Play sound
+        playBtn.addEventListener('click', () => {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            oscillator = audioContext.createOscillator();
+            gainNode = audioContext.createGain();
+            analyser = audioContext.createAnalyser();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(amplitude * 0.3, audioContext.currentTime);
+            
+            analyser.fftSize = 4096;
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(analyser);
+            analyser.connect(audioContext.destination);
+            
+            oscillator.start();
+            isPlaying = true;
+            
+            playBtn.disabled = true;
+            stopBtn.disabled = false;
+            
+            animate();
+        });
+        
+        // Stop sound
+        stopBtn.addEventListener('click', () => {
+            if (oscillator) {
+                oscillator.stop();
+                oscillator = null;
+            }
+            isPlaying = false;
+            playBtn.disabled = false;
+            stopBtn.disabled = true;
+        });
+        
+        // Draw waveform
+        function updateWaveform() {
+            const width = waveformCanvas.width;
+            const height = waveformCanvas.height;
+            const centerY = height / 2;
+            
+            waveCtx.fillStyle = '#ffffff';
+            waveCtx.fillRect(0, 0, width, height);
+            
+            waveCtx.strokeStyle = '#3b82f6';
+            waveCtx.lineWidth = 2;
+            waveCtx.beginPath();
+            
+            const cycles = 3;
+            const points = width;
+            
+            for (let x = 0; x < points; x++) {
+                const t = (x / points) * cycles * 2 * Math.PI;
+                const y = centerY + Math.sin(t) * amplitude * (height / 2 - 20);
+                
+                if (x === 0) {
+                    waveCtx.moveTo(x, y);
+                } else {
+                    waveCtx.lineTo(x, y);
+                }
+            }
+            
+            waveCtx.stroke();
+            
+            // Draw center line
+            waveCtx.strokeStyle = '#e2e8f0';
+            waveCtx.lineWidth = 1;
+            waveCtx.setLineDash([5, 5]);
+            waveCtx.beginPath();
+            waveCtx.moveTo(0, centerY);
+            waveCtx.lineTo(width, centerY);
+            waveCtx.stroke();
+            waveCtx.setLineDash([]);
+        }
+        
+        // Draw spectrogram
+        function updateSpectrogram() {
+            if (!analyser) return;
+            
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyser.getByteFrequencyData(dataArray);
+            
+            // Add new column to spectrogram data
+            spectrogramData.push(dataArray);
+            if (spectrogramData.length > spectrogramWidth) {
+                spectrogramData.shift();
+            }
+            
+            const width = spectrogramCanvas.width;
+            const height = spectrogramCanvas.height;
+            
+            // Clear canvas
+            specCtx.fillStyle = '#000';
+            specCtx.fillRect(0, 0, width, height);
+            
+            // Calculate frequency range to display
+            const sampleRate = audioContext.sampleRate;
+            const nyquist = sampleRate / 2;
+            const binWidth = nyquist / bufferLength;
+            const maxBinToShow = Math.floor(MAX_FREQ_DISPLAY / binWidth);
+            
+            // Draw spectrogram
+            const barWidth = width / spectrogramData.length;
+            
+            for (let i = 0; i < spectrogramData.length; i++) {
+                const x = i * barWidth;
+                const column = spectrogramData[i];
+                
+                for (let j = 0; j < height; j++) {
+                    // Map display height to frequency bins
+                    const binIndex = Math.floor((1 - j / height) * maxBinToShow);
+                    if (binIndex >= column.length) continue;
+                    
+                    const value = column[binIndex];
+                    
+                    // Color gradient from dark blue to bright yellow/white
+                    const intensity = value / 255;
+                    let r, g, b;
+                    
+                    if (intensity < 0.2) {
+                        // Dark blue to blue
+                        r = 0;
+                        g = 0;
+                        b = Math.floor(intensity * 5 * 255);
+                    } else if (intensity < 0.5) {
+                        // Blue to cyan
+                        r = 0;
+                        g = Math.floor((intensity - 0.2) * 3.33 * 255);
+                        b = 255;
+                    } else if (intensity < 0.8) {
+                        // Cyan to yellow
+                        r = Math.floor((intensity - 0.5) * 3.33 * 255);
+                        g = 255;
+                        b = Math.floor((1 - (intensity - 0.5) * 3.33) * 255);
+                    } else {
+                        // Yellow to white
+                        r = 255;
+                        g = 255;
+                        b = Math.floor((intensity - 0.8) * 5 * 255);
+                    }
+                    
+                    specCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                    specCtx.fillRect(x, j, barWidth + 1, 1);
+                }
+            }
+        }
+        
+        // Animation loop
+        function animate() {
+            if (!isPlaying) return;
+            
+            updateSpectrogram();
+            requestAnimationFrame(animate);
+        }
+        
+        // Initial draw
+        updateWaveform();
+    </script>
+</body>
+</html>
