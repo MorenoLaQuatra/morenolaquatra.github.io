@@ -789,3 +789,48 @@ h6 {
     top: 50%;
     transform: translateY(-50%);
 }
+
+/* Modern minimal navigation */
+.nav-menu {
+    text-align: center;
+    padding: 1rem 0 2rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.nav-menu a {
+    text-decoration: none;
+    color: #a00;
+    font-variant: small-caps;
+    font-size: 1.1em;
+    letter-spacing: 0.5px;
+}
+
+.nav-menu a:hover {
+    text-decoration: underline;
+}
+
+.nav-separator {
+    color: #999;
+    padding: 0 0.5rem;
+}
+
+/* Footer styling */
+.site-footer {
+    margin-top: 3rem;
+}
+
+.site-footer a {
+    color: #666;
+    text-decoration: none;
+}
+
+.site-footer a:hover {
+    color: #a00;
+    text-decoration: underline;
+}
+
+/* Add subtle top border to header */
+header {
+    border-top: 2px solid #333;
+    padding-top: 1rem;
+}
