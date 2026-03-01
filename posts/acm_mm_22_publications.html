@@ -4,25 +4,25 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="google-site-verification" content="" />
     <title>Buzzes, vocalisations and faces - Moreno La Quatra</title>
 
-    <meta name="description" content="Moreno La Quatra personal website" />
+    <meta name="description" content="ACM Multimedia 2022 publications - Research on mosquito detection, vocalisations, and facial emotion recognition presented at ACM MM 2022 in Lisbon." />
     <meta name="keywords" content="attending conference, ACM Multimedia, 2022, blog" />
     <meta property="og:title" content="ACM Multimedia 2022" />
     <meta property="og:url" content="https://mlaquatra.me/posts/acm_mm_22_publications.html" />
-    <meta property="og:description" content="Moreno La Quatra personal website" />
+    <meta property="og:description" content="ACM Multimedia 2022 publications - Research on mosquito detection, vocalisations, and facial emotion recognition presented at ACM MM 2022 in Lisbon." />
     <meta property="og:type" content="website" />
-    <link rel="stylesheet" href="../src/style.css" />
+    <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+    <link rel="canonical" href="https://mlaquatra.me/posts/acm_mm_22_publications.html">
+    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../prism/prism.css" />
-    <script src="../src/jquery-3.6.0.min.js"></script>
+    <link rel="icon" href="../mlq-logo.png" type="image/png">
 </head>
 
-<body id="top" class="libertinus">
+<body>
     <div data-include="header-nested-1"></div>
-    <header>
-        <h1><span class="latex">Buzzes, vocalisations and faces</h1>
-    </header>
+    <main>
+    <h1>Buzzes, vocalisations and faces</h1>
 
     <div class="abstract">
         <p>
@@ -76,9 +76,9 @@
                 </ul>
             </p>
 
-            <a href="">Full paper available soon!</a>
+            <a href="https://dl.acm.org/doi/10.1145/3551876.3554801" target="_blank" rel="noopener">Full paper</a>
 
-            <h4 id="vocalisations">Transformer-based Non-Verbal Emotion Recognition: Exploring Model Portability across Speakers’ Genders</h4>
+            <h4 id="vocalisations">Transformer-based Non-Verbal Emotion Recognition: Exploring Model Portability across Speakers' Genders</h4>
             <p>
                 A considerable body of research in the field of automatic emotion recognition from speech has been developed in the last years. However, most of the existing systems are designed and trained on a single dataset, usually collected from a specific geographical
                 region, and are not generalizable to other datasets.
@@ -90,7 +90,7 @@
             </p>
 
             <p>
-                To address the challenge, we propose a transformer-based emotion recognition system that is trained on the challenge’s training set. However, to allow for model portability across different speakers' genders, we augment the training set by using both
+                To address the challenge, we propose a transformer-based emotion recognition system that is trained on the challenge's training set. However, to allow for model portability across different speakers' genders, we augment the training set by using both
                 traditional and neural data augmentation techniques.
                 <ul>
                     <li><b>Pitch shifting</b>: we shift the pitch of the audio recordings to alter the mean fundamental frequency of phonation (F0) and the formant frequencies. This technique aims at increasing the variability of the training set and, in
@@ -151,34 +151,12 @@
             </p>
 
 
-            <script>
-                MathJax = {
-                    tex: {
-                        inlineMath: [
-                            ['$', '$'],
-                        ],
-                    },
-                }
-            </script>
-            <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
             <script async src="../prism/prism.js"></script>
 
-            <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
-            <!-- JavaScript Bundle with Popper -->
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+    </main>
+    <div data-include="footer"></div>
 
-            <div data-include="footer"></div>
-
-            <script>
-                $(function() {
-                    var includes = $('[data-include]')
-                    $.each(includes, function() {
-                        var file = '../components/' + $(this).data('include') + '.html'
-                        $(this).load(file)
-                    })
-                })
-            </script>
-
+    <script src="../script.js"></script>
 
 </body>
 

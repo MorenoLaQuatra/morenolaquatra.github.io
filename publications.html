@@ -1,67 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="google-site-verification" content="" />
-    <title>Publications - Moreno La Quatra</title>
-
-    <meta name="description" content="Moreno La Quatra personal website" />
-    <meta name="keywords" content="moreno la quatra, deep learning, machine listening, natural language processing" />
-    <meta property="og:title" content="Publications - Moreno La Quatra" />
-    <meta property="og:url" content="https://mlaquatra.me" />
-    <meta property="og:description" content="Moreno La Quatra personal website" />
-    <meta property="og:type" content="website" />
-    <link rel="stylesheet" href="src/style.css" />
-    <link rel="stylesheet" href="prism/prism.css" />
-    <script src="src/jquery-3.6.0.min.js"></script>
-
-    <link rel="stylesheet" href="src/bib-publication-list/bib-publication-list.css" />
-    <script src="src/jquery-3.6.0.min.js"></script>
-    <script src="src/bib-publication-list/build/bib-list.js"></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Scientific publications by Moreno La Quatra in NLP, audio processing, and deep learning — full list with BibTeX entries, links, and citation details.">
+  <meta property="og:title" content="Publications - Moreno La Quatra">
+  <meta property="og:url" content="https://mlaquatra.me/publications.html">
+  <meta property="og:description" content="Scientific publications by Moreno La Quatra — full list with BibTeX entries, links, and citation details.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+  <link rel="canonical" href="https://mlaquatra.me/publications.html">
+  <title>Publications &mdash; Moreno La Quatra</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="src/bib-publication-list/bib-publication-list.css">
+  <link rel="icon" href="mlq-logo.png" type="image/png">
+  <script src="src/jquery-3.6.0.min.js"></script>
+  <script src="src/bib-publication-list/build/bib-list.js"></script>
 </head>
+<body>
 
-<body id="top" class="libertinus">
-    <div data-include="header"></div>
-    <header>
-        <h1><span class="latex">Publications</h1>
-    </header>
+  <div data-include="header"></div>
 
-    <h4>Scientific publications</h4>
-    <p>
-        Publishing scientific papers is one of the key activities of any researcher.
-        This page contains an up-to-date list of my publications. 
-        You can also find them on <a href="https://scholar.google.com/citations?user=JyN-kZsAAAAJ">Google Scholar</a> or <a href="https://www.researchgate.net/profile/Moreno-La-Quatra">ResearchGate</a>.
+  <main class="wide-content">
+    <h1>Publications</h1>
+
+    <p class="pub-intro">
+      Publishing scientific papers is one of the key activities of any researcher.
+      This page contains an up-to-date list of my publications.
     </p>
-    
-    <br>
+    <p class="pub-links">
+      <a href="https://scholar.google.com/citations?user=JyN-kZsAAAAJ" target="_blank" rel="noopener">Google Scholar</a>
+      <a href="https://www.researchgate.net/profile/Moreno-La-Quatra" target="_blank" rel="noopener">ResearchGate</a>
+    </p>
 
     <table id="pubTable" class="display"></table>
     <noscript><style>#bibtex { display: block; }</style></noscript>
-    
-    
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script async src="prism/prism.js"></script>
-    <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
-    <!-- JavaScript Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+  </main>
 
-    <div data-include="footer"></div>
+  <div data-include="footer"></div>
 
-    <script>
-        $(function () {
-            var includes = $('[data-include]')
-            $.each(includes, function () {
-              var file = 'components/' + $(this).data('include') + '.html'
-              $(this).load(file)
-            })
-          })
-    </script>
-    
-</body>
-<script>
+  <script src="script.js"></script>
+  <script>
     bibtexify("my_publications.bib", "pubTable");
-</script>
+  </script>
+</body>
 </html>

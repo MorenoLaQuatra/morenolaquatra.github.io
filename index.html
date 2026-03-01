@@ -1,187 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="google-site-verification" content="" />
-    <title>Moreno La Quatra</title>
-
-    <meta name="description" content="Moreno La Quatra personal website" />
-    <meta name="keywords" content="moreno la quatra, deep learning, machine listening, natural language processing" />
-    <meta property="og:title" content="Moreno La Quatra" />
-    <meta property="og:url" content="https://mlaquatra.me" />
-    <meta property="og:description" content="Moreno La Quatra personal website" />
-    <meta property="og:type" content="website" />
-    <link rel="stylesheet" href="src/style.css" />
-    <link rel="stylesheet" href="prism/prism.css" />
-    <script src="src/jquery-3.6.0.min.js"></script>
-    <style>
-        /* Additional styling for better visual structure */
-        .news-item {
-            margin-bottom: 5px;
-            padding-bottom: 5px;
-            border-bottom: 1px dotted #eee;
-        }
-        .news-item:last-child {
-            border-bottom: none;
-        }
-        .news-date {
-            font-weight: bold;
-            color: #333;
-        }
-        .news-emoji {
-            margin-right: 2px;
-            margin-left: 2px;
-        }
-        .news-content {
-            margin-left: 1px;
-        }
-        .location {
-            font-style: italic;
-            color: #555;
-        }
-        .paper-link {
-            display: inline-block;
-            margin: 0 5px;
-        }
-        .paper-link:hover {
-            text-decoration: underline;
-        }
-        .section-heading {
-            margin-top: 30px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 2px;
-        }
-        h4 {
-            font-size: 1.3em;
-        }
-        .sub-items {
-            margin-top: 2px;
-            margin-left: 25px;
-            list-style-type: circle;
-        }
-        .sub-items li {
-            margin-bottom: 2px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Moreno La Quatra - Assistant Professor at Kore University of Enna, specializing in Deep Learning, NLP, and Speech Processing">
+  <meta name="keywords" content="moreno la quatra, deep learning, machine listening, natural language processing, speech processing">
+  <meta name="author" content="Moreno La Quatra">
+  <meta property="og:title" content="Moreno La Quatra">
+  <meta property="og:url" content="https://mlaquatra.me">
+  <meta property="og:description" content="Moreno La Quatra - Assistant Professor, Deep Learning Researcher">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+  <link rel="canonical" href="https://mlaquatra.me/">
+  <title>Moreno La Quatra</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="mlq-logo.png" type="image/png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Moreno La Quatra",
+    "url": "https://mlaquatra.me",
+    "jobTitle": "Assistant Professor (RTD-A)",
+    "worksFor": {
+      "@type": "Organization",
+      "name": "Kore University of Enna",
+      "url": "https://www.unikore.it"
+    },
+    "knowsAbout": ["Deep Learning", "Natural Language Processing", "Speech Processing", "Multimodal Learning", "Music Information Retrieval"],
+    "sameAs": [
+      "https://scholar.google.com/citations?user=7YasijMAAAAJ",
+      "https://github.com/MorenoLaQuatra",
+      "https://www.linkedin.com/in/moreno-la-quatra/",
+      "https://www.researchgate.net/profile/Moreno-La-Quatra"
+    ],
+    "email": "moreno.laquatra@unikore.it",
+    "image": "https://mlaquatra.me/mlq-logo.png"
+  }
+  </script>
 </head>
+<body>
 
-<body id="top" class="libertinus">
+  <div data-include="header"></div>
 
-    <div data-include="header"></div>
-
-    <header>
-        <h1><span class="latex">Moreno La Quatra</span></h1>
-        <p class="author">
-            Assistant Professor (RTD-A), Kore University of Enna <br>
-            Enna, Italy
-        </p>
-    </header>
+  <main>
+    <h1>Moreno La Quatra</h1>
+    <p class="hero-subtitle" data-typewriter>PhD &middot; Assistant Professor &middot; Deep Learning Researcher</p>
+    <p>
+      I am an Assistant Professor (RTD-A) at <a href="https://www.unikore.it" target="_blank" rel="noopener">Kore University of Enna</a>,
+      where I work on deep learning for speech processing and natural language understanding.
+      My research looks at how neural networks can capture the details of human communication, from
+      acoustic patterns in speech to semantic structures in text.
+    </p>
 
     <div class="abstract">
-        <h2>Who I am?</h2>
-        <p> 👋 I'm Moreno La Quatra, Assistant Professor (RTD-A) at University Kore of Enna. My main reseach interests include Natural Language and Speech Understading through the use of Deep Learning. </p>
+      <p>
+        My work covers <strong>speech processing</strong>, <strong>natural language understanding</strong>,
+        <strong>multimodal learning</strong>, and <strong>music analysis</strong>. I am particularly
+        interested in building models that work well across languages, domains, and acoustic conditions.
+        This has led me to explore self-supervised learning, cross-lingual transfer,
+        and efficient neural architectures. When I'm not training models, I'm probably debugging why
+        they won't converge.<sup data-note="It's always the learning rate.">1</sup>
+      </p>
     </div>
 
-    <h4 class="section-heading">News</h4>
+    <h2>News</h2>
     <ul class="news-list">
-        <li class="news-item">
-            <span class="news-date">2025-08-17</span>
-            <span class="news-emoji">🎤</span>
-            <span class="news-content">
-                At INTERSPEECH 2025: 
-                <ul class="sub-items">
-                    <li><a href="https://www.isca-archive.org/interspeech_2025/laquatra25_interspeech.html" class="paper-link">Exploring Generative Error Correction for Dysarthric Speech Recognition</a> (<a href="posts/INTERSPEECH25/slides-ger4dys.pdf">slides</a>, <a href="posts/INTERSPEECH25/poster-ger4dys.pdf">poster</a>)</li>
-                    <li><a href="https://www.isca-archive.org/interspeech_2025/koudounas25b_interspeech.html" class="paper-link">MVP</a> - Multi-source Voice Pathology detection</li>
-                    <li><a href="https://www.isca-archive.org/interspeech_2025/koudounas25_interspeech.html" class="paper-link">"KAN you hear me?"</a> - Exploring Kolmogorov-Arnold Networks for Spoken Language Understanding</li>
-                </ul>
-                <span class="location">- Rotterdam, The Netherlands 🇳🇱</span>
-            </span>
-        </li>
-        <li class="news-item">
-            <span class="news-date">2025-04-06</span>
-            <span class="news-emoji">🎤</span>
-            <span class="news-content">
-                At ICASSP 2025: 
-                <ul class="sub-items">
-                    <li>co-organizing the <a href="https://spadeworkshop.github.io/">SPADE workshop</a> on Speech Pathology Analysis and DEtection</li>
-                    <li><a href="https://doi.org/10.1109/ICASSP49660.2025.10890672" class="paper-link">voc2vec</a> - A new foundation model for non-verbal vocalizations</li>
-                    <li><a href="https://doi.org/10.1109/ICASSP49660.2025.10889445" class="paper-link">BDHPD</a> - A multilingual model for Parkinson's detection from speech (<a href="posts/BDHPD-ICASSP25/BDHPD-2.html">presentation slides</a>)</li>
-                </ul>
-                <span class="location">- Hyderabad, India 🇮🇳</span>
-            </span>
-        </li>
-        <li class="news-item">
-            <span class="news-date">2024-12-01</span>
-            <span class="news-emoji">🎯</span>
-            <span class="news-content">
-                Co-organizing the <a href="https://mcmi2024.unikore.it/">MCMI Workshop</a> on Multimodal and Cross-Modal Information at ICPR 2024
-                <span class="location">- Kolkata, India 🇮🇳</span>
-            </span>
-        </li>
-        <li class="news-item">
-            <span class="news-date">2023</span>
-            <span class="news-content">
-                To check what I did in 2024, check my <a href="news_2024.html">2024 page</a>.
-            </span>
-        </li>
-        <li class="news-item">
-            <span class="news-date">2023</span>
-            <span class="news-content">
-                To check what I did in 2023, check my <a href="news_2023.html">2023 page</a>.
-            </span>
-        </li>
-        <li class="news-item">
-            <span class="news-date">2022</span>
-            <span class="news-content">
-                To check what I did in 2022, check my <a href="news_2022.html">2022 page</a>.
-            </span>
-        </li>
+      <li class="news-item">
+        <span class="news-date">2026-08-21</span>
+        <span class="news-content">
+          Co-organizing the <a href="https://mcmi-workshop.github.io/2026/">2nd MCMI Workshop</a> on Multi and Cross-Modal Information at <a href="https://icpr2026.org/">ICPR 2026</a>.
+          <span class="news-location">Lyon, France</span>
+        </span>
+      </li>
+      <li class="news-item">
+        <span class="news-date">2026-12</span>
+        <span class="news-content">
+          Technical Program Co-chair and Co-Located Events Chair at <a href="https://attend.ieee.org/slt-2026/">SLT 2026</a> (IEEE Spoken Language Technology Workshop).
+          <span class="news-location">Palermo, Italy</span>
+        </span>
+      </li>
+      <li class="news-item">
+        <span class="news-date">2026-02-27</span>
+        <span class="news-content">
+          Paper accepted at <a href="https://evalita.it/2026/">EVALITA 2026</a>: <em>StereoBusters at GSI:detect</em> on LLM-based detection and human analysis of gender stereotypes in Italian texts. Co-organizing the <a href="https://svela-task.github.io/">SVELA task</a> on Machine Unlearning from LLM answers.
+          <span class="news-location">Bari, Italy</span>
+        </span>
+      </li>
+      <li class="news-item">
+        <span class="news-date">Archive</span>
+        <span class="news-content">
+          <a href="news_2025.html">2025</a> &middot;
+          <a href="news_2024.html">2024</a> &middot;
+          <a href="news_2023.html">2023</a> &middot;
+          <a href="news_2022.html">2022</a>
+        </span>
+      </li>
     </ul>
 
-    <h4 class="section-heading">Research focus</h4>
+    <h2>Master Thesis Supervision</h2>
     <p>
-      I focus on the development of computational models for the analysis of both audio and text data. 
-      I'm currently focusing on the applications of these models to the fields of 🎙️ speech processing, 📝 natural language understanding and 🎹 music analysis.
+      If you are a student looking for a thesis topic in <strong>multimodal learning</strong>,
+      <strong>audio processing</strong>, or <strong>natural language processing</strong>, feel free to contact me
+      or browse the <a href="thesis.html">open thesis proposals</a> for current topics.
     </p>
 
+  </main>
 
-    <h4 class="section-heading">Master Thesis Supervision</h4>
-    <p>
-        If you are a student and you are looking for a thesis topic in the field of <b>multimodal learning</b>, <b>audio</b> or <b>natural language processing</b> feel free to contact me or take a look at this <a href="https://github.com/MorenoLaQuatra/master-thesis-proposals">repository</a> containing updated proposals.
-    </p>
-    
-    <br>
+  <div data-include="footer"></div>
 
-    <script>
-        MathJax = {
-            tex: {
-                inlineMath: [
-                    ['$', '$'],
-                ],
-            },
-        }
-    </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script async src="prism/prism.js"></script>
-
-    <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
-    <!-- JavaScript Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
-
-    <div data-include="footer"></div>
-
-    <script>
-        $(function () {
-            var includes = $('[data-include]')
-            $.each(includes, function () {
-              var file = 'components/' + $(this).data('include') + '.html'
-              $(this).load(file)
-            })
-          })
-    </script>
-    
+  <script src="script.js"></script>
 </body>
-
 </html>

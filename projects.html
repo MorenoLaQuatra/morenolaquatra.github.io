@@ -1,158 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="google-site-verification" content="" />
-    <title>Projects - Moreno La Quatra</title>
-
-    <meta name="description" content="Moreno La Quatra personal website" />
-    <meta name="keywords" content="moreno la quatra, deep learning, machine listening, natural language processing" />
-    <meta property="og:title" content="Projects - Moreno La Quatra" />
-    <meta property="og:url" content="https://mlaquatra.me" />
-    <meta property="og:description" content="Moreno La Quatra personal website" />
-    <meta property="og:type" content="website" />
-    <link rel="stylesheet" href="src/style.css" />
-    <link rel="stylesheet" href="prism/prism.css" />
-    <script src="src/jquery-3.6.0.min.js"></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Research projects by Moreno La Quatra — open-source tools and frameworks for NLP, audio processing, and multimodal deep learning.">
+  <meta name="keywords" content="moreno la quatra, deep learning, projects, NLP, audio">
+  <meta property="og:title" content="Projects - Moreno La Quatra">
+  <meta property="og:url" content="https://mlaquatra.me/projects.html">
+  <meta property="og:description" content="Research projects by Moreno La Quatra — open-source tools and frameworks for NLP, audio processing, and multimodal deep learning.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+  <link rel="canonical" href="https://mlaquatra.me/projects.html">
+  <title>Projects &mdash; Moreno La Quatra</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="mlq-logo.png" type="image/png">
 </head>
+<body>
 
-<body id="top" class="libertinus">
+  <div data-include="header"></div>
 
-    <div data-include="header"></div>
+  <main>
+    <h1>Projects</h1>
+    <p>Interesting projects worth mentioning.</p>
 
-    <header>
-        <h1><span class="latex">Projects</h1>
-        <p class="author">
-            Interesting projects worth mentioning.
+    <input type="text" class="search-bar" placeholder="Search projects...">
+
+    <div class="project-grid">
+      <div class="project-card search-item">
+        <div class="project-date">2022-07-08</div>
+        <div class="project-title search-title"><a href="projects/calm.html">CALM &mdash; Contrastive Alignment of Language and Music</a></div>
+        <p class="project-desc">
+          A multimodal learning framework that learns a joint representation of language and music,
+          based on the CLIP model. Trained on a large-scale dataset of music and tags using ViT for
+          mel-spectrograms and BERT for language. Won "most marketable solution" at the 1st Sound of AI Hackathon.
         </p>
-    </header>
-
-    <input type="text" 
-            style="width: 100%" 
-            id="search_bar" 
-            onkeyup="search()" 
-            placeholder="Search projects..."
-    >
-    <br>
-    <br>
-
-    <div class="main-container ">
-        <div class="cards" id="list_posts">
-
-            <div class="post_card search_element">
-                <div class="card_title search_title">
-                    <a href="projects/calm.html" style="text-decoration: none !important;">
-                        CALM - Constrastive Alignment of Language and Music
-                    </a>
-                </div>
-                <div class="card_excerpt">
-                    <b>CALM</b> is a multimodal learning framework that aims to learn a joint representation of language and music. The framework is based on the CLIP model and it is trained on a large-scale dataset of music and tags.
-                    Find out more at <a href="https://github.com/ALM-LAB/CALM">https://github.com/ALM-LAB/CALM</a>
-                </div>
-                <div class="card_date">
-                    <small class="text-muted">2022-07-08</small>
-                </div>
-                <div class="card_link">
-                    <a href="projects/calm.html">Read more</a>
-                </div>
-            </div>
-
-            <br>
-
-            <div class="post_card search_element">
-                <div class="card_title search_title">
-                    <a href="projects/dlu.html" style="text-decoration: none !important;">
-                        Deep Learning Updates
-                    </a>
-                </div>
-                <div class="card_excerpt">
-                    Current research scenario is very fast and a lot of publications are released every day. It is very difficult for people to read all the papers/publications and hence it becomes necessary to summarize all these papers to some extent. This project aims at generating a daily selection and digest of the deep learning publications on arXiv.
-                </div>
-                <div class="card_date">
-                    <small class="text-muted">2022-07-31</small>
-                </div>
-                <div class="card_link">
-                    <a href="projects/dlu.html">Read more</a>
-                </div>
-            </div>
-
-            <br>
-            <div class="post_card search_element">
-                <div class="card_title search_title">
-                    <a href="projects/emimic.html" style="text-decoration: none !important;">
-                        E-MIMIC: Empowering Multilingual Inclusive Communication
-                    </a>
-                </div>
-                <div class="card_excerpt">
-                    Inclusive communication is essential for the development of a democratic society, as it ensures social cohesion and guarantees equal opportunities for all, especially in an increasingly diversified society. However, most languages in the world do not include stereotypes, do not have a gender-neutral form or do not allow to address people with disabilities in an inclusive way.
-                </div>
-                <div class="card_date">
-                    <small class="text-muted">2022-09-01</small>
-                </div>
-                <div class="card_link">
-                    <a href="projects/emimic.html">Read more</a>
-                </div>
-            </div>
-
-            <br>
-
-            
-
+        <div class="project-links">
+          <a href="https://github.com/ALM-LAB/CALM" target="_blank" rel="noopener">GitHub</a>
+          <a href="projects/calm.html">Details</a>
         </div>
+      </div>
+
+      <div class="project-card search-item">
+        <div class="project-date">2022-07-31</div>
+        <div class="project-title search-title"><a href="projects/dlu.html">Deep Learning Updates</a></div>
+        <p class="project-desc">
+          Daily arXiv paper digest on Telegram, covering NLP (cs.CL), Computer Vision (cs.CV),
+          Audio (cs.SD), and Multimedia (cs.MM). Automatic ranking and TL;DR summarization of
+          the latest deep learning publications.
+        </p>
+        <div class="project-links">
+          <a href="https://t.me/deeplearning_updates" target="_blank" rel="noopener">Telegram</a>
+          <a href="projects/dlu.html">Details</a>
+        </div>
+      </div>
+
+      <div class="project-card search-item">
+        <div class="project-date">2022-09-01</div>
+        <div class="project-title search-title"><a href="projects/emimic.html">E-MIMIC: Empowering Multilingual Inclusive Communication</a></div>
+        <p class="project-desc">
+          Multi-year project developing NLP tools for detecting and correcting stereotypes,
+          gender bias, and ableism across multiple languages (Italian, French, Spanish, and more).
+        </p>
+        <div class="project-links">
+          <a href="https://dbdmg.polito.it/e-mimic/" target="_blank" rel="noopener">Project page</a>
+          <a href="projects/emimic.html">Details</a>
+        </div>
+      </div>
     </div>
+  </main>
 
+  <div data-include="footer"></div>
 
-
-    <script>
-        MathJax = {
-            tex: {
-                inlineMath: [
-                    ['$', '$'],
-                ],
-            },
-        }
-    </script>
-
-    <script>
-        function search() {
-            var input, filter, list_posts, li, a, i, txtValue;
-            input = document.getElementById("search_bar");
-            filter = input.value.toUpperCase();
-            list_posts = document.getElementById("list_posts");
-            posts = list_posts.getElementsByClassName("search_element");
-            for (i = 0; i < posts.length; i++) {
-                a = posts[i].getElementsByClassName("search_title")[0];
-                txtValue = a.innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    posts[i].style.display = "";
-                } else {
-                    posts[i].style.display = "none";
-                }
-            }
-        }
-    </script>
-
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script async src="prism/prism.js"></script>
-
-    <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
-
-    <div data-include="footer"></div>
-
-    <script>
-        $(function () {
-            var includes = $('[data-include]')
-            $.each(includes, function () {
-              var file = 'components/' + $(this).data('include') + '.html'
-              $(this).load(file)
-            })
-          })
-    </script>
-    
+  <script src="script.js"></script>
 </body>
-
 </html>

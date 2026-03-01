@@ -4,31 +4,26 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="google-site-verification" content="" />
     <title>DLU - Moreno La Quatra</title>
 
-    <meta name="description" content="Moreno La Quatra personal website" />
+    <meta name="description" content="Deep Learning Updates (DLU) - A daily arxiv digest delivering curated deep learning paper summaries via Telegram." />
     <meta name="keywords" content="natural language processing, deep learning updates, DLU, arxiv digest" />
     <meta property="og:title" content="DLU - Moreno La Quatra" />
     <meta property="og:url" content="https://mlaquatra.me/projects/emimic.html" />
-    <meta property="og:description" content="Moreno La Quatra personal website" />
+    <meta property="og:description" content="Deep Learning Updates (DLU) - A daily arxiv digest delivering curated deep learning paper summaries via Telegram." />
     <meta property="og:type" content="website" />
-    <link rel="stylesheet" href="../src/style.css" />
-    <link rel="stylesheet" href="../prism/prism.css" />
-    <script src="../src/jquery-3.6.0.min.js"></script>
+    <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+    <link rel="canonical" href="https://mlaquatra.me/projects/dlu.html">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="icon" href="../mlq-logo.png" type="image/png">
 </head>
 
-<body id="top" class="libertinus">
+<body>
     <div data-include="header-nested-1"></div>
-    <header>
-        <h1><span class="latex">Deep Learning Updates</h1>
-        <p class="author">
-            2021-ongoing
-        </p>
-    </header>
+    <main>
+    <h1>Deep Learning Updates</h1>
 
     <div class="abstract">
-        <h2>TL;DR</h2>
         <p>
             Daily digest of arxiv papers on <a href="https://t.me/deeplearning_updates">telegram</a>.
         </p>
@@ -44,7 +39,7 @@
 
     <h4 id="why">Why this project?</h4>
     <p>
-        I am interested in Deep Learning and (of course) I have been reading lot of papers on this topic. However, it is very difficult to keep up with all the publications that are released daily. 
+        I am interested in Deep Learning and (of course) I have been reading lot of papers on this topic. However, it is very difficult to keep up with all the publications that are released daily.
         <br>
         To focus on the most important publications, I have been using the arXiv website and manually selecting the papers that are relevant to me. This process is very tedious and <b>time-consuming</b>.
         <br>
@@ -63,36 +58,10 @@
         Interested? You should just subscribe to the channel by clicking <a href="https://t.me/deeplearning_updates">here</a>.
     </p>
 
-
-    <script>
-        MathJax = {
-            tex: {
-                inlineMath: [
-                    ['$', '$'],
-                ],
-            },
-        }
-    </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script async src="../prism/prism.js"></script>
-
-    <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
-    <!-- JavaScript Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
-
+    </main>
     <div data-include="footer"></div>
 
-    <script>
-        $(function () {
-            var includes = $('[data-include]')
-            $.each(includes, function () {
-              var file = '../components/' + $(this).data('include') + '.html'
-              $(this).load(file)
-            })
-          })
-    </script>
-
-    
+    <script src="../script.js"></script>
 </body>
 
 </html>

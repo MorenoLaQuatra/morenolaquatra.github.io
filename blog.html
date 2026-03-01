@@ -1,273 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blog - Moreno La Quatra</title>
-
-    <meta name="description" content="Moreno La Quatra personal website" />
-    <meta name="keywords" content="moreno la quatra, deep learning, machine listening, natural language processing, research blog" />
-    <meta property="og:title" content="Blog - Moreno La Quatra" />
-    <meta property="og:url" content="https://mlaquatra.me" />
-    <meta property="og:description" content="Moreno La Quatra personal website" />
-    <meta property="og:type" content="website" />
-    <link rel="stylesheet" href="src/style.css" />
-    <link rel="stylesheet" href="prism/prism.css" />
-    <script src="src/jquery-3.6.0.min.js"></script>
-
-    <style>
-        .main-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-        }
-
-        .post_card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            width: 280px;
-            background-color: #fafafa;
-            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .card_title a {
-            font-weight: bold;
-            color: #333;
-            text-decoration: none;
-            font-size: 1.2em;
-        }
-
-        .card_excerpt {
-            color: #555;
-            margin-top: 10px;
-            font-size: 0.95em;
-        }
-
-        .card_date,
-        .tags {
-            font-size: 0.85em;
-            color: #888;
-            margin-top: 8px;
-        }
-
-        .tags {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .tag {
-            background-color: #f0f0f0;
-            border-radius: 4px;
-            padding: 2px 8px;
-            color: #333;
-            font-size: 0.8em;
-            border: 1px solid #ddd;
-        }
-
-        .card_link {
-            margin-top: auto;
-        }
-
-        .card_link a {
-            font-weight: bold;
-            color: #0066cc;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 10px;
-        }
-
-        h2 {
-            font-size: 1.5em;
-            margin-top: 30px;
-            text-align: center;
-        }
-
-        .flag-icon {
-            margin-right: 4px;
-            font-size: 1em;
-        }
-
-        br {
-            line-height: 1.8;
-        }
-    </style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Research blog by Moreno La Quatra — tutorials, practical guides, and insights on deep learning, NLP, and audio processing.">
+  <meta name="keywords" content="moreno la quatra, deep learning, research blog, NLP, audio">
+  <meta property="og:title" content="Blog - Moreno La Quatra">
+  <meta property="og:url" content="https://mlaquatra.me/blog.html">
+  <meta property="og:description" content="Research blog by Moreno La Quatra — tutorials, practical guides, and insights on deep learning, NLP, and audio processing.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+  <link rel="canonical" href="https://mlaquatra.me/blog.html">
+  <title>Blog &mdash; Moreno La Quatra</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="mlq-logo.png" type="image/png">
 </head>
+<body>
 
-<body id="top" class="libertinus">
+  <div data-include="header"></div>
 
-    <div data-include="header"></div>
+  <main>
+    <h1>Blog</h1>
+    <p>Research insights, tutorials, and practical programming guides.</p>
 
-    <header>
-        <h1><span class="latex">Blog</h1>
-        <p class="author">
-            Insights, research, and practical programming guides
+    <input type="text" class="search-bar" placeholder="Search posts...">
+
+    <!-- Research Posts -->
+    <h2>Research Blog Posts</h2>
+    <div class="blog-list">
+      <div class="blog-entry search-item">
+        <div class="blog-date">2024-03-10</div>
+        <div class="blog-title search-title"><a href="posts/arch_at_sasb24.html">ARCH &mdash; Audio Representations benCHmark</a></div>
+        <p class="blog-excerpt">
+          Introduction to ARCH, a benchmark for evaluating audio representation learning models, presented at ICASSP Workshop 2024.
         </p>
-    </header>
-
-    <input type="text" style="width: 100%" id="search_bar" onkeyup="search()" placeholder="Search blog posts..." />
-    <br><br>
-
-    <!-- Research Posts Section -->
-    <section>
-        <header>
-            <h2>Research Blog Posts</h2>
-        </header>
-        <br>
-        <div class="main-container" id="list_research_posts">
-
-            <div class="post_card search_element">
-                <div class="card_title search_title">
-                    <a href="posts/arch_at_sasb24.html">ARCH - Audio Representations benCHmark</a>
-                </div>
-                <div class="card_excerpt">
-                    Introduction to ARCH, a benchmark for evaluating audio representation learning models, presented at ICASSP Workshop 2024.
-                </div>
-                <div class="card_date">
-                    <small class="text-muted">2024-03-10</small>
-                </div>
-                <div class="tags">
-                    <span class="tag">Audio</span>
-                    <span class="tag">Benchmark</span>
-                    <span class="tag">ICASSPW 2024</span>
-                </div>
-                <div class="card_link">
-                    <a href="posts/arch_at_sasb24.html">Read more</a>
-                </div>
-            </div>
-
-            <div class="post_card search_element">
-                <div class="card_title search_title">
-                    <a href="posts/galactica_llm_slides.html">Galactica 🪐 - Science LLM (?)</a>
-                </div>
-                <div class="card_excerpt">
-                    Analysis of "Galactica: A Large Language Model for Science" by Papers with Code and Meta.
-                </div>
-                <div class="card_date">
-                    <small class="text-muted">2022-12-02</small>
-                </div>
-                <div class="tags">
-                    <span class="tag">LLM</span>
-                    <span class="tag">Science</span>
-                    <span class="tag">Meta</span>
-                </div>
-                <div class="card_link">
-                    <a href="posts/galactica_llm_slides.html">Read more</a>
-                </div>
-            </div>
-
-            <div class="post_card search_element">
-                <div class="card_title search_title">
-                    <a href="posts/acm_mm_22_publications.html">Buzzes, Vocalisations and Faces @ ACM Multimedia 2022</a>
-                </div>
-                <div class="card_excerpt">
-                    Preview of work on mosquito detection, vocalization classification, and emotion recognition for ACM Multimedia 2022.
-                </div>
-                <div class="card_date">
-                    <small class="text-muted">2022-09-28</small>
-                </div>
-                <div class="tags">
-                    <span class="tag">ACM Multimedia</span>
-                    <span class="tag">Emotion Recognition</span>
-                    <span class="tag">Audio</span>
-                </div>
-                <div class="card_link">
-                    <a href="posts/acm_mm_22_publications.html">Read more</a>
-                </div>
-            </div>
-
+        <div class="blog-tags">
+          <span class="blog-tag">audio</span>
+          <span class="blog-tag">benchmark</span>
+          <span class="blog-tag">icasspw-2024</span>
         </div>
-    </section>
+      </div>
 
-    <br><br>
-
-    <!-- Guides Section -->
-    <section>
-        <header>
-            <h2>Guides & Practical Programming</h2>
-        </header>
-        <br>
-        <div class="main-container" id="list_guides">
-
-            <div class="post_card search_element">
-                <div class="card_title search_title">
-                    <a href="guides/conda_en.html">(Mini) Conda on Linux</a>
-                </div>
-                <div class="card_excerpt">
-                    Quick guide to setting up Conda and Miniconda on Linux for environment management.
-                </div>
-                <div class="card_date">
-                    <small class="text-muted">Guide</small>
-                </div>
-                <div class="tags">
-                    <span class="tag">Conda</span>
-                    <span class="tag">Linux</span>
-                    <span class="tag">Environment Management</span>
-                </div>
-                <div class="card_link">
-                    <a href="guides/conda_en.html">🇬🇧 English</a> | <a href="guides/conda_it.html">🇮🇹 Italian</a>
-                </div>
-            </div>
-
-            <div class="post_card search_element">
-                <div class="card_title search_title">
-                    <a href="guides/streaming_datasets.html">Streaming Hugging Face Datasets in PyTorch</a>
-                </div>
-                <div class="card_excerpt">
-                    Guide to using Hugging Face’s streaming datasets in PyTorch for efficient data handling.
-                </div>
-                <div class="card_date">
-                    <small class="text-muted">Guide</small>
-                </div>
-                <div class="tags">
-                    <span class="tag">Hugging Face</span>
-                    <span class="tag">Streaming</span>
-                    <span class="tag">PyTorch</span>
-                </div>
-                <div class="card_link">
-                    <a href="guides/streaming_datasets.html">Read more</a>
-                </div>
-            </div>
-
+      <div class="blog-entry search-item">
+        <div class="blog-date">2022-12-02</div>
+        <div class="blog-title search-title"><a href="posts/galactica_llm_slides.html">Galactica &mdash; Science LLM (?)</a></div>
+        <p class="blog-excerpt">
+          Analysis of "Galactica: A Large Language Model for Science" by Papers with Code and Meta.
+        </p>
+        <div class="blog-tags">
+          <span class="blog-tag">llm</span>
+          <span class="blog-tag">science</span>
+          <span class="blog-tag">meta</span>
         </div>
-    </section>
+      </div>
 
-    <!-- JavaScript for Search Filtering -->
-    <script>
-        function search() {
-            var input = document.getElementById("search_bar").value.toUpperCase();
-            var lists = [document.getElementById("list_research_posts"), document.getElementById("list_guides")];
-            lists.forEach(list => {
-                let posts = list.getElementsByClassName("search_element");
-                for (let i = 0; i < posts.length; i++) {
-                    let title = posts[i].getElementsByClassName("search_title")[0].innerText;
-                    posts[i].style.display = title.toUpperCase().includes(input) ? "" : "none";
-                }
-            });
-        }
-    </script>
+      <div class="blog-entry search-item">
+        <div class="blog-date">2022-09-28</div>
+        <div class="blog-title search-title"><a href="posts/acm_mm_22_publications.html">Buzzes, Vocalisations and Faces @ ACM Multimedia 2022</a></div>
+        <p class="blog-excerpt">
+          Preview of work on mosquito detection, vocalization classification, and emotion recognition for ACM Multimedia 2022.
+        </p>
+        <div class="blog-tags">
+          <span class="blog-tag">acm-multimedia</span>
+          <span class="blog-tag">emotion-recognition</span>
+          <span class="blog-tag">audio</span>
+        </div>
+      </div>
+    </div>
 
-    <script async src="prism/prism.js"></script>
-    <script async defer data-domain="latex.now.sh" src="https://plausible.io/js/plausible.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+    <!-- Guides -->
+    <h2>Guides &amp; Practical Programming</h2>
+    <div class="blog-list">
+      <div class="blog-entry search-item">
+        <div class="blog-date">Guide</div>
+        <div class="blog-title search-title"><a href="guides/conda_en.html">(Mini) Conda on Linux</a></div>
+        <p class="blog-excerpt">
+          Quick guide to setting up Conda and Miniconda on Linux for environment management.
+        </p>
+        <div class="blog-tags">
+          <span class="blog-tag">conda</span>
+          <span class="blog-tag">linux</span>
+          <span class="blog-tag">environment</span>
+        </div>
+        <p style="margin-top: 0.5rem; margin-bottom: 0;">
+          <a href="guides/conda_en.html" style="font-family: var(--font-mono); font-size: 0.8rem;">English</a>
+          &middot;
+          <a href="guides/conda_it.html" style="font-family: var(--font-mono); font-size: 0.8rem;">Italian</a>
+        </p>
+      </div>
 
-    <div data-include="footer"></div>
+      <div class="blog-entry search-item">
+        <div class="blog-date">Guide</div>
+        <div class="blog-title search-title"><a href="guides/streaming_datasets.html">Streaming Hugging Face Datasets in PyTorch</a></div>
+        <p class="blog-excerpt">
+          Guide to using Hugging Face's streaming datasets in PyTorch for efficient data handling.
+        </p>
+        <div class="blog-tags">
+          <span class="blog-tag">hugging-face</span>
+          <span class="blog-tag">streaming</span>
+          <span class="blog-tag">pytorch</span>
+        </div>
+      </div>
+    </div>
+  </main>
 
-    <script>
-        $(function () {
-            $('[data-include]').each(function () {
-                $(this).load('components/' + $(this).data('include') + '.html');
-            });
-        });
-    </script>
+  <div data-include="footer"></div>
+
+  <script src="script.js"></script>
 </body>
-
 </html>

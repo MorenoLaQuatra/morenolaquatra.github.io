@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Open master thesis proposals by Moreno La Quatra on NLP, speech processing, sign language, emotional TTS, and LLM post-training.">
+  <meta name="keywords" content="master thesis, NLP, speech processing, deep learning, moreno la quatra">
+  <meta property="og:title" content="Thesis Proposals - Moreno La Quatra">
+  <meta property="og:url" content="https://mlaquatra.me/thesis.html">
+  <meta property="og:description" content="Open master thesis topics in NLP, speech processing, and deep learning.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+  <link rel="canonical" href="https://mlaquatra.me/thesis.html">
+  <title>Thesis Proposals - Moreno La Quatra</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="mlq-logo.png" type="image/png">
+</head>
+<body>
+
+  <div data-include="header"></div>
+
+  <main>
+    <h1>Master Thesis Proposals</h1>
+
+    <div class="abstract">
+      <p>
+        Below are open thesis topics I am actively interested in supervising. Each comes with
+        some background and a clear research direction. If something looks interesting, reach out
+        and we can refine the scope together. You can also pitch a topic of your own at the bottom.
+      </p>
+    </div>
+
+    <!-- PROPOSAL 1: Emotional TTS -->
+    <div class="course-card">
+      <span class="proposal-badge">Speech &middot; NLP &middot; Industry</span>
+      <div class="course-title">Emotional Text-to-Speech for Italian</div>
+      <p class="course-description">
+        Modern TTS systems can sound natural, but making them sound <em>human</em> is still hard.
+        Emotional TTS synthesizes speech with the right tone and prosody for the context: a calm reading
+        voice, an excited announcement, or an empathetic assistant. This matters a lot in 2026, as TTS
+        is now used in audiobooks, voice assistants, accessibility tools, and customer service.
+        Italian is still largely left out of this space.
+      </p>
+      <p class="course-description">
+        The thesis would explore how to build or adapt an emotional TTS system for Italian, using
+        fine-tuning or newer approaches like activation steering, which lets you control the emotional
+        tone of speech at inference time without extra training. A core challenge is the lack of Italian
+        emotional speech data, opening directions in data collection, augmentation, and cross-lingual transfer.
+      </p>
+      <div class="course-topics">
+        <span class="topic-tag">Text-to-Speech</span>
+        <span class="topic-tag">Emotion Control</span>
+        <span class="topic-tag">Prosody Modeling</span>
+        <span class="topic-tag">Italian NLP</span>
+        <span class="topic-tag">Cross-lingual Transfer</span>
+        <span class="topic-tag">Data Augmentation</span>
+      </div>
+      <div class="proposal-note">
+        <strong>Industry interest:</strong> This topic is connected to an ongoing collaboration with
+        <a href="https://audioboost.com/it/" target="_blank" rel="noopener">Audioboost</a>,
+        a company working on Italian audio production and voice technology. The thesis may have direct
+        industrial relevance and the chance to work with real application requirements.
+      </div>
+      <div class="proposal-refs">
+        <strong>References:</strong>
+        <a href="https://arxiv.org/abs/2504.12867" target="_blank" rel="noopener">EmoVoice (ACM MM 2025)</a> &middot;
+        <a href="https://arxiv.org/html/2508.03543v1" target="_blank" rel="noopener">EmoSteer-TTS (2025)</a> &middot;
+        <a href="https://www.mdpi.com/2076-3417/15/9/5108" target="_blank" rel="noopener">ECE-TTS (2025)</a>
+      </div>
+      <a class="proposal-contact"
+         href="mailto:moreno.laquatra@unikore.it?subject=%5BMaster%20Thesis%5D%20-%20Emotional%20TTS%20for%20Italian">
+        Contact me about this topic
+      </a>
+    </div>
+
+    <!-- PROPOSAL 2: Sign Language -->
+    <div class="course-card">
+      <span class="proposal-badge">Multimodal &middot; Vision &middot; NLP</span>
+      <div class="course-title">Sign Language Recognition and Processing</div>
+      <p class="course-description">
+        Sign languages are full natural languages, but most automatic language systems ignore them.
+        Sign language recognition is a multimodal problem: you need to understand hand gestures,
+        facial expressions, and body posture from video, and map them to words or sentences.
+      </p>
+      <p class="course-description">
+        What makes this exciting now is that the same techniques that changed NLP and speech
+        (transformers, self-supervised learning, large pre-trained models) are being applied to
+        sign language with good results. The thesis could go in several directions: recognizing
+        continuous signing from video, translating signs to text, or adapting speech processing
+        ideas to work with visual gestures instead of audio.
+      </p>
+      <div class="course-topics">
+        <span class="topic-tag">Video Understanding</span>
+        <span class="topic-tag">Transformers</span>
+        <span class="topic-tag">Sequence Modeling</span>
+        <span class="topic-tag">Multimodal Learning</span>
+        <span class="topic-tag">Sign Language Translation</span>
+        <span class="topic-tag">Accessibility</span>
+      </div>
+      <div class="proposal-refs">
+        <strong>References:</strong>
+        <a href="https://github.com/ZechengLi19/Awesome-Sign-Language" target="_blank" rel="noopener">Awesome Sign Language (curated resource list)</a> &middot;
+        <a href="https://www.mdpi.com/2227-7390/13/6/909" target="_blank" rel="noopener">Adaptive Transformer for SLR (2025)</a> &middot;
+        <a href="https://www.tandfonline.com/doi/full/10.1080/01691864.2024.2442721" target="_blank" rel="noopener">Review of DL-based Sign Language Processing</a>
+      </div>
+      <a class="proposal-contact"
+         href="mailto:moreno.laquatra@unikore.it?subject=%5BMaster%20Thesis%5D%20-%20Sign%20Language%20Recognition">
+        Contact me about this topic
+      </a>
+    </div>
+
+    <!-- PROPOSAL 3: Post-training LLMs -->
+    <div class="course-card">
+      <span class="proposal-badge">Advanced &middot; LLMs &middot; Reinforcement Learning</span>
+      <div class="course-title">Post-training of Language and Speech Models</div>
+      <p class="course-description">
+        Pre-training gives a model broad knowledge of language. Post-training shapes its behavior:
+        making it helpful, safe, or good at a specific task. This is one of the most active research
+        areas right now, with methods like supervised fine-tuning (SFT), RLHF (Reinforcement Learning
+        from Human Feedback), DPO (Direct Preference Optimization), and GRPO.
+      </p>
+      <p class="course-description">
+        The thesis would apply post-training techniques to <em>speech language models</em>, which
+        process audio and text together. This brings new open questions: how do you define a reward
+        signal for spoken responses? How do you align a model that works with audio tokens instead of
+        text? The focus could be on a specific application like speech summarization, spoken
+        question answering, or voice assistants.
+      </p>
+      <div class="course-topics">
+        <span class="topic-tag">Large Language Models</span>
+        <span class="topic-tag">SpeechLLMs</span>
+        <span class="topic-tag">RLHF / DPO / GRPO</span>
+        <span class="topic-tag">Fine-tuning</span>
+        <span class="topic-tag">Reinforcement Learning</span>
+        <span class="topic-tag">Alignment</span>
+      </div>
+      <div class="proposal-refs">
+        <strong>References:</strong>
+        <a href="https://aclanthology.org/2025.acl-long.682/" target="_blank" rel="noopener">Recent Advances in SpeechLMs (ACL 2025)</a> &middot;
+        <a href="https://arxiv.org/html/2507.04136v1" target="_blank" rel="noopener">RL Techniques for LLMs, Survey (2025)</a> &middot;
+        <a href="https://developers.redhat.com/articles/2025/11/04/post-training-methods-language-models" target="_blank" rel="noopener">Post-training methods overview</a>
+      </div>
+      <a class="proposal-contact"
+         href="mailto:moreno.laquatra@unikore.it?subject=%5BMaster%20Thesis%5D%20-%20Post-training%20of%20LLMs%20and%20SpeechLLMs">
+        Contact me about this topic
+      </a>
+    </div>
+
+    <!-- PROPOSAL 4: Pathological Speech -->
+    <div class="course-card">
+      <span class="proposal-badge">Clinical &middot; Speech &middot; Healthcare</span>
+      <div class="course-title">Automatic Analysis of Pathological Speech</div>
+      <p class="course-description">
+        Speech carries a lot of information about health. Changes in voice quality, rhythm, and
+        articulation can signal neurological conditions like Parkinson's or ALS, mental health
+        states like depression, or speech disorders like dysarthria. Systems that detect and track
+        these changes can help with diagnosis and monitoring.
+      </p>
+      <p class="course-description">
+        The thesis could focus on a specific condition or task, such as Parkinson's detection from
+        voice recordings, dysarthria severity assessment, or general voice pathology screening.
+        Key challenges include small clinical datasets, working across different recording settings,
+        and explainability (clinicians need to understand why a model raises a flag).
+      </p>
+      <div class="course-topics">
+        <span class="topic-tag">Speech Processing</span>
+        <span class="topic-tag">Voice Pathology</span>
+        <span class="topic-tag">Parkinson's Detection</span>
+        <span class="topic-tag">Dysarthria</span>
+        <span class="topic-tag">Explainability</span>
+        <span class="topic-tag">Clinical NLP</span>
+      </div>
+      <div class="proposal-refs">
+        <strong>References:</strong>
+        <a href="https://doi.org/10.1109/ICASSP49660.2025.10889445" target="_blank" rel="noopener">BDHPD: Multilingual Parkinson's detection (ICASSP 2025)</a> &middot;
+        <a href="https://doi.org/10.1109/ICASSP49660.2025.10890672" target="_blank" rel="noopener">voc2vec: Foundation model for non-verbal vocalizations (ICASSP 2025)</a> &middot;
+        <a href="https://www.isca-archive.org/interspeech_2025/laquatra25_interspeech.html" target="_blank" rel="noopener">Generative Error Correction for Dysarthric ASR (INTERSPEECH 2025)</a>
+      </div>
+      <a class="proposal-contact"
+         href="mailto:moreno.laquatra@unikore.it?subject=%5BMaster%20Thesis%5D%20-%20Pathological%20Speech%20Analysis">
+        Contact me about this topic
+      </a>
+    </div>
+
+    <!-- PROPOSE YOUR OWN -->
+    <div class="own-proposal">
+      <h3>Have your own idea?</h3>
+      <p>
+        If you have a research question in mind related to speech, language, audio, or multimodal
+        learning, I am happy to hear it. A good thesis topic often starts from genuine curiosity.
+        Write me a short description of what you have in mind and we can figure out if and how
+        to make it work together.
+      </p>
+      <a class="proposal-contact" style="margin-top: 1rem;"
+         href="mailto:moreno.laquatra@unikore.it?subject=%5BMaster%20Thesis%5D%20-%20Custom%20Proposal">
+        Propose your own topic
+      </a>
+    </div>
+
+  </main>
+
+  <div data-include="footer"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="google-site-verification" content="" />
     <title>Streaming Hugging Face Datasets in PyTorch - Moreno La Quatra</title>
 
     <meta name="description" content="Guide to using Hugging Face's streaming datasets in PyTorch for efficient large-scale data handling" />
@@ -13,20 +12,13 @@
     <meta property="og:url" content="https://mlaquatra.me/posts/streaming_datasets.html" />
     <meta property="og:description" content="Efficiently work with large Hugging Face datasets in PyTorch using streaming mode." />
     <meta property="og:type" content="website" />
-    <link rel="stylesheet" href="../src/style.css" />
-
-    <!-- Highlight.js CSS and JS for Syntax Highlighting -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/github-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+    <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+    <link rel="canonical" href="https://mlaquatra.me/guides/streaming_datasets.html">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../prism/prism.css" />
+    <link rel="icon" href="../mlq-logo.png" type="image/png">
 
     <style>
-        pre code {
-            background: #282c34;
-            color: #abb2bf;
-            padding: 10px;
-            border-radius: 5px;
-        }
-
         .warning-box {
             background-color: #fff3cd;
             color: #856404;
@@ -62,18 +54,17 @@
     </style>
 </head>
 
-<body id="top" class="libertinus">
+<body>
     <div data-include="header-nested-1"></div>
-    <header>
-        <h2 style="text-align: center;">Streaming Hugging Face Datasets in PyTorch</h2>
-    </header>
+    <main>
+    <h1>Streaming Hugging Face Datasets in PyTorch</h1>
 
     <img src="https://huggingface.co/front/assets/huggingface_logo.svg" alt="Hugging Face Logo" width="40%" style="display: block; margin: 0 auto;">
 
     <div class="abstract">
         <p>
-            When working with massive datasets in machine learning, handling storage and processing efficiency is crucial. In this guide, we will explore how to use <b>Hugging Face’s streaming datasets</b> in PyTorch, enabling you to load only the data you need, without downloading everything.
-            This guide will focus on using <code>collabora/librilight-webdataset</code> (4TB dataset) to demonstrate the streaming mode in Hugging Face’s <code>datasets</code> library and integrate it into PyTorch.
+            When working with massive datasets in machine learning, handling storage and processing efficiency is crucial. In this guide, we will explore how to use <b>Hugging Face's streaming datasets</b> in PyTorch, enabling you to load only the data you need, without downloading everything.
+            This guide will focus on using <code>collabora/librilight-webdataset</code> (4TB dataset) to demonstrate the streaming mode in Hugging Face's <code>datasets</code> library and integrate it into PyTorch.
         </p>
     </div>
 
@@ -86,7 +77,7 @@
         </ol>
     </nav>
 
-    <h4 id="streaming_setup"> 🛠️ Setting Up Streaming in Hugging Face</h4>
+    <h4 id="streaming_setup"> Setting Up Streaming in Hugging Face</h4>
     <p>To load a streaming dataset, simply enable the <code>streaming=True</code> parameter when calling <code>load_dataset</code>. This avoids downloading the entire dataset, only loading data as needed.</p>
     <pre class="code-box"><code class="language-python">
 from datasets import load_dataset
@@ -99,8 +90,8 @@ dataset = load_dataset('collabora/librilight-webdataset', split='train', streami
         <p><strong>Note:</strong> Streaming datasets like this do not have a fixed length because they process data in real-time. Length-based operations may not be directly applicable.</p>
     </div>
 
-    <h4 id="custom_dataset"> 📂 Creating a Custom PyTorch Dataset</h4>
-    <p>We’ll create a PyTorch dataset class to wrap the streaming data. Since we know the dataset length, <code>__len__</code> can return this value. The <code>__getitem__</code> method retrieves items directly from the stream, without holding them in memory.</p>
+    <h4 id="custom_dataset"> Creating a Custom PyTorch Dataset</h4>
+    <p>We'll create a PyTorch dataset class to wrap the streaming data. Since we know the dataset length, <code>__len__</code> can return this value. The <code>__getitem__</code> method retrieves items directly from the stream, without holding them in memory.</p>
 
     <pre class="code-box"><code class="language-python">
 import torch
@@ -145,8 +136,8 @@ class MyAudioDataset(Dataset):
         <p><strong>Warning:</strong> Iterable datasets do not inherently support length-based indexing due to their real-time processing nature.</p>
     </div>
 
-    <h4 id="dataloader_parallel"> ⏩ Using DataLoader with Parallel Workers</h4>
-    <p>To efficiently load data in parallel, PyTorch’s <code>DataLoader</code> supports the <code>num_workers</code> parameter. This allows multiple processes to retrieve data concurrently, ideal for large streaming datasets.</p>
+    <h4 id="dataloader_parallel"> Using DataLoader with Parallel Workers</h4>
+    <p>To efficiently load data in parallel, PyTorch's <code>DataLoader</code> supports the <code>num_workers</code> parameter. This allows multiple processes to retrieve data concurrently, ideal for large streaming datasets.</p>
 
     <pre class="code-box"><code class="language-python">
 from torch.utils.data import DataLoader
@@ -163,7 +154,7 @@ for batch in dataloader:
     break  # Display only the first batch
     </code></pre>
 
-    <h4 id="audio_handling"> 🎙️ Bonus: Efficient Handling of Audio Data</h4>
+    <h4 id="audio_handling"> Bonus: Efficient Handling of Audio Data</h4>
     <p>When working with audio, setting a <code>max_length</code> helps standardize the length of audio samples. In our example, we use 10 seconds as the default. This ensures consistency, which is beneficial for model training.</p>
 
     <pre class="code-box"><code class="language-python">
@@ -197,31 +188,16 @@ class MyAudioDataset(Dataset):
     </div>
 
     <p style="text-align: center;">
-        <button onclick="location.href='https://huggingface.co/docs/datasets/stream';">📖 Official Hugging Face Streaming Documentation</button>
-        <button onclick="location.href='https://pytorch.org/docs/stable/data.html';">🔍 PyTorch Data Documentation</button>
+        <button onclick="location.href='https://huggingface.co/docs/datasets/stream';">Official Hugging Face Streaming Documentation</button>
+        <button onclick="location.href='https://pytorch.org/docs/stable/data.html';">PyTorch Data Documentation</button>
     </p>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            hljs.highlightAll();
-        });
-    </script>
+    <script async src="../prism/prism.js"></script>
 
-    <script src="../src/jquery-3.6.0.min.js"></script>
-
+    </main>
     <div data-include="footer"></div>
 
-    <script>
-        $(function() {
-            var includes = $('[data-include]')
-            $.each(includes, function() {
-                var file = '../components/' + $(this).data('include') + '.html'
-                $(this).load(file)
-                // log file in console
-                console.log(file)
-            })
-        })
-    </script>
+    <script src="../script.js"></script>
 </body>
 
 </html>
