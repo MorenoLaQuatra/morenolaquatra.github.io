@@ -80,7 +80,7 @@ function initEasterEggs() {
   // 4. Console easter egg
   console.log('%c~ Welcome, fellow academic! ~', 'font-size: 20px; font-weight: bold;');
   console.log('%cYou found the console easter egg.', 'font-size: 14px; color: #8b0000;');
-  console.log('%cTry: konami code, triple-click the logo, or type "latex" anywhere', 'font-size: 12px; color: #666;');
+  console.log('%cTry: konami code, triple-click the logo, type "latex" anywhere, or press Space 5 times', 'font-size: 12px; color: #666;');
   console.log('%c\n  May your gradients never vanish.\n', 'font-family: serif; font-size: 14px;');
 
   // 5. Secret keyboard triggers
@@ -108,6 +108,23 @@ function initEasterEggs() {
   dates.forEach(date => {
     date.classList.add('easter-egg');
     date.title = getRandomAcademicJoke();
+  });
+
+  // 7. Press Space 5× to reveal the full easter egg list
+  let spaceCount = 0;
+  let spaceTimer;
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      const tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      spaceCount++;
+      clearTimeout(spaceTimer);
+      spaceTimer = setTimeout(() => { spaceCount = 0; }, 2000);
+      if (spaceCount >= 5) {
+        spaceCount = 0;
+        showEasterEggList();
+      }
+    }
   });
 }
 
@@ -246,6 +263,89 @@ function getRandomAcademicJoke() {
     'When overfitting was still called "memorization"'
   ];
   return jokes[Math.floor(Math.random() * jokes.length)];
+}
+
+function showEasterEggList() {
+  const existing = document.getElementById('easter-egg-list');
+  if (existing) { existing.remove(); return; }
+
+  const eggs = [
+    { keys: '↑↑↓↓←→←→BA',  desc: 'Konami code' },
+    { keys: 'triple-click',  desc: 'Click the logo three times' },
+    { keys: '×7 clicks',     desc: 'Click the logo seven times' },
+    { keys: 'dblclick',      desc: 'Double-click the LaTeX logo in the footer' },
+    { keys: 'latex',         desc: 'Type "latex" anywhere on the page' },
+    { keys: 'bibtex',        desc: 'Type "bibtex" anywhere on the page' },
+    { keys: 'phd',           desc: 'Type "phd" anywhere on the page' },
+    { keys: 'hover dates',   desc: 'Hover over any date for academic wisdom' },
+    { keys: '> console',     desc: 'Open the browser console' },
+    { keys: 'space ×5',      desc: 'You just found this one' },
+  ];
+
+  const modal = document.createElement('div');
+  modal.id = 'easter-egg-list';
+  modal.style.cssText = `
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-sans, sans-serif);
+  `;
+
+  const card = document.createElement('div');
+  card.style.cssText = `
+    background: var(--paper, #fefdfc);
+    border: 1px solid var(--border, #ddd);
+    padding: 2rem 2.4rem;
+    max-width: 420px; width: 90%;
+    line-height: 1.6;
+  `;
+
+  const title = document.createElement('p');
+  title.style.cssText = `
+    margin: 0 0 1rem;
+    font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent, #8b0000); font-weight: 600;
+  `;
+  title.textContent = 'Hidden Easter Eggs';
+
+  const list = document.createElement('ul');
+  list.style.cssText = `
+    list-style: none; margin: 0 0 1.2rem; padding: 0;
+  `;
+
+  eggs.forEach(egg => {
+    const li = document.createElement('li');
+    li.style.cssText = `
+      display: flex; gap: 0.8rem; align-items: baseline;
+      padding: 0.25rem 0; border-bottom: 1px solid var(--border, #eee);
+      font-size: 0.88rem;
+    `;
+    li.innerHTML = `
+      <code style="font-family: var(--font-mono, monospace); font-size: 0.8rem;
+                   color: var(--accent, #8b0000); white-space: nowrap;">${egg.keys}</code>
+      <span style="color: var(--text, #333);">${egg.desc}</span>
+    `;
+    list.appendChild(li);
+  });
+
+  const dismiss = document.createElement('p');
+  dismiss.style.cssText = `
+    margin: 0; font-size: 0.78rem; color: var(--text-light, #888); text-align: right;
+  `;
+  dismiss.textContent = 'Esc or click outside to close';
+
+  card.appendChild(title);
+  card.appendChild(list);
+  card.appendChild(dismiss);
+  modal.appendChild(card);
+  document.body.appendChild(modal);
+
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+  const escHandler = (e) => {
+    if (e.key === 'Escape') { modal.remove(); document.removeEventListener('keydown', escHandler); }
+  };
+  document.addEventListener('keydown', escHandler);
 }
 
 /* ============================================
