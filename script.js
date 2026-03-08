@@ -526,9 +526,11 @@ function loadComponents() {
   const includes = document.querySelectorAll('[data-include]');
   const promises = Array.from(includes).map(el => {
     const name = el.dataset.include;
-    // Nested components (e.g. header-nested-1) are used from sub-folders,
-    // so we need to go up one level to reach /components/
-    const prefix = name.includes('nested') ? '../components/' : 'components/';
+    // Nested components are used from sub-folders:
+    // nested-2 = two levels deep (e.g. teaching/SLP/)
+    // nested-1 = one level deep (e.g. teaching/)
+    const prefix = name.includes('nested-2') ? '../../components/' :
+                   name.includes('nested') ? '../components/' : 'components/';
     const file = prefix + name + '.html';
     return fetch(file)
       .then(r => {

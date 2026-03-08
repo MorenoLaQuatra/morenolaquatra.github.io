@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sinusoid Visualizer — interactive tool for the Speech and Language Processing course by Moreno La Quatra, Kore University of Enna.">
+  <meta property="og:title" content="Sinusoid Visualizer — SLP — Moreno La Quatra">
+  <meta property="og:url" content="https://mlaquatra.me/teaching/SLP/sin-viz-2.html">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+  <link rel="canonical" href="https://mlaquatra.me/teaching/SLP/sin-viz-2.html">
+  <title>Sinusoid Visualizer &mdash; SLP &mdash; Moreno La Quatra</title>
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="icon" href="../../mlq-logo.png" type="image/png">
+
+  <style>
+    /* ── Page-specific styles ── */
+
+    .viz-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: var(--margin-unit);
+    }
+
+    /* Control cards */
+    .control-card {
+      background: var(--paper-dark);
+      padding: 1.25rem 1.5rem;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+    }
+
+    .control-card label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 5px;
+      border-radius: 2px;
+      background: var(--border);
+      outline: none;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+    }
+
+    .value-display {
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      color: var(--ink);
+      margin-top: 0.25rem;
+    }
+
+    /* Audibility badge */
+    .audibility-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.2em 0.7em;
+      border-radius: 2px;
+      margin-top: 0.5rem;
+    }
+
+    .audibility-badge.audible {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #b1dfbb;
+    }
+
+    .audibility-badge.inaudible-high {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f1b0b7;
+    }
+
+    .audibility-badge.inaudible-low {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffc107;
+    }
+
+    /* Play / Stop buttons */
+    .viz-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: var(--margin-unit);
+    }
+
+    .btn-play {
+      padding: 0.55rem 1.8rem;
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: var(--paper);
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .btn-play:hover:not(:disabled) {
+      background: var(--accent-light);
+      border-color: var(--accent-light);
+    }
+
+    .btn-stop {
+      padding: 0.55rem 1.8rem;
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      color: var(--ink);
+      cursor: pointer;
+      border-radius: 2px;
+      transition: border-color 0.2s;
+    }
+
+    .btn-stop:hover:not(:disabled) {
+      border-color: var(--ink);
+    }
+
+    button:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+
+    /* Canvas sections */
+    .viz-section {
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: var(--margin-unit);
+    }
+
+    .viz-section-title {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      background: var(--paper);
+      border: 1px solid var(--border);
+    }
+
+    canvas {
+      width: 100%;
+      display: block;
+    }
+
+    #waveformCanvas    { height: 180px; }
+    #spectrogramCanvas { height: 300px; }
+
+    /* Waveform density note */
+    #waveformNote {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--ink-lighter);
+      text-align: center;
+      margin-top: 0.4rem;
+      min-height: 1em;
+    }
+
+    /* Frequency axis labels on spectrogram */
+    .freq-labels {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 52px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 8px 4px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--ink-lighter);
+      background: rgba(254, 253, 251, 0.93);
+      pointer-events: none;
+    }
+
+    .freq-label {
+      text-align: right;
+      padding-right: 4px;
+    }
+
+    /* ── Piano section wrapper ── */
+    .piano-section {
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      margin-bottom: var(--margin-unit);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      overflow-x: auto;
+    }
+
+    .piano-section-title {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      align-self: flex-start;
+    }
+
+    /* ── Piano keys (kept exactly as original) ── */
+    .piano {
+      position: relative;
+      display: inline-flex;
+      height: 180px;
+    }
+
+    .key {
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.1s;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      padding-bottom: 10px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .white-key {
+      width: 60px;
+      height: 180px;
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 0 0 4px 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      z-index: 1;
+      margin-right: 0;
+    }
+
+    .white-key:hover {
+      background: #f1f5f9;
+    }
+
+    .white-key:active, .white-key.active {
+      background: #e2e8f0;
+      transform: translateY(2px);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .black-key {
+      width: 36px;
+      height: 110px;
+      background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #020617;
+      border-radius: 0 0 3px 3px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      position: absolute;
+      z-index: 2;
+      color: white;
+    }
+
+    .black-key:hover {
+      background: linear-gradient(to bottom, #334155 0%, #1e293b 100%);
+    }
+
+    .black-key:active, .black-key.active {
+      background: linear-gradient(to bottom, #475569 0%, #334155 100%);
+      transform: translateY(2px);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .note-label      { opacity: 0.6; }
+    .freq-label-key  { font-size: 10px; opacity: 0.5; }
+
+    @media (max-width: 640px) {
+      .viz-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div data-include="header-nested-2"></div>
+
+  <main class="wide-content">
+
+    <div class="breadcrumb">
+      <a href="../../teaching/">Teaching</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="../../teaching/SLP/">Language and Speech Processing</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>Sinusoid Visualizer</span>
+    </div>
+
+    <h1>Sinusoid Visualizer</h1>
+    <p class="hero-subtitle">Amplitude &middot; Frequency &middot; Waveform &middot; Spectrogram</p>
+
+    <div class="abstract">
+      <p>
+        Explore how a pure sinusoidal tone changes with its two fundamental parameters:
+        <strong>frequency</strong> (pitch) and <strong>amplitude</strong> (loudness).
+        The human auditory system perceives frequencies between roughly
+        <strong>20&thinsp;Hz</strong> and <strong>20&thinsp;000&thinsp;Hz (20&thinsp;kHz)</strong>.
+        Use the frequency slider to go all the way up to 28&thinsp;kHz and observe that
+        above 20&thinsp;kHz the tone enters the <em>ultrasonic</em> range &mdash;
+        the oscillator still runs, yet no sound is heard.
+      </p>
+    </div>
+
+    <!-- ── Controls ── -->
+    <div class="viz-grid">
+
+      <div class="control-card">
+        <label for="frequency">Frequency &mdash; Pitch</label>
+        <input type="range" id="frequency" min="20" max="28000" value="880" step="10">
+        <div class="value-display"><span id="freqValue">880</span> Hz</div>
+        <div style="text-align:center;">
+          <span id="audibilityBadge" class="audibility-badge audible">&#10003;&ensp;Audible &mdash; 20 Hz &ndash; 20 kHz</span>
+        </div>
+      </div>
+
+      <div class="control-card">
+        <label for="amplitude">Amplitude &mdash; Loudness</label>
+        <input type="range" id="amplitude" min="0" max="100" value="50" step="1">
+        <div class="value-display"><span id="ampValue">50</span> %</div>
+      </div>
+
+    </div>
+
+    <!-- ── Play / Stop ── -->
+    <div class="viz-buttons">
+      <button class="btn-play" id="playBtn">&#9654;&ensp;Play Sound</button>
+      <button class="btn-stop" id="stopBtn" disabled>&#9646;&#9646;&ensp;Stop Sound</button>
+    </div>
+
+    <!-- ── Piano keyboard (untouched logic) ── -->
+    <div class="piano-section">
+      <div class="piano-section-title">Piano Keyboard &mdash; click a key to set the frequency</div>
+      <div class="piano" id="piano"></div>
+    </div>
+
+    <!-- ── Waveform ── -->
+    <div class="viz-section">
+      <div class="viz-section-title">Waveform &mdash; Time Domain</div>
+      <div class="canvas-wrapper">
+        <canvas id="waveformCanvas"></canvas>
+      </div>
+      <div id="waveformNote"></div>
+    </div>
+
+    <!-- ── Spectrogram ── -->
+    <div class="viz-section">
+      <div class="viz-section-title">Spectrogram &mdash; Frequency over Time</div>
+      <div class="canvas-wrapper">
+        <div class="freq-labels" id="freqLabels"></div>
+        <canvas id="spectrogramCanvas"></canvas>
+      </div>
+      <p style="margin-top:0.6rem;margin-bottom:0;font-family:var(--font-mono);font-size:0.72rem;color:var(--ink-lighter);">
+        The dashed yellow line marks the 20&thinsp;kHz boundary. Energy above it is ultrasonic and inaudible to humans.
+        The spectrogram is limited to the Nyquist frequency of your audio device (typically 22&ndash;24&thinsp;kHz).
+      </p>
+    </div>
+
+  </main>
+
+  <div data-include="footer-nested-2"></div>
+
+  <script src="../../script.js"></script>
+  <script>
+
+    // ── Audio context and nodes ──────────────────────────────────────────────
+    let audioContext;
+    let oscillator;
+    let gainNode;
+    let analyser;
+    let isPlaying = false;
+
+    const waveformCanvas    = document.getElementById('waveformCanvas');
+    const spectrogramCanvas = document.getElementById('spectrogramCanvas');
+    const waveCtx  = waveformCanvas.getContext('2d');
+    const specCtx  = spectrogramCanvas.getContext('2d');
+
+    const MAX_FREQ_DISPLAY = 28000; // Hz — capped to Nyquist when AudioContext exists
+
+    // ── All declarations up-front (must precede resizeCanvases call) ─────────
+    let frequency = 880;
+    let amplitude = 0.5;
+
+    let spectrogramData = [];
+    const spectrogramWidth = 200;
+
+    // ── DOM references ───────────────────────────────────────────────────────
+    const frequencySlider = document.getElementById('frequency');
+    const amplitudeSlider = document.getElementById('amplitude');
+    const freqValue       = document.getElementById('freqValue');
+    const ampValue        = document.getElementById('ampValue');
+    const playBtn         = document.getElementById('playBtn');
+    const stopBtn         = document.getElementById('stopBtn');
+    const audibilityBadge = document.getElementById('audibilityBadge');
+    const waveformNote    = document.getElementById('waveformNote');
+
+    // ── Canvas resize ────────────────────────────────────────────────────────
+    function resizeCanvases() {
+      waveformCanvas.width    = waveformCanvas.offsetWidth;
+      waveformCanvas.height   = waveformCanvas.offsetHeight;
+      spectrogramCanvas.width  = spectrogramCanvas.offsetWidth;
+      spectrogramCanvas.height = spectrogramCanvas.offsetHeight;
+      updateFrequencyLabels();
+      updateWaveform();
+    }
+    resizeCanvases();
+    window.addEventListener('resize', resizeCanvases);
+
+    // ── Frequency-axis labels for spectrogram ────────────────────────────────
+    function updateFrequencyLabels() {
+      const container = document.getElementById('freqLabels');
+      container.innerHTML = '';
+      [28000, 24000, 20000, 16000, 12000, 8000, 4000, 0].forEach(freq => {
+        const div = document.createElement('div');
+        div.className = 'freq-label';
+        div.textContent = freq >= 1000 ? `${freq / 1000}k` : `${freq}`;
+        container.appendChild(div);
+      });
+    }
+    updateFrequencyLabels();
+
+    // ── Audibility badge ─────────────────────────────────────────────────────
+    function updateAudibilityBadge(freq) {
+      if (freq < 20) {
+        audibilityBadge.className = 'audibility-badge inaudible-low';
+        audibilityBadge.innerHTML = '&#9888;&ensp;Infrasound &mdash; below human hearing (&lt;&nbsp;20&thinsp;Hz)';
+      } else if (freq <= 20000) {
+        audibilityBadge.className = 'audibility-badge audible';
+        audibilityBadge.innerHTML = '&#10003;&ensp;Audible &mdash; 20&thinsp;Hz &ndash; 20&thinsp;kHz';
+      } else {
+        audibilityBadge.className = 'audibility-badge inaudible-high';
+        audibilityBadge.innerHTML = '&#10007;&ensp;Ultrasound &mdash; above human hearing (&gt;&nbsp;20&thinsp;kHz)';
+      }
+    }
+
+    // ── Piano notes C5–C6 (data untouched) ───────────────────────────────────
+    const pianoNotes = [
+      { note: 'C5',  freq: 524,  type: 'white', label: 'C' },
+      { note: 'C#5', freq: 554,  type: 'black', label: 'C#', offset: 42 },
+      { note: 'D5',  freq: 588,  type: 'white', label: 'D' },
+      { note: 'D#5', freq: 622,  type: 'black', label: 'D#', offset: 102 },
+      { note: 'E5',  freq: 660,  type: 'white', label: 'E' },
+      { note: 'F5',  freq: 698,  type: 'white', label: 'F' },
+      { note: 'F#5', freq: 740,  type: 'black', label: 'F#', offset: 222 },
+      { note: 'G5',  freq: 784,  type: 'white', label: 'G' },
+      { note: 'G#5', freq: 830,  type: 'black', label: 'G#', offset: 282 },
+      { note: 'A5',  freq: 880,  type: 'white', label: 'A' },
+      { note: 'A#5', freq: 932,  type: 'black', label: 'A#', offset: 342 },
+      { note: 'B5',  freq: 988,  type: 'white', label: 'B' },
+      { note: 'C6',  freq: 1046, type: 'white', label: 'C' }
+    ];
+
+    // ── Create piano keyboard (logic untouched) ───────────────────────────────
+    function createPiano() {
+      const piano = document.getElementById('piano');
+      let whiteKeyIndex = 0;
+
+      pianoNotes.forEach(noteData => {
+        if (noteData.type === 'white') {
+          const key = document.createElement('div');
+          key.className = 'key white-key';
+          key.innerHTML = `
+            <span class="note-label">${noteData.label}</span>
+            <span class="freq-label-key">${noteData.freq}Hz</span>
+          `;
+          key.addEventListener('mousedown',  () => playNote(noteData.freq, key));
+          key.addEventListener('mouseup',    () => key.classList.remove('active'));
+          key.addEventListener('mouseleave', () => key.classList.remove('active'));
+          piano.appendChild(key);
+          whiteKeyIndex++;
+        } else {
+          const key = document.createElement('div');
+          key.className = 'key black-key';
+          const leftPosition = (whiteKeyIndex - 1) * 60 + 42;
+          key.style.left = `${leftPosition}px`;
+          key.innerHTML = `
+            <span class="note-label">${noteData.label}</span>
+            <span class="freq-label-key">${noteData.freq}Hz</span>
+          `;
+          key.addEventListener('mousedown',  () => playNote(noteData.freq, key));
+          key.addEventListener('mouseup',    () => key.classList.remove('active'));
+          key.addEventListener('mouseleave', () => key.classList.remove('active'));
+          piano.appendChild(key);
+        }
+      });
+    }
+
+    // ── Play a note from the piano (logic untouched) ──────────────────────────
+    function playNote(freq, keyElement) {
+      keyElement.classList.add('active');
+
+      frequency = freq;
+      frequencySlider.value = freq;
+      freqValue.textContent = freq;
+      updateAudibilityBadge(freq);
+      requestAnimationFrame(() => { updateWaveform(); });
+
+      if (!isPlaying) {
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        oscillator = audioContext.createOscillator();
+        gainNode   = audioContext.createGain();
+        analyser   = audioContext.createAnalyser();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+        gainNode.gain.setValueAtTime(amplitude * 0.3, audioContext.currentTime);
+        analyser.fftSize = 4096;
+
+        oscillator.connect(gainNode);
+        gainNode.connect(analyser);
+        analyser.connect(audioContext.destination);
+
+        oscillator.start();
+        isPlaying = true;
+        playBtn.disabled = true;
+        stopBtn.disabled = false;
+        animate();
+      } else {
+        oscillator.frequency.setTargetAtTime(frequency, audioContext.currentTime, 0.01);
+      }
+    }
+
+    // ── Sliders ───────────────────────────────────────────────────────────────
+    frequencySlider.addEventListener('input', (e) => {
+      frequency = parseInt(e.target.value);
+      freqValue.textContent = frequency;
+      updateAudibilityBadge(frequency);
+      if (oscillator) oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+      requestAnimationFrame(() => updateWaveform());
+    });
+
+    amplitudeSlider.addEventListener('input', (e) => {
+      amplitude = parseInt(e.target.value) / 100;
+      ampValue.textContent = e.target.value;
+      if (gainNode) gainNode.gain.setValueAtTime(amplitude * 0.3, audioContext.currentTime);
+      requestAnimationFrame(() => updateWaveform());
+    });
+
+    // ── Play button ───────────────────────────────────────────────────────────
+    playBtn.addEventListener('click', () => {
+      if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+      oscillator = audioContext.createOscillator();
+      gainNode   = audioContext.createGain();
+      analyser   = audioContext.createAnalyser();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+      gainNode.gain.setValueAtTime(amplitude * 0.3, audioContext.currentTime);
+      analyser.fftSize = 4096;
+
+      oscillator.connect(gainNode);
+      gainNode.connect(analyser);
+      analyser.connect(audioContext.destination);
+
+      oscillator.start();
+      isPlaying = true;
+      playBtn.disabled = true;
+      stopBtn.disabled = false;
+      animate();
+    });
+
+    // ── Stop button ───────────────────────────────────────────────────────────
+    stopBtn.addEventListener('click', () => {
+      if (oscillator) { oscillator.stop(); oscillator = null; }
+      isPlaying = false;
+      playBtn.disabled = false;
+      stopBtn.disabled = true;
+    });
+
+    // ── Waveform (time domain) ────────────────────────────────────────────────
+    function updateWaveform() {
+      const width   = waveformCanvas.width;
+      const height  = waveformCanvas.height;
+      const centerY = height / 2;
+
+      waveCtx.fillStyle = '#fefdfb';
+      waveCtx.fillRect(0, 0, width, height);
+
+      // Cap visible cycles so very high freqs remain readable
+      const MAX_VISUAL_CYCLES = 20;
+      const rawCycles = frequency / 150;
+      const cycles    = Math.min(rawCycles, MAX_VISUAL_CYCLES);
+      const cramped   = rawCycles > MAX_VISUAL_CYCLES;
+
+      waveCtx.strokeStyle = '#8b0000';
+      waveCtx.lineWidth   = 2;
+      waveCtx.beginPath();
+      for (let x = 0; x < width; x++) {
+        const t = (x / width) * cycles * 2 * Math.PI;
+        const y = centerY + Math.sin(t) * amplitude * (height / 2 - 20);
+        x === 0 ? waveCtx.moveTo(x, y) : waveCtx.lineTo(x, y);
+      }
+      waveCtx.stroke();
+
+      // Centre dashed line
+      waveCtx.strokeStyle = '#d4d0c8';
+      waveCtx.lineWidth   = 1;
+      waveCtx.setLineDash([5, 5]);
+      waveCtx.beginPath();
+      waveCtx.moveTo(0, centerY);
+      waveCtx.lineTo(width, centerY);
+      waveCtx.stroke();
+      waveCtx.setLineDash([]);
+
+      waveformNote.textContent = cramped
+        ? `Showing ${MAX_VISUAL_CYCLES} cycles for readability — actual frequency: ${frequency} Hz (${rawCycles.toFixed(0)} cycles at full scale).`
+        : '';
+    }
+
+    // ── Spectrogram (frequency over time) ────────────────────────────────────
+    function updateSpectrogram() {
+      if (!analyser) return;
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray    = new Uint8Array(bufferLength);
+      analyser.getByteFrequencyData(dataArray);
+
+      spectrogramData.push(dataArray.slice());
+      if (spectrogramData.length > spectrogramWidth) spectrogramData.shift();
+
+      const width  = spectrogramCanvas.width;
+      const height = spectrogramCanvas.height;
+
+      specCtx.fillStyle = '#0f0f0f';
+      specCtx.fillRect(0, 0, width, height);
+
+      const sampleRate   = audioContext.sampleRate;
+      const nyquist      = sampleRate / 2;
+      const binHz        = nyquist / bufferLength;
+      const effectiveMax = Math.min(MAX_FREQ_DISPLAY, nyquist);
+      const maxBinToShow = Math.floor(effectiveMax / binHz);
+
+      // 20 kHz audibility boundary line
+      if (effectiveMax >= 20000) {
+        const boundaryY = (1 - 20000 / effectiveMax) * height;
+        specCtx.save();
+        specCtx.strokeStyle = 'rgba(255, 210, 60, 0.55)';
+        specCtx.lineWidth   = 1.5;
+        specCtx.setLineDash([5, 5]);
+        specCtx.beginPath();
+        specCtx.moveTo(52, boundaryY);
+        specCtx.lineTo(width, boundaryY);
+        specCtx.stroke();
+        specCtx.setLineDash([]);
+        specCtx.restore();
+      }
+
+      const barWidth = (width - 52) / Math.max(spectrogramData.length, 1);
+
+      for (let i = 0; i < spectrogramData.length; i++) {
+        const x      = 52 + i * barWidth;
+        const column = spectrogramData[i];
+
+        for (let j = 0; j < height; j++) {
+          const binIndex = Math.floor((1 - j / height) * maxBinToShow);
+          if (binIndex >= column.length) continue;
+
+          const intensity = column[binIndex] / 255;
+          let r, g, b;
+
+          if (intensity < 0.2) {
+            r = 0; g = 0; b = Math.floor(intensity * 5 * 255);
+          } else if (intensity < 0.5) {
+            r = 0; g = Math.floor((intensity - 0.2) * 3.33 * 255); b = 255;
+          } else if (intensity < 0.8) {
+            r = Math.floor((intensity - 0.5) * 3.33 * 255);
+            g = 255;
+            b = Math.floor((1 - (intensity - 0.5) * 3.33) * 255);
+          } else {
+            r = 255; g = 255; b = Math.floor((intensity - 0.8) * 5 * 255);
+          }
+
+          specCtx.fillStyle = `rgb(${r},${g},${b})`;
+          specCtx.fillRect(x, j, barWidth + 1, 1);
+        }
+      }
+    }
+
+    // ── Animation loop ────────────────────────────────────────────────────────
+    function animate() {
+      if (!isPlaying) return;
+      updateSpectrogram();
+      requestAnimationFrame(animate);
+    }
+
+    // ── Initial render ────────────────────────────────────────────────────────
+    updateWaveform();
+    updateAudibilityBadge(880);
+    createPiano();
+
+  </script>
+</body>
+</html>

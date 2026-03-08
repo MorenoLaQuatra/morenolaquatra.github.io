@@ -765,6 +765,108 @@ li {
   font-size: 0.8rem;
 }
 
+/* Clickable course card wrapper */
+.course-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.course-card-link:hover .course-card {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.course-card-link:hover .course-link {
+  color: var(--accent-light);
+}
+
+/* ============================================
+   COURSE PAGE — BREADCRUMB & RESOURCES
+   ============================================ */
+
+.breadcrumb {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--ink-lighter);
+  margin-bottom: var(--margin-unit);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.breadcrumb a {
+  color: var(--ink-lighter);
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  color: var(--link);
+}
+
+.breadcrumb-sep {
+  opacity: 0.5;
+}
+
+.resource-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: var(--margin-unit);
+}
+
+.resource-item {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  padding: 1.2rem 1.4rem;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.resource-item:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+}
+
+.resource-item-type {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+.resource-item-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.resource-item-desc {
+  font-size: 0.85rem;
+  color: var(--ink-lighter);
+  line-height: 1.4;
+}
+
+.resource-item-arrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-lighter);
+  margin-top: auto;
+  padding-top: 0.6rem;
+}
+
+.resource-item:hover .resource-item-arrow {
+  color: var(--accent);
+}
+
 /* Research interest tags on homepage */
 .research-areas {
   display: flex;

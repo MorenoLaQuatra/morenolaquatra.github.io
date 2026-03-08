@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SQL Injection Playground - interactive Ex for the Cybersecurity course by Moreno La Quatra, Kore University of Enna.">
+  <meta property="og:title" content="SQL Injection Playground - CYB - Moreno La Quatra">
+  <meta property="og:url" content="https://mlaquatra.me/teaching/CYB/sqli-playground.html">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+  <link rel="canonical" href="https://mlaquatra.me/teaching/CYB/sqli-playground.html">
+  <title>SQL Injection Playground &mdash; CYB &mdash; Moreno La Quatra</title>
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="icon" href="../../mlq-logo.png" type="image/png">
+
+  <style>
+    /* ── Core layout helpers ── */
+    .viz-section {
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: var(--margin-unit);
+    }
+    .viz-section-title {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    /* ── Warning banner ── */
+    .lab-warning {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-left: 4px solid #f9a825;
+      padding: 0.75rem 1.1rem;
+      font-family: var(--font-serif);
+      font-size: 0.88rem;
+      color: #4a3800;
+      margin-bottom: var(--margin-unit);
+      line-height: 1.55;
+    }
+    .lab-warning strong { font-weight: 600; }
+
+    /* ── DB Schema viewer ── */
+    .schema-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .schema-table {
+      border: 1px solid var(--border);
+      background: var(--paper);
+      overflow: hidden;
+    }
+    .schema-table-name {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.4rem 0.75rem;
+      background: #1a1a1a;
+      color: #e8e8e8;
+    }
+    .schema-col {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.28rem 0.75rem;
+      border-top: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+    }
+    .schema-col-name { color: var(--ink); }
+    .schema-col-type { color: var(--ink-lighter); font-size: 0.7rem; }
+    .schema-col.pk .schema-col-name { color: var(--accent); }
+
+    /* ── Ex card ── */
+    .lab-card {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      margin-bottom: var(--margin-unit);
+      overflow: hidden;
+    }
+    .lab-header {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.85rem 1.25rem;
+      background: var(--paper-dark);
+      border-bottom: 1px solid var(--border);
+    }
+    .lab-badge {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.2rem 0.55rem;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+    }
+    .lab-badge.attack  { border-color: #c0392b; color: #c0392b; }
+    .lab-badge.defense { border-color: #1a5c1a; color: #1a5c1a; }
+    .lab-badge.blind   { border-color: #00008b; color: #00008b; }
+    .lab-badge.infer   { border-color: #6b4e0a; color: #6b4e0a; }
+    .lab-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .lab-body { padding: 1.25rem 1.5rem; }
+    .lab-desc {
+      font-family: var(--font-serif);
+      font-size: 0.92rem;
+      color: var(--ink-light);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Form elements ── */
+    .sqli-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-bottom: 1.1rem;
+    }
+    .sqli-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .sqli-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-lighter);
+    }
+    .sqli-input {
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      padding: 0.5rem 0.75rem;
+      border: 1.5px solid var(--border);
+      background: var(--paper);
+      color: var(--ink);
+      width: 100%;
+      box-sizing: border-box;
+      outline: none;
+      border-radius: 2px;
+      transition: border-color 0.15s;
+    }
+    .sqli-input:focus { border-color: var(--accent); }
+    .sqli-input.injected { border-color: #c0392b; background: #fff5f5; }
+
+    .sqli-actions {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .btn-execute {
+      padding: 0.45rem 1.3rem;
+      font-family: var(--font-serif);
+      font-size: 0.92rem;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: var(--paper);
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.15s;
+    }
+    .btn-execute:hover { background: var(--accent-light); border-color: var(--accent-light); }
+    .btn-execute:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-reset {
+      padding: 0.45rem 1rem;
+      font-family: var(--font-serif);
+      font-size: 0.92rem;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      color: var(--ink-light);
+      cursor: pointer;
+      border-radius: 2px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-reset:hover { border-color: var(--ink); color: var(--ink); }
+
+    /* ── Live query display ── */
+    .query-panel {
+      margin-bottom: 1rem;
+    }
+    .query-panel-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-lighter);
+      margin-bottom: 0.35rem;
+    }
+    .query-display {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      font-family: var(--font-mono);
+      font-size: 0.83rem;
+      padding: 0.85rem 1.1rem;
+      border-radius: 2px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.65;
+      min-height: 2.5rem;
+      position: relative;
+    }
+    /* SQL syntax colours */
+    .sql-kw    { color: #cba6f7; font-weight: 600; }           /* keywords: purple */
+    .sql-str   { color: #a6e3a1; }                              /* strings: green */
+    .sql-num   { color: #fab387; }                              /* numbers: orange */
+    .sql-col   { color: #89dceb; }                              /* columns/idents: cyan */
+    .sql-op    { color: #f38ba8; }                              /* operators: red */
+    .sql-cmt   { color: #585b70; font-style: italic; }          /* comments: dark gray */
+    .sql-inj   { background: rgba(243,139,168,0.25); color: #f38ba8; border-radius: 2px; } /* injection highlight */
+    .sql-safe  { background: rgba(166,227,161,0.2); color: #a6e3a1; border-radius: 2px; }  /* safe (parameterized) */
+
+    /* ── Results panel ── */
+    .result-panel {
+      margin-top: 0.85rem;
+    }
+    .result-panel-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-lighter);
+      margin-bottom: 0.35rem;
+    }
+    .result-box {
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      display: none;
+    }
+    .result-box.show { display: block; }
+
+    .result-status {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.5rem 0.85rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+    }
+    .result-status.ok      { background: #d4edda; color: #155724; border-bottom: 1px solid #b1dfbb; }
+    .result-status.err     { background: #f8d7da; color: #721c24; border-bottom: 1px solid #f1b0b7; }
+    .result-status.warn    { background: #fff3cd; color: #856404; border-bottom: 1px solid #ffc107; }
+    .result-status.danger  { background: #f8d7da; color: #721c24; border-bottom: 1px solid #f1b0b7; }
+    .result-status.info    { background: #d1ecf1; color: #0c5460; border-bottom: 1px solid #bee5eb; }
+
+    .result-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+    .ok    .result-dot { background: #155724; }
+    .err   .result-dot { background: #721c24; }
+    .warn  .result-dot { background: #856404; }
+    .danger .result-dot { background: #7b1d1d; }
+    .info  .result-dot { background: #0c5460; }
+
+    .result-table-wrap { overflow-x: auto; }
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+    .result-table th {
+      background: #2a2a3e;
+      color: #cdd6f4;
+      padding: 0.35rem 0.7rem;
+      text-align: left;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .result-table td {
+      padding: 0.32rem 0.7rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .result-table tr:nth-child(even) td { background: var(--paper-dark); }
+    .result-table td.leaked { color: #c0392b; font-weight: 600; }
+    .result-table .row-separator td {
+      background: #fff3cd;
+      color: #856404;
+      font-size: 0.72rem;
+      text-align: center;
+      padding: 0.2rem;
+      font-style: italic;
+    }
+
+    .result-msg {
+      padding: 0.6rem 0.85rem;
+      font-family: var(--font-serif);
+      font-size: 0.88rem;
+      color: var(--ink-light);
+      line-height: 1.55;
+      border-top: 1px solid var(--border);
+    }
+    .result-msg strong { color: var(--ink); font-weight: 600; }
+    .result-msg code {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      background: var(--paper-dark);
+      padding: 0.05rem 0.3rem;
+      border-radius: 2px;
+    }
+
+    /* ── Blind Ex ── */
+    .timer-display {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      padding: 0.85rem 1.1rem;
+      background: #1e1e2e;
+      border-radius: 2px;
+      margin-bottom: 1rem;
+    }
+    .timer-bar-wrap {
+      flex: 1;
+      height: 8px;
+      background: #313244;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .timer-bar {
+      height: 100%;
+      width: 0%;
+      background: #cba6f7;
+      border-radius: 4px;
+      transition: width linear;
+    }
+    .timer-val {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      color: #cdd6f4;
+      min-width: 4rem;
+      text-align: right;
+    }
+    .timer-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #585b70;
+      min-width: 6rem;
+    }
+
+    /* ── Defense section ── */
+    .defense-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .defense-col-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+      padding: 0.3rem 0.6rem;
+    }
+    .defense-col-label.vuln  { background: #f8d7da; color: #721c24; }
+    .defense-col-label.safe  { background: #d4edda; color: #155724; }
+
+    .hint-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .hint-chip {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      padding: 0.25rem 0.65rem;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      color: var(--ink-light);
+      cursor: pointer;
+      border-radius: 2px;
+      transition: border-color 0.12s, color 0.12s;
+      user-select: none;
+    }
+    .hint-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+    .hint-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-lighter);
+      width: 100%;
+      margin-bottom: 0.1rem;
+    }
+
+    @media (max-width: 820px) {
+      .schema-grid  { grid-template-columns: 1fr; }
+      .defense-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .lab-body { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div data-include="header-nested-2"></div>
+
+  <main class="wide-content">
+
+    <div class="breadcrumb">
+      <a href="../../teaching/">Teaching</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="../../teaching/CYB/">Cybersecurity</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>SQL Injection Playground</span>
+    </div>
+
+    <h1>SQL Injection Playground</h1>
+
+    <div class="abstract">
+      <p>
+        SQL Injection (SQLi) is one of the most prevalent and dangerous web vulnerabilities.
+        This playground lets you experiment with a <strong>simulated vulnerable application</strong>
+        backed by an in-memory database. Type real payloads, watch how the query is assembled,
+        and observe the consequences - all without touching a real server.
+        The final example demonstrates how <strong>parameterized queries</strong> neutralize every attack.
+      </p>
+    </div>
+
+    <div class="lab-warning">
+      <strong>Educational use only.</strong>
+      The techniques shown exist to help understand and <em>prevent</em> SQL injection.
+      Never attempt SQLi against systems you do not own or have explicit permission to test.
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         DATABASE SCHEMA
+    ══════════════════════════════════════════════════════════════════════ -->
+
+    <div class="viz-section">
+      <div class="viz-section-title">Simulated Database Schema</div>
+      <div class="schema-grid">
+
+        <div class="schema-table">
+          <div class="schema-table-name">users</div>
+          <div class="schema-col pk">
+            <span class="schema-col-name">id</span>
+            <span class="schema-col-type">INT PK</span>
+          </div>
+          <div class="schema-col"><span class="schema-col-name">username</span><span class="schema-col-type">VARCHAR</span></div>
+          <div class="schema-col"><span class="schema-col-name">email</span><span class="schema-col-type">VARCHAR</span></div>
+          <div class="schema-col"><span class="schema-col-name">password_hash</span><span class="schema-col-type">VARCHAR</span></div>
+          <div class="schema-col"><span class="schema-col-name">role</span><span class="schema-col-type">VARCHAR</span></div>
+          <div class="schema-col"><span class="schema-col-name">credit_card</span><span class="schema-col-type">VARCHAR</span></div>
+        </div>
+
+        <div class="schema-table">
+          <div class="schema-table-name">products</div>
+          <div class="schema-col pk">
+            <span class="schema-col-name">id</span>
+            <span class="schema-col-type">INT PK</span>
+          </div>
+          <div class="schema-col"><span class="schema-col-name">name</span><span class="schema-col-type">VARCHAR</span></div>
+          <div class="schema-col"><span class="schema-col-name">description</span><span class="schema-col-type">VARCHAR</span></div>
+          <div class="schema-col"><span class="schema-col-name">price</span><span class="schema-col-type">DECIMAL</span></div>
+          <div class="schema-col"><span class="schema-col-name">category</span><span class="schema-col-type">VARCHAR</span></div>
+        </div>
+
+        <div class="schema-table">
+          <div class="schema-table-name">orders</div>
+          <div class="schema-col pk">
+            <span class="schema-col-name">id</span>
+            <span class="schema-col-type">INT PK</span>
+          </div>
+          <div class="schema-col"><span class="schema-col-name">user_id</span><span class="schema-col-type">INT FK</span></div>
+          <div class="schema-col"><span class="schema-col-name">product_id</span><span class="schema-col-type">INT FK</span></div>
+          <div class="schema-col"><span class="schema-col-name">quantity</span><span class="schema-col-type">INT</span></div>
+          <div class="schema-col"><span class="schema-col-name">total</span><span class="schema-col-type">DECIMAL</span></div>
+          <div class="schema-col"><span class="schema-col-name">status</span><span class="schema-col-type">VARCHAR</span></div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Ex 1 - LOGIN BYPASS (TAUTOLOGY / COMMENT)
+    ══════════════════════════════════════════════════════════════════════ -->
+
+    <div class="lab-card">
+      <div class="lab-header">
+        <span class="lab-badge attack">Attack</span>
+        <span class="lab-title">Ex 1 - Login Bypass</span>
+      </div>
+      <div class="lab-body">
+        <p class="lab-desc">
+          The application builds this query by directly concatenating user input:<br>
+          <code style="font-family:var(--font-mono);font-size:0.82rem;background:var(--paper-dark);padding:0.15rem 0.45rem;border-radius:2px;">
+            SELECT * FROM users WHERE username = '<em>USER</em>' AND password_hash = '<em>PASS</em>'
+          </code><br><br>
+          Try inserting a <strong>tautology</strong> to make the WHERE clause always true, or use a 
+          <strong>comment</strong> to cut off the password check entirely. Classic payloads:
+        </p>
+
+        <div class="hint-strip">
+          <span class="hint-label">Payload suggestions - click to fill</span>
+          <span class="hint-chip" data-lab="1" data-field="user" data-val="admin">admin (normal)</span>
+          <span class="hint-chip" data-lab="1" data-field="user" data-val="admin'--">admin'--</span>
+          <span class="hint-chip" data-lab="1" data-field="user" data-val="' OR '1'='1">&#39; OR &#39;1&#39;=&#39;1</span>
+          <span class="hint-chip" data-lab="1" data-field="user" data-val="' OR 1=1--">&#39; OR 1=1--</span>
+          <span class="hint-chip" data-lab="1" data-field="user" data-val="'; DROP TABLE users;--">&#39;; DROP TABLE users;--</span>
+          <span class="hint-chip" data-lab="1" data-field="user" data-val="' UNION SELECT id,username,email,password_hash,role,credit_card FROM users--">UNION dump</span>
+        </div>
+
+        <div class="sqli-form">
+          <div class="sqli-field">
+            <label class="sqli-label" for="l1-user">Username</label>
+            <input type="text" id="l1-user" class="sqli-input" placeholder="Enter username" value="admin" spellcheck="false" autocomplete="off">
+          </div>
+          <div class="sqli-field">
+            <label class="sqli-label" for="l1-pass">Password</label>
+            <input type="text" id="l1-pass" class="sqli-input" placeholder="Enter password" value="secret" spellcheck="false" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="query-panel">
+          <div class="query-panel-label">Constructed SQL Query</div>
+          <div class="query-display" id="l1-query">–</div>
+        </div>
+
+        <div class="sqli-actions">
+          <button class="btn-execute" onclick="runLab1()">Execute Query</button>
+          <button class="btn-reset" onclick="resetLab1()">Reset</button>
+        </div>
+
+        <div class="result-panel">
+          <div class="result-panel-label">Database Response</div>
+          <div class="result-box" id="l1-result"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Ex 2 - UNION-BASED DATA EXTRACTION
+    ══════════════════════════════════════════════════════════════════════ -->
+
+    <div class="lab-card">
+      <div class="lab-header">
+        <span class="lab-badge attack">Attack</span>
+        <span class="lab-title">Ex 2 - UNION-Based Data Extraction</span>
+      </div>
+      <div class="lab-body">
+        <p class="lab-desc">
+          The product search page runs:
+          <code style="font-family:var(--font-mono);font-size:0.82rem;background:var(--paper-dark);padding:0.15rem 0.45rem;border-radius:2px;">
+            SELECT id, name, description, price, category FROM products WHERE name LIKE '%<em>SEARCH</em>%'
+          </code><br><br>
+          A <strong>UNION SELECT</strong> appends a second query to the results.
+          As long as it returns the same number of columns, the database will merge the output -
+          leaking data from any other table, including <code>users</code>.
+        </p>
+
+        <div class="hint-strip">
+          <span class="hint-label">Payload suggestions - click to fill</span>
+          <span class="hint-chip" data-lab="2" data-field="search" data-val="laptop">laptop (normal)</span>
+          <span class="hint-chip" data-lab="2" data-field="search" data-val="%' OR '1'='1">&#39; OR &#39;1&#39;=&#39;1 (all rows)</span>
+          <span class="hint-chip" data-lab="2" data-field="search" data-val="%' UNION SELECT id,username,email,password_hash,role FROM users--">UNION users (5 cols)</span>
+          <span class="hint-chip" data-lab="2" data-field="search" data-val="%' UNION SELECT id,username,credit_card,password_hash,role FROM users--">UNION credit cards</span>
+          <span class="hint-chip" data-lab="2" data-field="search" data-val="%'; DROP TABLE orders;--">DROP orders (piggyback)</span>
+        </div>
+
+        <div class="sqli-form">
+          <div class="sqli-field">
+            <label class="sqli-label" for="l2-search">Search products</label>
+            <input type="text" id="l2-search" class="sqli-input" placeholder="e.g. laptop" value="laptop" spellcheck="false" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="query-panel">
+          <div class="query-panel-label">Constructed SQL Query</div>
+          <div class="query-display" id="l2-query">–</div>
+        </div>
+
+        <div class="sqli-actions">
+          <button class="btn-execute" onclick="runLab2()">Execute Query</button>
+          <button class="btn-reset" onclick="resetLab2()">Reset</button>
+        </div>
+
+        <div class="result-panel">
+          <div class="result-panel-label">Database Response</div>
+          <div class="result-box" id="l2-result"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Ex 3 - ERROR-BASED / SCHEMA ENUMERATION
+    ══════════════════════════════════════════════════════════════════════ -->
+
+    <div class="lab-card">
+      <div class="lab-header">
+        <span class="lab-badge infer">Inferential</span>
+        <span class="lab-title">Ex 3 - Error-Based Schema Enumeration</span>
+      </div>
+      <div class="lab-body">
+        <p class="lab-desc">
+          This endpoint fetches a product by numeric ID - the input is inserted
+          <em>without quotes</em> because "it's just a number":
+          <code style="font-family:var(--font-mono);font-size:0.82rem;background:var(--paper-dark);padding:0.15rem 0.45rem;border-radius:2px;">
+            SELECT * FROM products WHERE id = <em>ID</em>
+          </code><br><br>
+          By injecting a type-conversion expression, an attacker can force the database to
+          emit an <strong>error message</strong> that inadvertently reveals table names, column names,
+          or even row values from other tables.
+        </p>
+
+        <div class="hint-strip">
+          <span class="hint-label">Payload suggestions - click to fill</span>
+          <span class="hint-chip" data-lab="3" data-field="id" data-val="1">1 (normal)</span>
+          <span class="hint-chip" data-lab="3" data-field="id" data-val="1 AND 1=2">1 AND 1=2 (false → no row)</span>
+          <span class="hint-chip" data-lab="3" data-field="id" data-val="CONVERT(int,(SELECT username FROM users WHERE id=1))">CONVERT error (leak username)</span>
+          <span class="hint-chip" data-lab="3" data-field="id" data-val="CONVERT(int,(SELECT credit_card FROM users WHERE id=1))">CONVERT error (leak card)</span>
+          <span class="hint-chip" data-lab="3" data-field="id" data-val="1; UPDATE users SET role='admin' WHERE id=2--">UPDATE (privilege escalation)</span>
+        </div>
+
+        <div class="sqli-form">
+          <div class="sqli-field">
+            <label class="sqli-label" for="l3-id">Product ID</label>
+            <input type="text" id="l3-id" class="sqli-input" placeholder="e.g. 1" value="1" spellcheck="false" autocomplete="off" style="max-width:420px;">
+          </div>
+        </div>
+
+        <div class="query-panel">
+          <div class="query-panel-label">Constructed SQL Query</div>
+          <div class="query-display" id="l3-query">–</div>
+        </div>
+
+        <div class="sqli-actions">
+          <button class="btn-execute" onclick="runLab3()">Execute Query</button>
+          <button class="btn-reset" onclick="resetLab3()">Reset</button>
+        </div>
+
+        <div class="result-panel">
+          <div class="result-panel-label">Database Response</div>
+          <div class="result-box" id="l3-result"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Ex 4 - BLIND TIME-BASED INJECTION
+    ══════════════════════════════════════════════════════════════════════ -->
+
+    <div class="lab-card">
+      <div class="lab-header">
+        <span class="lab-badge blind">Blind</span>
+        <span class="lab-title">Ex 4 - Blind Time-Based Injection</span>
+      </div>
+      <div class="lab-body">
+        <p class="lab-desc">
+          Sometimes an application reveals <em>nothing</em> - no results, no errors, only a
+          silent success or failure. The attacker can still extract information by measuring
+          <strong>response time</strong>. If the condition is true, the database sleeps
+          and the page loads slowly; if false, it responds instantly.
+        </p>
+        <p class="lab-desc">
+          Query:
+          <code style="font-family:var(--font-mono);font-size:0.82rem;background:var(--paper-dark);padding:0.15rem 0.45rem;border-radius:2px;">
+            SELECT COUNT(*) FROM users WHERE username = '<em>USER</em>'
+          </code>
+        </p>
+
+        <div class="hint-strip">
+          <span class="hint-label">Payload suggestions - click to fill</span>
+          <span class="hint-chip" data-lab="4" data-field="user" data-val="alice">alice (normal, fast)</span>
+          <span class="hint-chip" data-lab="4" data-field="user" data-val="nobody">nobody (no match, fast)</span>
+          <span class="hint-chip" data-lab="4" data-field="user" data-val="admin' AND SLEEP(3)--">admin exists → SLEEP(3)</span>
+          <span class="hint-chip" data-lab="4" data-field="user" data-val="nobody' AND SLEEP(3)--">nobody → no sleep (false)</span>
+          <span class="hint-chip" data-lab="4" data-field="user" data-val="' OR 1=1 AND SLEEP(5)--">always true → SLEEP(5)</span>
+        </div>
+
+        <div class="sqli-form">
+          <div class="sqli-field">
+            <label class="sqli-label" for="l4-user">Username</label>
+            <input type="text" id="l4-user" class="sqli-input" placeholder="e.g. alice" value="alice" spellcheck="false" autocomplete="off" style="max-width:420px;">
+          </div>
+        </div>
+
+        <div class="query-panel">
+          <div class="query-panel-label">Constructed SQL Query</div>
+          <div class="query-display" id="l4-query">–</div>
+        </div>
+
+        <div class="sqli-actions">
+          <button class="btn-execute" id="l4-btn" onclick="runLab4()">Execute Query</button>
+          <button class="btn-reset" onclick="resetLab4()">Reset</button>
+        </div>
+
+        <div class="query-panel" id="l4-timer-wrap" style="display:none;">
+          <div class="query-panel-label">Response Time Simulation</div>
+          <div class="timer-display">
+            <span class="timer-label">Elapsed</span>
+            <div class="timer-bar-wrap"><div class="timer-bar" id="l4-bar"></div></div>
+            <span class="timer-val" id="l4-time">0.00 s</span>
+          </div>
+        </div>
+
+        <div class="result-panel">
+          <div class="result-panel-label">Database Response</div>
+          <div class="result-box" id="l4-result"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Ex 5 - DEFENSE: PARAMETERIZED QUERIES
+    ══════════════════════════════════════════════════════════════════════ -->
+
+    <div class="lab-card">
+      <div class="lab-header">
+        <span class="lab-badge defense">Defense</span>
+        <span class="lab-title">Ex 5 - Parameterized Queries</span>
+      </div>
+      <div class="lab-body">
+        <p class="lab-desc">
+          The fix is simple and reliable: <strong>never concatenate user input into SQL</strong>.
+          Use parameterized queries (also called prepared statements).
+          The database engine receives the SQL structure separately from the data -
+          so injection is structurally impossible regardless of what the user types.
+        </p>
+
+        <div class="hint-strip">
+          <span class="hint-label">Try any payload - click to apply to both forms</span>
+          <span class="hint-chip" data-lab="5" data-field="user" data-val="admin">admin (normal)</span>
+          <span class="hint-chip" data-lab="5" data-field="user" data-val="admin'--">admin'--</span>
+          <span class="hint-chip" data-lab="5" data-field="user" data-val="' OR '1'='1">&#39; OR &#39;1&#39;=&#39;1</span>
+          <span class="hint-chip" data-lab="5" data-field="user" data-val="' UNION SELECT id,username,email,password_hash,role,credit_card FROM users--">UNION dump</span>
+        </div>
+
+        <div class="defense-grid">
+
+          <div>
+            <div class="defense-col-label vuln">&#9888; Vulnerable - String Concatenation</div>
+            <div class="sqli-form">
+              <div class="sqli-field">
+                <label class="sqli-label" for="l5-user-v">Username</label>
+                <input type="text" id="l5-user-v" class="sqli-input" placeholder="username" value="admin" spellcheck="false" autocomplete="off">
+              </div>
+              <div class="sqli-field">
+                <label class="sqli-label" for="l5-pass-v">Password</label>
+                <input type="text" id="l5-pass-v" class="sqli-input" placeholder="password" value="secret" spellcheck="false" autocomplete="off">
+              </div>
+            </div>
+            <div class="query-panel">
+              <div class="query-panel-label">Constructed SQL</div>
+              <div class="query-display" id="l5-query-v" style="font-size:0.78rem;">–</div>
+            </div>
+            <div class="result-box show" id="l5-result-v">
+              <div class="result-status info"><div class="result-dot"></div>Waiting for execution…</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="defense-col-label safe">&#10003; Safe - Parameterized Query</div>
+            <div class="sqli-form">
+              <div class="sqli-field">
+                <label class="sqli-label" for="l5-user-s">Username</label>
+                <input type="text" id="l5-user-s" class="sqli-input" placeholder="username" value="admin" spellcheck="false" autocomplete="off" readonly>
+              </div>
+              <div class="sqli-field">
+                <label class="sqli-label" for="l5-pass-s">Password</label>
+                <input type="text" id="l5-pass-s" class="sqli-input" placeholder="password" value="secret" spellcheck="false" autocomplete="off" readonly>
+              </div>
+            </div>
+            <div class="query-panel">
+              <div class="query-panel-label">Parameterized SQL</div>
+              <div class="query-display" id="l5-query-s" style="font-size:0.78rem;">–</div>
+            </div>
+            <div class="result-box show" id="l5-result-s">
+              <div class="result-status info"><div class="result-dot"></div>Waiting for execution…</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="sqli-actions">
+          <button class="btn-execute" onclick="runLab5()">Execute Both Queries</button>
+          <button class="btn-reset" onclick="resetLab5()">Reset</button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <div data-include="footer-nested-2"></div>
+
+  <script src="../../script.js"></script>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       SIMULATION ENGINE
+  ══════════════════════════════════════════════════════════════════════ -->
+  <script>
+  'use strict';
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     IN-MEMORY DATABASE
+  ───────────────────────────────────────────────────────────────────────── */
+  const _DB = {
+    users: [
+      { id: 1, username: 'admin',  email: 'admin@shop.local',  password_hash: '5f4dcc3b5aa765d61d8327deb882cf99', role: 'admin',    credit_card: '4111-1111-1111-1111' },
+      { id: 2, username: 'alice',  email: 'alice@shop.local',  password_hash: 'e99a18c428cb38d5f260853678922e03', role: 'customer',  credit_card: '5500-0000-0000-0004' },
+      { id: 3, username: 'bob',    email: 'bob@shop.local',    password_hash: '6cb75f652a9b52798eb6cf2201057c73', role: 'customer',  credit_card: '3714-496353-98431'   },
+    ],
+    products: [
+      { id: 1, name: 'Laptop Pro',          description: 'High-performance 16" laptop',    price: 1299.99, category: 'Electronics'  },
+      { id: 2, name: 'Wireless Mouse',      description: 'Ergonomic wireless mouse',       price:   39.99, category: 'Peripherals'  },
+      { id: 3, name: 'Mechanical Keyboard', description: 'Full-size RGB mech keyboard',    price:   89.99, category: 'Peripherals'  },
+      { id: 4, name: '4K Monitor',          description: '32" 4K IPS display 144 Hz',      price:  549.99, category: 'Electronics'  },
+      { id: 5, name: 'USB-C Hub',           description: '7-in-1 USB-C hub',               price:   49.99, category: 'Accessories'  },
+    ],
+    orders: [
+      { id: 1, user_id: 2, product_id: 1, quantity: 1, total: 1299.99, status: 'shipped'   },
+      { id: 2, user_id: 3, product_id: 2, quantity: 2, total:   79.98, status: 'pending'   },
+      { id: 3, user_id: 2, product_id: 4, quantity: 1, total:  549.99, status: 'delivered' },
+    ],
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     SQL SYNTAX HIGHLIGHTER (for display only)
+  ───────────────────────────────────────────────────────────────────────── */
+  const SQL_KEYWORDS = ['SELECT','FROM','WHERE','AND','OR','NOT','UNION','ALL',
+    'LIKE','IS','NULL','TRUE','FALSE','IN','DISTINCT','ORDER','BY','LIMIT',
+    'ASC','DESC','AS','DROP','TABLE','DELETE','INSERT','UPDATE','TRUNCATE',
+    'EXEC','EXECUTE','SLEEP','CONVERT','CAST','COUNT','MAX','MIN','SUM','AVG',
+    'GROUP','HAVING','INTO','VALUES','SET','BETWEEN','EXISTS','JOIN','ON'];
+
+  function sqlHighlight(raw) {
+    // Escape HTML first
+    let s = raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    // Highlight comment parts: -- to end of line
+    s = s.replace(/(--[^\n]*)/g, '<span class="sql-cmt">$1</span>');
+    s = s.replace(/(#[^\n]*)/g, '<span class="sql-cmt">$1</span>');
+
+    // Highlight strings (single-quoted) - but avoid inside already-tagged spans
+    // We'll do a simple character walk to handle strings properly
+    // For display purposes, a regex approximation is fine:
+    s = s.replace(/'([^']*)'/g, (_,m) => `'<span class="sql-str">${m}</span>'`);
+
+    // Highlight numbers (standalone)
+    s = s.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="sql-num">$1</span>');
+
+    // Highlight keywords (case-insensitive)
+    const kwRe = new RegExp(`\\b(${SQL_KEYWORDS.join('|')})\\b`, 'gi');
+    s = s.replace(kwRe, '<span class="sql-kw">$1</span>');
+
+    return s;
+  }
+
+  /* Build a highlighted query where the user-injected portions are wrapped
+     in a .sql-inj span so they show up differently from the base query. */
+  function buildHighlightedQuery(template, injections, isParameterized = false) {
+    // template: string with %INJECT_x% placeholders
+    // injections: { INJECT_0: 'value', ... }
+    let result = template;
+    for (const [key, val] of Object.entries(injections)) {
+      const escaped = val.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const cls = isParameterized ? 'sql-safe' : 'sql-inj';
+      result = result.replace(
+        `%${key}%`,
+        `<span class="${cls}">${escaped}</span>`
+      );
+    }
+    // Now highlight the non-injected SQL keywords / strings / numbers
+    // We process around the injection spans
+    const parts = result.split(/(<span[^>]*>.*?<\/span>)/gs);
+    return parts.map((p, i) => {
+      if (i % 2 === 1) return p; // already a span
+      return sqlHighlight(p);
+    }).join('');
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     INJECTION ANALYSIS ENGINE
+  ───────────────────────────────────────────────────────────────────────── */
+
+  // Strip SQL comments from injection payload
+  function stripComments(s) {
+    return s.replace(/--.*$/gm, '').replace(/#.*$/gm, '').replace(/\/\*.*?\*\//gs, '').trim();
+  }
+
+  // Detect if a string contains a comment token (meaning the rest of the query is nullified)
+  function hasComment(s) {
+    return /--/.test(s) || /#/.test(s) || /\/\*/.test(s);
+  }
+
+  // Detect UNION SELECT payload
+  function detectUnion(s) {
+    return /UNION\s+(ALL\s+)?SELECT/i.test(s);
+  }
+
+  // Detect piggybacked (multiple statements)
+  function detectPiggyback(s) {
+    return /;/.test(stripComments(s));
+  }
+
+  // Detect destructive operations
+  function detectDestructive(s) {
+    return /(DROP|DELETE|TRUNCATE|UPDATE|INSERT)\s/i.test(s);
+  }
+
+  // Detect SLEEP
+  function detectSleep(s) {
+    const m = s.match(/SLEEP\s*\(\s*(\d+(\.\d+)?)\s*\)/i);
+    return m ? parseFloat(m[1]) : 0;
+  }
+
+  // Detect CONVERT error-leak pattern
+  function detectConvert(s) {
+    const m = s.match(/CONVERT\s*\(\s*int\s*,\s*\((.*?)\)\s*\)/i);
+    return m ? m[1].trim() : null;
+  }
+
+  // Detect tautology in WHERE that always evaluates to true
+  function hasTautology(s) {
+    // OR 1=1, OR TRUE, OR '1'='1', OR 'x'='x', OR 1 LIKE 1, etc.
+    return /OR\s+(1\s*=\s*1|true|'[^']+'\s*=\s*'[^']+'|\d+\s*=\s*\d+)/i.test(s) ||
+           /OR\s+1\s*LIKE\s*1/i.test(s) ||
+           /OR\s+NOT\s+false/i.test(s);
+  }
+
+  // Parse a simple UNION SELECT column list from payload
+  function parseUnionCols(s) {
+    const m = s.match(/UNION\s+(?:ALL\s+)?SELECT\s+(.*?)(?:FROM\s+(\w+))?(?:--|#|$)/i);
+    if (!m) return null;
+    const colPart = m[1];
+    const table   = m[2] ? m[2].toLowerCase() : null;
+    const cols = colPart.split(',').map(c => c.trim().replace(/\s+AS\s+\w+$/i,'').toLowerCase());
+    return { cols, table };
+  }
+
+  /* Get column values from rows given a column list.
+     Handles '*' expansion. */
+  function projectRow(row, colList) {
+    if (colList.includes('*')) return Object.values(row).map(String);
+    return colList.map(c => {
+      const k = Object.keys(row).find(k => k.toLowerCase() === c.toLowerCase());
+      return k !== undefined ? String(row[k]) : '?';
+    });
+  }
+
+  /* Evaluate a product LIKE search (naive string-contains) */
+  function productLikeMatch(row, pattern) {
+    // Strip leading/trailing % from pattern edges
+    const inner = pattern.replace(/^%+|%+$/g, '').toLowerCase();
+    if (inner === '') return true;
+    return row.name.toLowerCase().includes(inner) ||
+           row.description.toLowerCase().includes(inner);
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     HTML RESULT BUILDERS
+  ───────────────────────────────────────────────────────────────────────── */
+
+  function renderTable(headers, rows, leakedFromIdx) {
+    leakedFromIdx = leakedFromIdx || 0;
+    let h = headers.map(c => `<th>${esc(c)}</th>`).join('');
+    let body = rows.map((r, ri) => {
+      const isLeaked = ri >= leakedFromIdx;
+      const cells = r.map(c => `<td class="${isLeaked ? 'leaked' : ''}">${esc(c)}</td>`).join('');
+      return `<tr>${cells}</tr>`;
+    }).join('');
+    return `<div class="result-table-wrap"><table class="result-table"><thead><tr>${h}</tr></thead><tbody>${body}</tbody></table></div>`;
+  }
+
+  function renderSeparatorRow(colCount, label) {
+    return `<tr class="row-separator"><td colspan="${colCount}">${label}</td></tr>`;
+  }
+
+  function renderTableWithSeparator(headers, normalRows, leakedRows, sepLabel) {
+    let h = headers.map(c => `<th>${esc(c)}</th>`).join('');
+    let body = normalRows.map(r => `<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('');
+    if (leakedRows.length) {
+      body += `<tr class="row-separator"><td colspan="${headers.length}">${sepLabel}</td></tr>`;
+      body += leakedRows.map(r => `<tr>${r.map(c=>`<td class="leaked">${esc(c)}</td>`).join('')}</tr>`).join('');
+    }
+    return `<div class="result-table-wrap"><table class="result-table"><thead><tr>${h}</tr></thead><tbody>${body}</tbody></table></div>`;
+  }
+
+  function resultHTML(statusClass, dotClass, statusMsg, bodyHTML, msgHTML) {
+    return `
+      <div class="result-status ${statusClass}"><div class="result-dot"></div>${esc(statusMsg)}</div>
+      ${bodyHTML || ''}
+      ${msgHTML ? `<div class="result-msg">${msgHTML}</div>` : ''}
+    `;
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     LIVE QUERY UPDATERS (called on input)
+  ───────────────────────────────────────────────────────────────────────── */
+
+  function updateLiveQuery(containerId, template, injections) {
+    document.getElementById(containerId).innerHTML =
+      buildHighlightedQuery(template, injections);
+  }
+
+  // Ex 1
+  const L1_TPL = `SELECT * FROM users\nWHERE username = '%U%' AND password_hash = '%P%'`;
+  function l1Update() {
+    const u = document.getElementById('l1-user').value;
+    const p = document.getElementById('l1-pass').value;
+    const el = document.getElementById('l1-query');
+    el.innerHTML = buildHighlightedQuery(L1_TPL, { U: u, P: p });
+    highlightInjectedInputs(['l1-user','l1-pass'], [u,p]);
+  }
+
+  // Ex 2
+  const L2_TPL = `SELECT id, name, description, price, category\nFROM products\nWHERE name LIKE '%%S%%'`;
+  function l2Update() {
+    const s = document.getElementById('l2-search').value;
+    const el = document.getElementById('l2-query');
+    el.innerHTML = buildHighlightedQuery(L2_TPL, { S: s });
+    highlightInjectedInputs(['l2-search'], [s]);
+  }
+
+  // Ex 3
+  const L3_TPL = `SELECT * FROM products WHERE id = %ID%`;
+  function l3Update() {
+    const id = document.getElementById('l3-id').value;
+    const el = document.getElementById('l3-query');
+    el.innerHTML = buildHighlightedQuery(L3_TPL, { ID: id });
+    highlightInjectedInputs(['l3-id'], [id]);
+  }
+
+  // Ex 4
+  const L4_TPL = `SELECT COUNT(*) FROM users\nWHERE username = '%U%'`;
+  function l4Update() {
+    const u = document.getElementById('l4-user').value;
+    const el = document.getElementById('l4-query');
+    el.innerHTML = buildHighlightedQuery(L4_TPL, { U: u });
+    highlightInjectedInputs(['l4-user'], [u]);
+  }
+
+  // Ex 5
+  const L5_TPL_V = `SELECT * FROM users\nWHERE username = '%U%' AND password_hash = '%P%'`;
+  const L5_TPL_S = `SELECT * FROM users\nWHERE username = %1 AND password_hash = %2`;
+  function l5Update() {
+    const u = document.getElementById('l5-user-v').value;
+    const p = document.getElementById('l5-pass-v').value;
+    document.getElementById('l5-user-s').value = u;
+    document.getElementById('l5-pass-s').value = p;
+    document.getElementById('l5-query-v').innerHTML = buildHighlightedQuery(L5_TPL_V, { U: u, P: p });
+    document.getElementById('l5-query-s').innerHTML = buildHighlightedQuery(
+      '<span class="sql-kw">SELECT</span> * <span class="sql-kw">FROM</span> users\n<span class="sql-kw">WHERE</span> username = <span class="sql-safe">?</span> <span class="sql-kw">AND</span> password_hash = <span class="sql-safe">?</span>',
+      {}, true
+    );
+    highlightInjectedInputs(['l5-user-v','l5-pass-v'], [u,p]);
+  }
+
+  function isLikelySqli(val) {
+    return /['";\-\#\*\/\\]/.test(val) || /\bOR\b|\bUNION\b|\bDROP\b|\bSELECT\b|\bSLEEP\b/i.test(val);
+  }
+
+  function highlightInjectedInputs(ids, vals) {
+    ids.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('injected', isLikelySqli(vals[i] || ''));
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Ex 1 EXECUTION - LOGIN BYPASS
+  ───────────────────────────────────────────────────────────────────────── */
+  function runLab1() {
+    const u = document.getElementById('l1-user').value;
+    const p = document.getElementById('l1-pass').value;
+    const resultEl = document.getElementById('l1-result');
+    resultEl.classList.add('show');
+
+    // Build the effective WHERE clause after comment stripping
+    const uClean = u; // raw user input
+    const hasCommentInUser = hasComment(u);
+    const hasSemicolon     = detectPiggyback(u + p);
+    const isDestructive    = detectDestructive(u + p);
+    const unionInfo        = detectUnion(u) ? parseUnionCols(u) : null;
+    const tautology        = hasTautology(u + ' AND password_hash = \'' + p + '\'') ||
+                             hasTautology(u);
+
+    // Piggybacked destructive query
+    if (hasSemicolon && isDestructive) {
+      const cmd = (u + ' ' + p).match(/(DROP\s+TABLE\s+\w+|DELETE\s+FROM\s+\w+|UPDATE\s+\w+\s+SET|TRUNCATE\s+TABLE\s+\w+)/i)?.[0] || 'unknown statement';
+      resultEl.innerHTML = resultHTML(
+        'danger', '', 'Error: Piggybacked query blocked (simulation)',
+        '',
+        `<strong>Piggybacked query detected.</strong> The injected payload attempted to execute: <code>${esc(cmd)}</code>
+         after the original query. In a real database this could destroy data permanently.
+         The simulator does not execute destructive operations, but a vulnerable application would.`
+      );
+      return;
+    }
+
+    // UNION injection
+    if (unionInfo && unionInfo.table === 'users') {
+      const headers = unionInfo.cols.map(c => c === '*' ? 'all_cols' : c);
+      const rows = _DB.users.map(r => projectRow(r, unionInfo.cols));
+      resultEl.innerHTML = resultHTML(
+        'danger', '', `Query returned ${rows.length} row(s) via UNION - user data leaked!`,
+        renderTable(headers, rows, 0),
+        `<strong>UNION injection succeeded.</strong> By appending <code>UNION SELECT … FROM users</code>
+         the attacker retrieved all user records including <code>password_hash</code> and <code>credit_card</code>.`
+      );
+      return;
+    }
+
+    // Tautology OR comment bypass
+    if (tautology || hasCommentInUser) {
+      // Log in as first row (admin) if admin is mentioned, else first user
+      const targetUser = /admin/i.test(u) ? _DB.users[0] : _DB.users[0];
+      resultEl.innerHTML = resultHTML(
+        'danger', '', `Authentication BYPASSED - logged in as "${targetUser.username}" (${targetUser.role})`,
+        renderTable(['id','username','email','role'], [[targetUser.id, targetUser.username, targetUser.email, targetUser.role]], 0),
+        tautology
+          ? `<strong>Tautology attack.</strong> The condition <code>OR 1=1</code> (or equivalent) makes the WHERE clause
+             always evaluate to true, bypassing the password check entirely. The first matching row is returned.`
+          : `<strong>Comment injection.</strong> The <code>--</code> comment marker cuts off the
+             <code>AND password_hash = '${esc(p)}'</code> check. The query only verifies the username exists.`
+      );
+      return;
+    }
+
+    // Normal login - check exact match
+    const match = _DB.users.find(r =>
+      r.username.toLowerCase() === u.trim().toLowerCase()
+    );
+    if (match && (p.trim() === 'password' || p.trim() === match.password_hash || p.trim() === 'secret')) {
+      resultEl.innerHTML = resultHTML(
+        'ok', '', `Login successful - welcome, ${match.username}!`,
+        '',
+        `Normal query execution. The WHERE condition matched exactly one row.`
+      );
+    } else if (!match) {
+      resultEl.innerHTML = resultHTML(
+        'err', '', 'Login failed - no matching user',
+        '',
+        `The WHERE clause returned 0 rows. No session is created.`
+      );
+    } else {
+      resultEl.innerHTML = resultHTML(
+        'err', '', 'Login failed - wrong password',
+        '',
+        `Username found but password hash does not match. Access denied.`
+      );
+    }
+  }
+
+  function resetLab1() {
+    document.getElementById('l1-user').value = 'admin';
+    document.getElementById('l1-pass').value = 'secret';
+    document.getElementById('l1-result').classList.remove('show');
+    document.getElementById('l1-result').innerHTML = '';
+    l1Update();
+    highlightInjectedInputs(['l1-user','l1-pass'],['admin','secret']);
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Ex 2 EXECUTION - UNION EXTRACTION
+  ───────────────────────────────────────────────────────────────────────── */
+  function runLab2() {
+    const s = document.getElementById('l2-search').value;
+    const resultEl = document.getElementById('l2-result');
+    resultEl.classList.add('show');
+
+    const hasSemi      = detectPiggyback(s);
+    const isDestructive = detectDestructive(s);
+    const unionInfo    = detectUnion(s) ? parseUnionCols(s) : null;
+    const taut         = hasTautology("name LIKE '%" + s + "%'") || /OR\s+'1'\s*=\s*'1'/i.test(s) || /OR\s+1\s*=\s*1/i.test(s);
+
+    if (hasSemi && isDestructive) {
+      const cmd = s.match(/(DROP\s+TABLE\s+\w+|DELETE\s+FROM\s+\w+|TRUNCATE\s+TABLE\s+\w+)/i)?.[0] || 'unknown';
+      resultEl.innerHTML = resultHTML(
+        'danger','','Error: Piggybacked destructive query (simulation)','',
+        `<strong>Stacked query detected.</strong> The injected <code>${esc(cmd)}</code> statement would execute
+         after the SELECT in a real database. This can delete entire tables and all their data.`
+      );
+      return;
+    }
+
+    if (unionInfo) {
+      const targetTable = unionInfo.table;
+      const targetData  = targetTable && _DB[targetTable] ? _DB[targetTable] : null;
+
+      // Normal product results first (search term before the injection)
+      const searchTerm = s.split(/'/)[0].replace(/%/g,'').trim().toLowerCase();
+      const normalRows = _DB.products
+        .filter(r => searchTerm === '' || productLikeMatch(r, searchTerm))
+        .map(r => [String(r.id), r.name, r.description, String(r.price), r.category]);
+
+      const colCount = unionInfo.cols.length;
+      const headers  = (() => {
+        const base = ['id','name','description','price','category'];
+        return base.slice(0, Math.min(colCount, 5));
+      })();
+
+      if (targetData) {
+        const leakedRows = targetData.map(r => projectRow(r, unionInfo.cols));
+        resultEl.innerHTML = resultHTML(
+          'danger','',
+          `UNION injected ${leakedRows.length} row(s) from "${esc(targetTable)}" into product results!`,
+          renderTableWithSeparator(
+            headers,
+            normalRows,
+            leakedRows,
+            `▼ UNION result - data leaked from "${esc(targetTable)}" table ▼`
+          ),
+          `<strong>UNION injection succeeded.</strong> The application returned product rows <em>plus</em>
+           data from the <code>${esc(targetTable)}</code> table - including sensitive fields - because
+           the injected SELECT matched the column count.`
+        );
+      } else {
+        resultEl.innerHTML = resultHTML(
+          'warn','','UNION SELECT executed but target table unknown or column count mismatch','',
+          `The UNION target table could not be resolved. In a real attack the attacker would probe
+           column counts and table names (e.g. via error messages or blind techniques) before extracting data.`
+        );
+      }
+      return;
+    }
+
+    // Tautology → return all products
+    if (taut) {
+      const rows = _DB.products.map(r => [String(r.id), r.name, r.description, String(r.price), r.category]);
+      resultEl.innerHTML = resultHTML(
+        'warn','',`Tautology: all ${rows.length} product rows returned`,
+        renderTable(['id','name','description','price','category'], rows, rows.length),
+        `<strong>Tautology injection.</strong> The <code>OR '1'='1'</code> clause makes the WHERE condition
+         always true. Every product is returned - useful for reconnaissance.`
+      );
+      return;
+    }
+
+    // Normal search
+    const searchLower = s.replace(/^%+|%+$/g,'').toLowerCase();
+    const rows = _DB.products
+      .filter(r => searchLower === '' || productLikeMatch(r, searchLower))
+      .map(r => [String(r.id), r.name, r.description, String(r.price), r.category]);
+
+    if (rows.length) {
+      resultEl.innerHTML = resultHTML(
+        'ok','',`${rows.length} product(s) found`,
+        renderTable(['id','name','description','price','category'], rows, rows.length),
+        `Normal query execution.`
+      );
+    } else {
+      resultEl.innerHTML = resultHTML(
+        'err','','No products matched the search term','',`The LIKE condition returned 0 rows.`
+      );
+    }
+  }
+
+  function resetLab2() {
+    document.getElementById('l2-search').value = 'laptop';
+    document.getElementById('l2-result').classList.remove('show');
+    document.getElementById('l2-result').innerHTML = '';
+    l2Update();
+    highlightInjectedInputs(['l2-search'],['laptop']);
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Ex 3 EXECUTION - ERROR-BASED
+  ───────────────────────────────────────────────────────────────────────── */
+  function runLab3() {
+    const idRaw    = document.getElementById('l3-id').value.trim();
+    const resultEl = document.getElementById('l3-result');
+    resultEl.classList.add('show');
+
+    // Check for CONVERT leak pattern
+    const convertTarget = detectConvert(idRaw);
+    if (convertTarget) {
+      // Try to simulate what the sub-select would return
+      const innerMatch = convertTarget.match(/SELECT\s+(\w+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+))?/i);
+      if (innerMatch) {
+        const col = innerMatch[1].toLowerCase();
+        const tbl = innerMatch[2].toLowerCase();
+        const rows = _DB[tbl] || [];
+        // Apply simple WHERE id=n filter
+        const whereStr = innerMatch[3] || '';
+        const idMatch  = whereStr.match(/id\s*=\s*(\d+)/i);
+        const row  = idMatch ? rows.find(r => r.id === parseInt(idMatch[1])) : rows[0];
+        const val  = row ? (row[col] || row[Object.keys(row).find(k=>k.toLowerCase()===col)] || '?') : '?';
+        resultEl.innerHTML = resultHTML(
+          'warn','',
+          `Server Error: Conversion failed when converting the nvarchar value '${esc(String(val))}' to data type int.`,
+          '',
+          `<strong>Error-based information leak!</strong> The database attempted to convert
+           <code>${esc(String(val))}</code> (from <code>${esc(tbl)}.${esc(col)}</code>) to an integer.
+           The type-conversion error reveals the actual value. Attackers enumerate tables and rows
+           this way, one value at a time.`
+        );
+      } else {
+        resultEl.innerHTML = resultHTML(
+          'warn','','Server Error: Conversion failed when converting nvarchar to int.','',
+          `<strong>Error-based technique detected.</strong> The CONVERT() function forced a type mismatch.
+           A real error message would reveal the value that could not be cast.`
+        );
+      }
+      return;
+    }
+
+    // Detect UPDATE injection
+    if (/UPDATE\s+\w+\s+SET/i.test(idRaw)) {
+      const updateMatch = idRaw.match(/UPDATE\s+(\w+)\s+SET\s+(\w+)\s*=\s*'([^']*)'\s+WHERE\s+(\w+)\s*=\s*(\d+)/i);
+      if (updateMatch) {
+        const tbl = updateMatch[1], col = updateMatch[2], val = updateMatch[3];
+        const whereCol = updateMatch[4], whereId = parseInt(updateMatch[5]);
+        resultEl.innerHTML = resultHTML(
+          'danger','',
+          `UPDATE executed - "${esc(tbl)}.${esc(col)}" changed to "${esc(val)}" for id=${whereId} (simulation)`,
+          '',
+          `<strong>Second-order / piggybacked UPDATE injection.</strong>
+           The stacked query <code>UPDATE ${esc(tbl)} SET ${esc(col)} = '${esc(val)}' WHERE ${esc(whereCol)} = ${whereId}</code>
+           would escalate privileges or corrupt data in a real database.`
+        );
+      } else {
+        resultEl.innerHTML = resultHTML(
+          'danger','','UPDATE statement injected (simulation)','',
+          `<strong>UPDATE injection detected.</strong> Stacked queries allow data modification beyond the original SELECT.`
+        );
+      }
+      return;
+    }
+
+    // Pure numeric
+    const numericId = parseInt(idRaw, 10);
+    if (!isNaN(numericId) && String(numericId) === idRaw.trim()) {
+      const product = _DB.products.find(r => r.id === numericId);
+      if (product) {
+        resultEl.innerHTML = resultHTML(
+          'ok','',`1 product found (id = ${numericId})`,
+          renderTable(Object.keys(product), [Object.values(product).map(String)], 1),
+          `Normal numeric query execution.`
+        );
+      } else {
+        resultEl.innerHTML = resultHTML('err','',`No product with id = ${numericId}`,'','0 rows returned.');
+      }
+      return;
+    }
+
+    // Injected expression without CONVERT
+    const falseCond = /AND\s+1\s*=\s*2|AND\s+FALSE/i.test(idRaw);
+    if (falseCond) {
+      resultEl.innerHTML = resultHTML(
+        'warn','','0 rows - injected AND condition evaluates to FALSE','',
+        `<strong>Illegal / logically incorrect query probe.</strong>
+         By appending <code>AND 1=2</code> (always false) the attacker confirms the injection point exists -
+         a matching row that appeared before now disappears. This is the first step of inferential enumeration.`
+      );
+      return;
+    }
+
+    // Generic injection detected
+    if (isLikelySqli(idRaw)) {
+      resultEl.innerHTML = resultHTML(
+        'warn','','Server Error: Invalid numeric value in WHERE clause','',
+        `<strong>Injection point confirmed.</strong> The server attempted to execute
+         <code>WHERE id = ${esc(idRaw)}</code> but the expression is not a pure integer.
+         An attacker uses these error signals to discover the injection point and refine payloads.`
+      );
+    } else {
+      resultEl.innerHTML = resultHTML('err','',`Not a valid product ID`,'','Non-numeric input.');
+    }
+  }
+
+  function resetLab3() {
+    document.getElementById('l3-id').value = '1';
+    document.getElementById('l3-result').classList.remove('show');
+    document.getElementById('l3-result').innerHTML = '';
+    l3Update();
+    highlightInjectedInputs(['l3-id'],['1']);
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Ex 4 EXECUTION - BLIND TIME-BASED
+  ───────────────────────────────────────────────────────────────────────── */
+  let l4Running = false;
+
+  function runLab4() {
+    if (l4Running) return;
+    const u = document.getElementById('l4-user').value;
+    const resultEl = document.getElementById('l4-result');
+    const timerWrap = document.getElementById('l4-timer-wrap');
+    const bar = document.getElementById('l4-bar');
+    const timeEl = document.getElementById('l4-time');
+    const btn = document.getElementById('l4-btn');
+
+    resultEl.classList.remove('show');
+    resultEl.innerHTML = '';
+    timerWrap.style.display = 'block';
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    timeEl.textContent = '0.00 s';
+    l4Running = true;
+    btn.disabled = true;
+
+    // Determine sleep time
+    let sleepSec = detectSleep(u);
+    const taut = hasTautology(u);
+    const cmt  = hasComment(u);
+
+    // If no SLEEP but has tautology / comment → 0 sleep (query always fast)
+    // If SLEEP present, check if condition is true
+    let conditionTrue = false;
+
+    if (sleepSec > 0) {
+      // Check the condition part before SLEEP
+      const condPart = u.split(/AND\s+SLEEP/i)[0].replace(/^'/, '');
+      const cleanCond = condPart.replace(/--.*$/, '').trim();
+      // Does username portion match?
+      if (taut || cleanCond === '' || /OR\s+1\s*=\s*1/i.test(u)) {
+        conditionTrue = true;
+      } else {
+        // Check if the user matched by the condition before SLEEP
+        const userPart = cleanCond.replace(/^'+|'+$/g,'').toLowerCase().trim();
+        conditionTrue = _DB.users.some(r => r.username.toLowerCase() === userPart);
+      }
+    }
+
+    const effectiveSleep = (sleepSec > 0 && conditionTrue) ? sleepSec : 0;
+    const maxDisplay = Math.max(effectiveSleep, 0.5);
+
+    // Animate the timer bar
+    const startMs = Date.now();
+    const totalMs = effectiveSleep * 1000;
+    const displayMs = maxDisplay * 1000;
+
+    function tick() {
+      const elapsed = Date.now() - startMs;
+      const pct = Math.min(elapsed / displayMs * 100, 100);
+      bar.style.transition = 'none';
+      bar.style.width = pct + '%';
+      timeEl.textContent = (elapsed / 1000).toFixed(2) + ' s';
+      if (elapsed < totalMs) {
+        requestAnimationFrame(tick);
+      } else {
+        bar.style.width = '100%';
+        timeEl.textContent = effectiveSleep.toFixed(2) + ' s';
+        finishLab4(u, sleepSec, effectiveSleep, conditionTrue, taut);
+        l4Running = false;
+        btn.disabled = false;
+      }
+    }
+
+    if (totalMs === 0) {
+      // instant
+      setTimeout(() => {
+        timeEl.textContent = '~0.00 s';
+        bar.style.width = '100%';
+        finishLab4(u, sleepSec, effectiveSleep, conditionTrue, taut);
+        l4Running = false;
+        btn.disabled = false;
+      }, 300);
+    } else {
+      requestAnimationFrame(tick);
+    }
+  }
+
+  function finishLab4(u, sleepSec, effectiveSleep, conditionTrue, taut) {
+    const resultEl = document.getElementById('l4-result');
+    resultEl.classList.add('show');
+
+    // Check plain username (no injection)
+    const plainUser = _DB.users.find(r => r.username.toLowerCase() === u.toLowerCase().trim());
+
+    if (sleepSec > 0) {
+      if (conditionTrue) {
+        resultEl.innerHTML = resultHTML(
+          'danger','',
+          `Response delayed ${effectiveSleep.toFixed(1)} s - condition is TRUE`,
+          '',
+          `<strong>Blind time-based injection confirmed.</strong> The <code>SLEEP(${sleepSec})</code>
+           was executed, proving the preceding condition is true. An attacker can infer:
+           "the username before the AND clause exists in the database."
+           By varying the condition bit by bit, entire column values can be extracted - without a single
+           byte of data being returned in the HTTP response.`
+        );
+      } else {
+        resultEl.innerHTML = resultHTML(
+          'info','',
+          `Response instant - condition is FALSE (no sleep executed)`,
+          '',
+          `The condition evaluated to FALSE - the username was not found.
+           Because no row matched, <code>SLEEP(${sleepSec})</code> was never executed.
+           The instant response tells the attacker: "this username does not exist."`
+        );
+      }
+      return;
+    }
+
+    // No SLEEP - normal or comment/tautology
+    if (taut || hasComment(u)) {
+      resultEl.innerHTML = resultHTML(
+        'warn','','Injection detected but no SLEEP - 1 row matched (bypassed)','',
+        `Injection without timing - the tautology or comment makes the WHERE always true.
+         In an application that only shows "Found / Not found", no timing information leaks.
+         Blind time-based attacks are a different technique for the same type of bypassing.`
+      );
+      return;
+    }
+
+    const count = plainUser ? 1 : 0;
+    resultEl.innerHTML = resultHTML(
+      count ? 'ok' : 'err', '',
+      `COUNT(*) = ${count}`,
+      '',
+      count
+        ? `Normal query. Username "${esc(u)}" exists; the application returns count=1 (fast).`
+        : `Normal query. Username "${esc(u)}" not found; count=0 (fast).`
+    );
+  }
+
+  function resetLab4() {
+    if (l4Running) return;
+    document.getElementById('l4-user').value = 'alice';
+    document.getElementById('l4-result').classList.remove('show');
+    document.getElementById('l4-result').innerHTML = '';
+    document.getElementById('l4-timer-wrap').style.display = 'none';
+    document.getElementById('l4-bar').style.width = '0%';
+    document.getElementById('l4-time').textContent = '0.00 s';
+    l4Update();
+    highlightInjectedInputs(['l4-user'],['alice']);
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Ex 5 EXECUTION - DEFENSE
+  ───────────────────────────────────────────────────────────────────────── */
+  function runLab5() {
+    const u = document.getElementById('l5-user-v').value;
+    const p = document.getElementById('l5-pass-v').value;
+
+    // Vulnerable side - same logic as Ex 1
+    const tmp_l1_user = document.getElementById('l1-user');
+    const tmp_l1_pass = document.getElementById('l1-pass');
+    const tmp_l1_res  = document.getElementById('l1-result');
+    const savedU = tmp_l1_user.value, savedP = tmp_l1_pass.value;
+    tmp_l1_user.value = u; tmp_l1_pass.value = p;
+    runLab1();
+    const vulnHTML = document.getElementById('l1-result').innerHTML;
+    tmp_l1_user.value = savedU; tmp_l1_pass.value = savedP;
+
+    document.getElementById('l5-result-v').innerHTML = vulnHTML;
+
+    // Safe side - parameterized: user input is ALWAYS treated as data
+    // Whatever the user types is searched as a literal string
+    const safeMatch = _DB.users.find(
+      r => r.username === u.trim() // exact literal match only - no SQL parsing
+    );
+
+    const safeResult = document.getElementById('l5-result-s');
+    if (safeMatch && (p.trim() === safeMatch.password_hash || p.trim() === 'secret' || p.trim() === 'password')) {
+      safeResult.innerHTML = resultHTML(
+        'ok','',`Login successful - welcome, ${safeMatch.username}!`,'',
+        `Parameterized query executed safely. The input was bound as a <strong>literal string parameter</strong>,
+         not as SQL code. No injection is possible - every single character of the input is treated as data.`
+      );
+    } else {
+      safeResult.innerHTML = resultHTML(
+        'err','','Login failed - invalid credentials','',
+        `Parameterized query rejected the input. Even with payload <code>${esc(u)}</code>,
+         the database compared it character-by-character as a literal value.
+         <code>' OR '1'='1</code> does not equal any stored username - <strong>injection is impossible.</strong>`
+      );
+    }
+  }
+
+  function resetLab5() {
+    document.getElementById('l5-user-v').value = 'admin';
+    document.getElementById('l5-pass-v').value = 'secret';
+    document.getElementById('l5-result-v').innerHTML = '<div class="result-status info"><div class="result-dot"></div>Waiting for execution…</div>';
+    document.getElementById('l5-result-s').innerHTML = '<div class="result-status info"><div class="result-dot"></div>Waiting for execution…</div>';
+    l5Update();
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     HINT CHIPS
+  ───────────────────────────────────────────────────────────────────────── */
+  document.querySelectorAll('.hint-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const Ex   = chip.dataset.lab;
+      const field = chip.dataset.field;
+      const val   = chip.dataset.val;
+      if (Ex === '1') {
+        if (field === 'user') document.getElementById('l1-user').value = val;
+        l1Update();
+      } else if (Ex === '2') {
+        document.getElementById('l2-search').value = val;
+        l2Update();
+      } else if (Ex === '3') {
+        document.getElementById('l3-id').value = val;
+        l3Update();
+      } else if (Ex === '4') {
+        document.getElementById('l4-user').value = val;
+        l4Update();
+      } else if (Ex === '5') {
+        document.getElementById('l5-user-v').value = val;
+        l5Update();
+      }
+    });
+  });
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     LIVE INPUT LISTENERS
+  ───────────────────────────────────────────────────────────────────────── */
+  ['l1-user','l1-pass'].forEach(id => document.getElementById(id)?.addEventListener('input', l1Update));
+  ['l2-search'].forEach(id => document.getElementById(id)?.addEventListener('input', l2Update));
+  ['l3-id'].forEach(id => document.getElementById(id)?.addEventListener('input', l3Update));
+  ['l4-user'].forEach(id => document.getElementById(id)?.addEventListener('input', l4Update));
+  ['l5-user-v','l5-pass-v'].forEach(id => document.getElementById(id)?.addEventListener('input', l5Update));
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     INIT
+  ───────────────────────────────────────────────────────────────────────── */
+  l1Update(); l2Update(); l3Update(); l4Update(); l5Update();
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="UNIX File Access Control — interactive explainer for the Cybersecurity course by Moreno La Quatra, Kore University of Enna.">
+  <meta property="og:title" content="UNIX File Access Control — CYB — Moreno La Quatra">
+  <meta property="og:url" content="https://mlaquatra.me/teaching/CYB/unix-access-control.html">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+  <link rel="canonical" href="https://mlaquatra.me/teaching/CYB/unix-access-control.html">
+  <title>UNIX File Access Control &mdash; CYB &mdash; Moreno La Quatra</title>
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="icon" href="../../mlq-logo.png" type="image/png">
+
+  <style>
+    /* ── Permission builder ── */
+
+    .perm-builder {
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      margin-bottom: var(--margin-unit);
+      overflow-x: auto;
+    }
+
+    .perm-groups {
+      display: flex;
+      gap: 0;
+      align-items: flex-start;
+      flex-wrap: nowrap;
+      min-width: max-content;
+      margin-bottom: 1.25rem;
+    }
+
+    .perm-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 1rem 1.1rem;
+      border: 1px solid var(--border);
+      background: var(--paper);
+    }
+
+    .perm-group + .perm-group {
+      border-left: none;
+    }
+
+    .perm-group-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-lighter);
+      white-space: nowrap;
+    }
+
+    .perm-group.group-special .perm-group-label { color: #6b4e0a; }
+    .perm-group.group-owner .perm-group-label   { color: #8b0000; }
+    .perm-group.group-group .perm-group-label   { color: #00008b; }
+    .perm-group.group-others .perm-group-label  { color: #1a5c1a; }
+
+    .bit-row {
+      display: flex;
+      gap: 0.35rem;
+    }
+
+    .bit-btn {
+      width: 48px;
+      height: 48px;
+      border: 1.5px solid var(--border);
+      background: var(--paper);
+      color: var(--ink-lighter);
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+
+    .bit-btn:hover {
+      border-color: var(--ink-light);
+      color: var(--ink);
+    }
+
+    .bit-btn.on {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--paper);
+    }
+
+    .perm-group.group-owner .bit-btn.on   { background: #8b0000; border-color: #8b0000; }
+    .perm-group.group-group .bit-btn.on   { background: #00008b; border-color: #00008b; }
+    .perm-group.group-others .bit-btn.on  { background: #1a5c1a; border-color: #1a5c1a; }
+    .perm-group.group-special .bit-btn.on { background: #6b4e0a; border-color: #6b4e0a; }
+
+    /* ls -l output display */
+    .ls-display {
+      background: #1a1a1a;
+      color: #e8e8e8;
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      padding: 0.9rem 1.2rem;
+      border-radius: 2px;
+      margin-bottom: 1rem;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .ls-type   { color: #aaa; }
+    .ls-owner  { color: #e05555; }
+    .ls-group  { color: #5555e0; }
+    .ls-other  { color: #3a9e3a; }
+    .ls-special-char { color: #c89000; }
+    .ls-meta   { color: #888; }
+    .ls-name   { color: #e8e8e8; }
+
+    /* Octal / chmod row */
+    .perm-meta-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .perm-meta-cards {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .perm-meta-actions {
+      display: flex;
+      justify-content: center;
+    }
+
+    .perm-meta-card {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      padding: 0.6rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      align-items: center;
+      text-align: center;
+    }
+
+    .perm-meta-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-lighter);
+    }
+
+    .perm-meta-value {
+      font-family: var(--font-mono);
+      font-size: 1.2rem;
+      color: var(--ink);
+    }
+
+    .perm-meta-value code {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      background: none;
+      padding: 0;
+    }
+
+    /* Reset button */
+    .btn-reset {
+      padding: 0.45rem 1.2rem;
+      font-family: var(--font-serif);
+      font-size: 0.9rem;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      color: var(--ink-light);
+      cursor: pointer;
+      border-radius: 2px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .btn-reset:hover { border-color: var(--ink); color: var(--ink); }
+
+    /* Inode anatomy diagram */
+    .inode-diagram {
+      display: flex;
+      gap: 0;
+      margin-bottom: var(--margin-unit);
+      flex-wrap: wrap;
+    }
+
+    .inode-block {
+      flex: 1;
+      min-width: 120px;
+      border: 1px solid var(--border);
+      background: var(--paper-dark);
+      padding: 0.85rem 1rem;
+      position: relative;
+    }
+
+    .inode-block + .inode-block { border-left: none; }
+
+    .inode-block-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-lighter);
+      margin-bottom: 0.4rem;
+    }
+
+    .inode-block-value {
+      font-family: var(--font-serif);
+      font-size: 0.95rem;
+      color: var(--ink);
+    }
+
+    .inode-block.highlight {
+      border-color: var(--accent);
+      background: #fdf4f4;
+    }
+
+    .inode-block.highlight .inode-block-label { color: var(--accent); }
+
+    /* Scenario cards */
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+      margin-bottom: var(--margin-unit);
+    }
+
+    .scenario-card {
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 1.25rem 1.4rem;
+    }
+
+    .scenario-title {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+    }
+
+    .scenario-desc {
+      font-family: var(--font-serif);
+      font-size: 0.92rem;
+      color: var(--ink-light);
+      margin-bottom: 1rem;
+      line-height: 1.55;
+    }
+
+    /* Mini bit builder inside scenarios */
+    .mini-perm-groups {
+      display: flex;
+      gap: 0;
+      margin-bottom: 0.85rem;
+    }
+
+    .mini-perm-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.5rem 0.45rem;
+      border: 1px solid var(--border);
+      background: var(--paper);
+    }
+
+    .mini-perm-group + .mini-perm-group { border-left: none; }
+
+    .mini-perm-group-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink-lighter);
+    }
+
+    .mini-bit-row { display: flex; gap: 0.25rem; }
+
+    .mini-bit-btn {
+      width: 28px;
+      height: 28px;
+      border: 1.5px solid var(--border);
+      background: var(--paper);
+      color: var(--ink-lighter);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      user-select: none;
+    }
+
+    .mini-bit-btn:hover { border-color: var(--ink-light); color: var(--ink); }
+
+    .mini-bit-btn.on {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--paper);
+    }
+
+    .mini-perm-group.mini-owner .mini-bit-btn.on { background: #8b0000; border-color: #8b0000; }
+    .mini-perm-group.mini-group .mini-bit-btn.on  { background: #00008b; border-color: #00008b; }
+    .mini-perm-group.mini-other .mini-bit-btn.on  { background: #1a5c1a; border-color: #1a5c1a; }
+    .mini-perm-group.mini-spec  .mini-bit-btn.on  { background: #6b4e0a; border-color: #6b4e0a; }
+
+    .scenario-mini-ls {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      background: #1a1a1a;
+      color: #e8e8e8;
+      padding: 0.45rem 0.75rem;
+      border-radius: 2px;
+      margin-bottom: 0.85rem;
+      white-space: nowrap;
+      overflow-x: auto;
+    }
+
+    .scenario-actions {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-check {
+      padding: 0.4rem 1.1rem;
+      font-family: var(--font-serif);
+      font-size: 0.9rem;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: var(--paper);
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.15s;
+    }
+
+    .btn-check:hover { background: var(--accent-light); border-color: var(--accent-light); }
+
+    .btn-reveal {
+      padding: 0.4rem 1.1rem;
+      font-family: var(--font-serif);
+      font-size: 0.9rem;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      color: var(--ink-light);
+      cursor: pointer;
+      border-radius: 2px;
+      transition: border-color 0.15s;
+    }
+
+    .btn-reveal:hover { border-color: var(--ink); color: var(--ink); }
+
+    .scenario-feedback {
+      margin-top: 0.7rem;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      padding: 0.45rem 0.75rem;
+      border-radius: 2px;
+      display: none;
+    }
+
+    .scenario-feedback.correct {
+      display: block;
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #b1dfbb;
+    }
+
+    .scenario-feedback.wrong {
+      display: block;
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f1b0b7;
+    }
+
+    .scenario-feedback.revealed {
+      display: block;
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffc107;
+    }
+
+    /* ── Cheatsheet ── */
+
+    .cs-strip {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+    }
+
+    .cs-strip-group {
+      flex: 1;
+      min-width: 150px;
+      border: 1px solid var(--border);
+      padding: 0.85rem 0.9rem;
+      background: var(--paper);
+    }
+
+    .cs-strip-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.6rem;
+    }
+
+    .cs-strip-owner .cs-strip-label { color: #8b0000; }
+    .cs-strip-grp   .cs-strip-label { color: #00008b; }
+    .cs-strip-other .cs-strip-label { color: #1a5c1a; }
+
+    .cs-strip-bits { display: flex; gap: 0.4rem; }
+
+    .cs-strip-bit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .cs-bit-char {
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: 3px;
+    }
+
+    .cs-strip-owner .cs-bit-char { background: #fdf0f0; color: #8b0000; border: 1.5px solid #c9a0a0; }
+    .cs-strip-grp   .cs-bit-char { background: #f0f0fd; color: #00008b; border: 1.5px solid #a0a0c9; }
+    .cs-strip-other .cs-bit-char { background: #f0fdf0; color: #1a5c1a; border: 1.5px solid #a0c9a0; }
+
+    .cs-bit-sub {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--ink-lighter);
+    }
+
+    /* Patterns grid */
+    .cs-patterns {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .cs-pattern {
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 0.85rem 0.9rem;
+    }
+
+    .cs-pattern-code {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--accent);
+      font-weight: 500;
+      margin-bottom: 0.3rem;
+    }
+
+    .cs-pattern-perm {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.04em;
+    }
+
+    .cs-pattern-desc {
+      font-family: var(--font-serif);
+      font-size: 0.78rem;
+      color: var(--ink-light);
+      line-height: 1.45;
+    }
+
+    /* Special chars legend */
+    .cs-specials {
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      align-items: flex-start;
+    }
+
+    .cs-special-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+    }
+
+    .cs-special-char {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 600;
+      background: #1a1a1a;
+      color: #c89000;
+      border-radius: 3px;
+    }
+
+    .cs-special-text {
+      font-family: var(--font-serif);
+      font-size: 0.8rem;
+      color: var(--ink-light);
+      line-height: 1.45;
+    }
+
+    .cs-special-text strong {
+      font-weight: 500;
+      color: var(--ink);
+      display: block;
+      margin-bottom: 0.1rem;
+    }
+
+    /* Viz section wrapper (matches sin-viz style) */
+    .viz-section {
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: var(--margin-unit);
+    }
+
+    .viz-section-title {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    @media (max-width: 820px) {
+      .scenario-grid { grid-template-columns: 1fr; }
+      .cs-patterns   { grid-template-columns: repeat(2, 1fr); }
+      .perm-groups   { justify-content: flex-start; }
+    }
+
+    @media (max-width: 500px) {
+      .cs-patterns   { grid-template-columns: 1fr; }
+      .cs-strip      { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <div data-include="header-nested-2"></div>
+
+  <main class="wide-content">
+
+    <div class="breadcrumb">
+      <a href="../../teaching/">Teaching</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="../../teaching/CYB/">Cybersecurity</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>UNIX File Access Control</span>
+    </div>
+
+    <h1>UNIX File Access Control</h1>
+    <p class="hero-subtitle">Inodes &middot; Permission Bits &middot; Special Bits &middot; Scenarios</p>
+
+    <div class="abstract">
+      <p>
+        In UNIX, every file has an <strong>inode</strong>: a small record on disk that stores ownership,
+        timestamps, and <strong>12 permission bits</strong>. Nine bits control read, write, and execute access
+        for three categories (<em>owner</em>, <em>group</em>, <em>others</em>)
+        and three special bits add behaviours like running a program with elevated privileges (SetUID)
+        or protecting a shared directory from accidental deletion (Sticky).
+        Use the builder to experiment, then test yourself with the scenario challenges.
+      </p>
+    </div>
+
+    <!-- ── Inode anatomy ─────────────────────────────────────────────────── -->
+
+    <div class="viz-section">
+      <div class="viz-section-title">Inode Anatomy: What Lives Inside a File Control Structure</div>
+      <div class="inode-diagram">
+        <div class="inode-block">
+          <div class="inode-block-label">File type</div>
+          <div class="inode-block-value">regular&nbsp;/ dir&nbsp;/ link&nbsp;&hellip;</div>
+        </div>
+        <div class="inode-block highlight">
+          <div class="inode-block-label">Owner UID</div>
+          <div class="inode-block-value">e.g. 1001 (mlaquatra)</div>
+        </div>
+        <div class="inode-block highlight">
+          <div class="inode-block-label">Group GID</div>
+          <div class="inode-block-value">e.g. 200 (staff)</div>
+        </div>
+        <div class="inode-block highlight">
+          <div class="inode-block-label">Permission bits</div>
+          <div class="inode-block-value">12 bits &rarr; rwxr-xr--</div>
+        </div>
+        <div class="inode-block">
+          <div class="inode-block-label">File size</div>
+          <div class="inode-block-value">bytes on disk</div>
+        </div>
+        <div class="inode-block">
+          <div class="inode-block-label">Timestamps</div>
+          <div class="inode-block-value">atime / mtime / ctime</div>
+        </div>
+        <div class="inode-block">
+          <div class="inode-block-label">Data pointers</div>
+          <div class="inode-block-value">block addresses</div>
+        </div>
+      </div>
+      <p style="font-family:var(--font-serif);font-size:0.9rem;color:var(--ink-light);margin:0;">
+        The highlighted fields are directly involved in access control. When a process tries to access a file,
+        the kernel compares the process&rsquo;s UID/GID against the inode to decide whether the
+        <em>owner</em>, <em>group</em>, or <em>others</em> permissions apply.
+      </p>
+    </div>
+
+    <!-- ── Permission Bit Builder ────────────────────────────────────────── -->
+
+    <h2>Permission Bit Builder</h2>
+    <p style="font-size:0.95rem;color:var(--ink-light);margin-bottom:1rem;">
+      Click any bit to toggle it on or off. The <code>ls -l</code> output, octal value, and
+      <code>chmod</code> command update in real time.
+    </p>
+
+    <div class="perm-builder">
+
+      <div class="perm-groups" id="mainBuilder">
+
+        <!-- Special bits -->
+        <div class="perm-group group-special">
+          <div class="perm-group-label">Special</div>
+          <div class="bit-row">
+            <button class="bit-btn" data-group="special" data-bit="suid" title="Set User ID">UID</button>
+            <button class="bit-btn" data-group="special" data-bit="sgid" title="Set Group ID">GID</button>
+            <button class="bit-btn" data-group="special" data-bit="sticky" title="Sticky bit">STK</button>
+          </div>
+        </div>
+
+        <!-- Owner -->
+        <div class="perm-group group-owner">
+          <div class="perm-group-label">Owner (u)</div>
+          <div class="bit-row">
+            <button class="bit-btn" data-group="owner" data-bit="r" title="Owner read">r</button>
+            <button class="bit-btn" data-group="owner" data-bit="w" title="Owner write">w</button>
+            <button class="bit-btn" data-group="owner" data-bit="x" title="Owner execute">x</button>
+          </div>
+        </div>
+
+        <!-- Group -->
+        <div class="perm-group group-group">
+          <div class="perm-group-label">Group (g)</div>
+          <div class="bit-row">
+            <button class="bit-btn" data-group="group" data-bit="r" title="Group read">r</button>
+            <button class="bit-btn" data-group="group" data-bit="w" title="Group write">w</button>
+            <button class="bit-btn" data-group="group" data-bit="x" title="Group execute">x</button>
+          </div>
+        </div>
+
+        <!-- Others -->
+        <div class="perm-group group-others">
+          <div class="perm-group-label">Others (o)</div>
+          <div class="bit-row">
+            <button class="bit-btn" data-group="others" data-bit="r" title="Others read">r</button>
+            <button class="bit-btn" data-group="others" data-bit="w" title="Others write">w</button>
+            <button class="bit-btn" data-group="others" data-bit="x" title="Others execute">x</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ls -l live output -->
+      <div class="ls-display" id="mainLsLine">
+        <span class="ls-type">-</span><span id="mainLsPerm">---------</span>
+        <span class="ls-meta"> 1 mlaquatra  staff  4096 Mar  8 12:00 </span><span class="ls-name">myfile.txt</span>
+      </div>
+
+      <!-- Octal + chmod + who-can / reset -->
+      <div class="perm-meta-row">
+        <div class="perm-meta-cards">
+          <div class="perm-meta-card">
+            <div class="perm-meta-label">Octal notation</div>
+            <div class="perm-meta-value" id="mainOctal">0000</div>
+          </div>
+          <div class="perm-meta-card">
+            <div class="perm-meta-label">chmod command</div>
+            <div class="perm-meta-value"><code id="mainChmod">chmod 0000 filename</code></div>
+          </div>
+          <div class="perm-meta-card">
+            <div class="perm-meta-label">Who can</div>
+            <div class="perm-meta-value" style="font-size:0.82rem;line-height:1.5;" id="mainSummary">
+              No permissions set.
+            </div>
+          </div>
+        </div>
+        <div class="perm-meta-actions">
+          <button class="btn-reset" id="mainReset">Reset all bits</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Scenario Challenges ───────────────────────────────────────────── -->
+
+    <h2>Examples</h2>
+    <p style="font-size:0.95rem;color:var(--ink-light);margin-bottom:1rem;">
+      Read each situation and set the permission bits accordingly. Hit <strong>Check</strong> to see if you got it right,
+      or <strong>Reveal</strong> to see the answer and the hint.
+    </p>
+
+    <div class="scenario-grid" id="scenarioGrid">
+      <!-- Injected by JS -->
+    </div>
+
+    <!-- ── Cheatsheet ───────────────────────────────────────────────────── -->
+
+    <h2>Cheatsheet</h2>
+    <div class="viz-section" style="margin-bottom:1rem;">
+      <div class="viz-section-title">How Permission Bits Work</div>
+
+      <div class="cs-strip">
+        <div class="cs-strip-group cs-strip-owner">
+          <div class="cs-strip-label">Owner (u)</div>
+          <div class="cs-strip-bits">
+            <div class="cs-strip-bit"><div class="cs-bit-char">r</div><div class="cs-bit-sub">4</div></div>
+            <div class="cs-strip-bit"><div class="cs-bit-char">w</div><div class="cs-bit-sub">2</div></div>
+            <div class="cs-strip-bit"><div class="cs-bit-char">x</div><div class="cs-bit-sub">1</div></div>
+          </div>
+        </div>
+        <div class="cs-strip-group cs-strip-grp">
+          <div class="cs-strip-label">Group (g)</div>
+          <div class="cs-strip-bits">
+            <div class="cs-strip-bit"><div class="cs-bit-char">r</div><div class="cs-bit-sub">4</div></div>
+            <div class="cs-strip-bit"><div class="cs-bit-char">w</div><div class="cs-bit-sub">2</div></div>
+            <div class="cs-strip-bit"><div class="cs-bit-char">x</div><div class="cs-bit-sub">1</div></div>
+          </div>
+        </div>
+        <div class="cs-strip-group cs-strip-other">
+          <div class="cs-strip-label">Others (o)</div>
+          <div class="cs-strip-bits">
+            <div class="cs-strip-bit"><div class="cs-bit-char">r</div><div class="cs-bit-sub">4</div></div>
+            <div class="cs-strip-bit"><div class="cs-bit-char">w</div><div class="cs-bit-sub">2</div></div>
+            <div class="cs-strip-bit"><div class="cs-bit-char">x</div><div class="cs-bit-sub">1</div></div>
+          </div>
+        </div>
+      </div>
+
+      <p style="font-family:var(--font-serif);font-size:0.85rem;color:var(--ink-lighter);margin:0;">
+        Add the active values per group: <strong>r=4, w=2, x=1</strong>.
+        Example: <code>rwx</code> = 7, <code>r-x</code> = 5, <code>r--</code> = 4.
+        The octal is written as <code>[special][owner][group][others]</code>, e.g. <code>0755</code>.
+      </p>
+    </div>
+
+    <div class="viz-section-title" style="margin-bottom:0.75rem;">Common Patterns</div>
+    <div class="cs-patterns">
+      <div class="cs-pattern">
+        <div class="cs-pattern-code">chmod 600</div>
+        <div class="cs-pattern-perm"><span class="ls-owner">rw-</span><span class="ls-group">---</span><span class="ls-other">---</span></div>
+        <div class="cs-pattern-desc">Private file. Only you read and write.</div>
+      </div>
+      <div class="cs-pattern">
+        <div class="cs-pattern-code">chmod 644</div>
+        <div class="cs-pattern-perm"><span class="ls-owner">rw-</span><span class="ls-group">r--</span><span class="ls-other">r--</span></div>
+        <div class="cs-pattern-desc">Standard file. You edit; everyone reads.</div>
+      </div>
+      <div class="cs-pattern">
+        <div class="cs-pattern-code">chmod 700</div>
+        <div class="cs-pattern-perm"><span class="ls-owner">rwx</span><span class="ls-group">---</span><span class="ls-other">---</span></div>
+        <div class="cs-pattern-desc">Private executable. Only you run it.</div>
+      </div>
+      <div class="cs-pattern">
+        <div class="cs-pattern-code">chmod 755</div>
+        <div class="cs-pattern-perm"><span class="ls-owner">rwx</span><span class="ls-group">r-x</span><span class="ls-other">r-x</span></div>
+        <div class="cs-pattern-desc">Standard program. Everyone can run it.</div>
+      </div>
+      <div class="cs-pattern">
+        <div class="cs-pattern-code">chmod 750</div>
+        <div class="cs-pattern-perm"><span class="ls-owner">rwx</span><span class="ls-group">r-x</span><span class="ls-other">---</span></div>
+        <div class="cs-pattern-desc">Team executable. Group runs; world locked out.</div>
+      </div>
+      <div class="cs-pattern">
+        <div class="cs-pattern-code">chmod 770</div>
+        <div class="cs-pattern-perm"><span class="ls-owner">rwx</span><span class="ls-group">rwx</span><span class="ls-other">---</span></div>
+        <div class="cs-pattern-desc">Shared team directory. Owner and group: full access.</div>
+      </div>
+      <div class="cs-pattern">
+        <div class="cs-pattern-code">chmod 1777</div>
+        <div class="cs-pattern-perm"><span class="ls-owner">rwx</span><span class="ls-group">rwx</span><span class="ls-other">rw<span style="color:#c89000">t</span></span></div>
+        <div class="cs-pattern-desc">World-writable + sticky. Like /tmp.</div>
+      </div>
+      <div class="cs-pattern">
+        <div class="cs-pattern-code">chmod 4755</div>
+        <div class="cs-pattern-perm"><span class="ls-owner">rw<span style="color:#c89000">s</span></span><span class="ls-group">r-x</span><span class="ls-other">r-x</span></div>
+        <div class="cs-pattern-desc">SetUID program. Runs as owner. e.g. passwd.</div>
+      </div>
+    </div>
+
+
+  </main>
+
+  <div data-include="footer-nested-2"></div>
+
+  <script src="../../script.js"></script>
+  <script>
+
+    // ── Utility: compute ls -l permission string from state ─────────────────
+    //   state = { suid, sgid, sticky, or, ow, ox, gr, gw, gx, ur, uw, ux }
+    //   all booleans
+
+    function permString(s) {
+      // owner
+      const ur = s.ur ? 'r' : '-';
+      const uw = s.uw ? 'w' : '-';
+      let   ux;
+      if (s.suid) {
+        ux = s.ux ? 's' : 'S';
+      } else {
+        ux = s.ux ? 'x' : '-';
+      }
+
+      // group
+      const gr = s.gr ? 'r' : '-';
+      const gw = s.gw ? 'w' : '-';
+      let   gx;
+      if (s.sgid) {
+        gx = s.gx ? 's' : 'S';
+      } else {
+        gx = s.gx ? 'x' : '-';
+      }
+
+      // others
+      const or2 = s.or ? 'r' : '-';
+      const ow  = s.ow ? 'w' : '-';
+      let   ox;
+      if (s.sticky) {
+        ox = s.ox ? 't' : 'T';
+      } else {
+        ox = s.ox ? 'x' : '-';
+      }
+
+      return ur + uw + ux + gr + gw + gx + or2 + ow + ox;
+    }
+
+    function octalValue(s) {
+      const special = (s.suid ? 4 : 0) + (s.sgid ? 2 : 0) + (s.sticky ? 1 : 0);
+      const owner   = (s.ur   ? 4 : 0) + (s.uw   ? 2 : 0) + (s.ux    ? 1 : 0);
+      const group   = (s.gr   ? 4 : 0) + (s.gw   ? 2 : 0) + (s.gx    ? 1 : 0);
+      const others  = (s.or   ? 4 : 0) + (s.ow   ? 2 : 0) + (s.ox    ? 1 : 0);
+      return special.toString() + owner.toString() + group.toString() + others.toString();
+    }
+
+    function humanSummary(s) {
+      const parts = [];
+      const ro = s.ur || s.uw || s.ux;
+      const rg = s.gr || s.gw || s.gx;
+      const oth = s.or || s.ow || s.ox;
+      if (!ro && !rg && !oth) return 'No permissions set.';
+      if (ro) {
+        const p = [s.ur && 'read', s.uw && 'write', s.ux && 'execute'].filter(Boolean).join(', ');
+        parts.push('Owner: ' + p);
+      }
+      if (rg) {
+        const p = [s.gr && 'read', s.gw && 'write', s.gx && 'execute'].filter(Boolean).join(', ');
+        parts.push('Group: ' + p);
+      }
+      if (oth) {
+        const p = [s.or && 'read', s.ow && 'write', s.ox && 'execute'].filter(Boolean).join(', ');
+        parts.push('Others: ' + p);
+      }
+      return parts.join('<br>');
+    }
+
+    // ── Colored ls -l permission string (with HTML spans) ───────────────────
+    function coloredPerm(s) {
+      const p = permString(s);
+      const ownerSpan  = `<span class="ls-owner">${p.slice(0, 3)}</span>`;
+      const groupSpan  = `<span class="ls-group">${p.slice(3, 6)}</span>`;
+      const otherSpan  = `<span class="ls-other">${p.slice(6, 9)}</span>`;
+      return ownerSpan + groupSpan + otherSpan;
+    }
+
+    // ── Main builder state ───────────────────────────────────────────────────
+
+    const mainState = {
+      suid: false, sgid: false, sticky: false,
+      ur: false, uw: false, ux: false,
+      gr: false, gw: false, gx: false,
+      or: false, ow: false, ox: false
+    };
+
+    function updateMainDisplay() {
+      document.getElementById('mainLsPerm').innerHTML = coloredPerm(mainState);
+      const oct = octalValue(mainState);
+      document.getElementById('mainOctal').textContent = oct;
+      document.getElementById('mainChmod').textContent = 'chmod ' + oct + ' filename';
+      document.getElementById('mainSummary').innerHTML = humanSummary(mainState);
+    }
+
+    // Wire up main builder buttons
+    document.querySelectorAll('#mainBuilder .bit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const group = btn.dataset.group;
+        const bit   = btn.dataset.bit;
+        const key   = group === 'special' ? bit : group[0] + bit; // e.g. "ur", "gw", "ox"
+        // normalize key
+        let stateKey;
+        if (group === 'special') {
+          stateKey = bit; // suid / sgid / sticky
+        } else {
+          const g = { owner: 'u', group: 'g', others: 'o' }[group];
+          stateKey = g + bit; // ur, uw, ux, gr, gw, gx, or, ow, ox
+        }
+        mainState[stateKey] = !mainState[stateKey];
+        btn.classList.toggle('on', mainState[stateKey]);
+        updateMainDisplay();
+      });
+    });
+
+    document.getElementById('mainReset').addEventListener('click', () => {
+      Object.keys(mainState).forEach(k => mainState[k] = false);
+      document.querySelectorAll('#mainBuilder .bit-btn').forEach(b => b.classList.remove('on'));
+      updateMainDisplay();
+    });
+
+    updateMainDisplay();
+
+    // ── Scenario definitions ─────────────────────────────────────────────────
+
+    const scenarios = [
+      {
+        id: 'private',
+        title: 'Private Notes',
+        desc: 'You keep a personal diary file. Only you should be able to read and write it. No one else should even know what is inside.',
+        answer: { suid:false, sgid:false, sticky:false, ur:true, uw:true, ux:false, gr:false, gw:false, gx:false, or:false, ow:false, ox:false },
+        hint: 'Think: owner reads & writes, group and others get nothing.',
+        showSpecial: false
+      },
+      {
+        id: 'script',
+        title: 'Team Project Script',
+        desc: 'A shell script your whole team needs to run, but only you should be able to edit it. Nobody outside the group should access it at all.',
+        answer: { suid:false, sgid:false, sticky:false, ur:true, uw:true, ux:true, gr:true, gw:false, gx:true, or:false, ow:false, ox:false },
+        hint: 'Owner: full access. Group: read + execute. Others: nothing.',
+        showSpecial: false
+      },
+      {
+        id: 'webpage',
+        title: 'Public Web Page',
+        desc: 'An HTML file served by a web server. The server (running as "www-data") just needs to read it. Only you should modify it.',
+        answer: { suid:false, sgid:false, sticky:false, ur:true, uw:true, ux:false, gr:true, gw:false, gx:false, or:true, ow:false, ox:false },
+        hint: 'Owner: read + write. Group and Others: read only.',
+        showSpecial: false
+      },
+      {
+        id: 'sticky',
+        title: 'Shared Upload Folder',
+        desc: 'A directory shared among all students. Anyone can upload files, but no student should be able to delete another student\'s work.',
+        answer: { suid:false, sgid:false, sticky:true, ur:true, uw:true, ux:true, gr:true, gw:true, gx:true, or:true, ow:true, ox:true },
+        hint: 'Full rwx for everyone — but activate the Sticky bit so only owners can delete their own files.',
+        showSpecial: true
+      }
+    ];
+
+    // ── Build scenario cards ─────────────────────────────────────────────────
+
+    const scenarioGrid = document.getElementById('scenarioGrid');
+
+    scenarios.forEach(sc => {
+      // Build state object for this scenario (all false initially)
+      const state = {
+        suid: false, sgid: false, sticky: false,
+        ur: false, uw: false, ux: false,
+        gr: false, gw: false, gx: false,
+        or: false, ow: false, ox: false
+      };
+
+      const card = document.createElement('div');
+      card.className = 'scenario-card';
+
+      // Special bit row (only for sticky scenario)
+      const specialRow = sc.showSpecial ? `
+        <div class="mini-perm-groups" style="margin-bottom:0.5rem;">
+          <div class="mini-perm-group mini-spec">
+            <div class="mini-perm-group-label">Special</div>
+            <div class="mini-bit-row">
+              <button class="mini-bit-btn" data-sc="${sc.id}" data-key="suid" title="SetUID">UID</button>
+              <button class="mini-bit-btn" data-sc="${sc.id}" data-key="sgid" title="SetGID">GID</button>
+              <button class="mini-bit-btn" data-sc="${sc.id}" data-key="sticky" title="Sticky">STK</button>
+            </div>
+          </div>
+        </div>` : '';
+
+      card.innerHTML = `
+        <div class="scenario-title">${sc.title}</div>
+        <div class="scenario-desc">${sc.desc}</div>
+        ${specialRow}
+        <div class="mini-perm-groups">
+          <div class="mini-perm-group mini-owner">
+            <div class="mini-perm-group-label">Owner</div>
+            <div class="mini-bit-row">
+              <button class="mini-bit-btn" data-sc="${sc.id}" data-key="ur">r</button>
+              <button class="mini-bit-btn" data-sc="${sc.id}" data-key="uw">w</button>
+              <button class="mini-bit-btn" data-sc="${sc.id}" data-key="ux">x</button>
+            </div>
+          </div>
+          <div class="mini-perm-group mini-group">
+            <div class="mini-perm-group-label">Group</div>
+            <div class="mini-bit-row">
+              <button class="mini-bit-btn" data-sc="${sc.id}" data-key="gr">r</button>
+              <button class="mini-bit-btn" data-sc="${sc.id}" data-key="gw">w</button>
+              <button class="mini-bit-btn" data-sc="${sc.id}" data-key="gx">x</button>
+            </div>
+          </div>
+          <div class="mini-perm-group mini-other">
+            <div class="mini-perm-group-label">Others</div>
+            <div class="mini-bit-row">
+              <button class="mini-bit-btn" data-sc="${sc.id}" data-key="or">r</button>
+              <button class="mini-bit-btn" data-sc="${sc.id}" data-key="ow">w</button>
+              <button class="mini-bit-btn" data-sc="${sc.id}" data-key="ox">x</button>
+            </div>
+          </div>
+        </div>
+        <div class="scenario-mini-ls" id="miniLs-${sc.id}">-<span id="miniPerm-${sc.id}">---------</span> mlaquatra staff  myfile</div>
+        <div class="scenario-actions">
+          <button class="btn-check" data-sc="${sc.id}">Check</button>
+          <button class="btn-reveal" data-sc="${sc.id}">Reveal</button>
+        </div>
+        <div class="scenario-feedback" id="feedback-${sc.id}"></div>
+      `;
+
+      scenarioGrid.appendChild(card);
+
+      // Store state per scenario
+      window['_scState_' + sc.id] = state;
+
+      // Attach bit toggle listeners
+      card.querySelectorAll('.mini-bit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const key = btn.dataset.key;
+          state[key] = !state[key];
+          btn.classList.toggle('on', state[key]);
+          document.getElementById('miniPerm-' + sc.id).innerHTML = coloredPerm(state);
+        });
+      });
+
+      // Check button
+      card.querySelector('.btn-check').addEventListener('click', () => {
+        const fb = document.getElementById('feedback-' + sc.id);
+        const ans = sc.answer;
+        const correct = Object.keys(ans).every(k => state[k] === ans[k]);
+        if (correct) {
+          fb.className = 'scenario-feedback correct';
+          fb.textContent = '✓ Correct! chmod ' + octalValue(state) + ' — ' + permString(state);
+        } else {
+          fb.className = 'scenario-feedback wrong';
+          fb.textContent = '✗ Not quite. ' + sc.hint;
+        }
+      });
+
+      // Reveal button
+      card.querySelector('.btn-reveal').addEventListener('click', () => {
+        const ans = sc.answer;
+        // Apply answer to state
+        Object.keys(ans).forEach(k => state[k] = ans[k]);
+        // Sync buttons
+        card.querySelectorAll('.mini-bit-btn').forEach(btn => {
+          btn.classList.toggle('on', state[btn.dataset.key]);
+        });
+        document.getElementById('miniPerm-' + sc.id).innerHTML = coloredPerm(state);
+        const fb = document.getElementById('feedback-' + sc.id);
+        fb.className = 'scenario-feedback revealed';
+        fb.textContent = 'Answer: chmod ' + octalValue(state) + ' → ' + permString(state) + '  (' + sc.hint + ')';
+      });
+    });
+
+  </script>
+</body>
+</html>
