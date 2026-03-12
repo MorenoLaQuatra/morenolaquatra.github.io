@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="OS Security Labs — Chroot Jail, Biba Integrity Model, Virtualization — interactive demos for the Cybersecurity course by Moreno La Quatra, Kore University of Enna.">
+  <meta property="og:title" content="OS Security Labs — CYB — Moreno La Quatra">
+  <meta property="og:url" content="https://mlaquatra.me/teaching/CYB/os-security-lab.html">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+  <link rel="canonical" href="https://mlaquatra.me/teaching/CYB/os-security-lab.html">
+  <title>OS Security Labs &mdash; CYB &mdash; Moreno La Quatra</title>
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="icon" href="../../mlq-logo.png" type="image/png">
+
+  <style>
+    /* ── Shared helpers ── */
+    .viz-section {
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: var(--margin-unit);
+    }
+    .viz-section-title {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+    .lab-card {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      margin-bottom: var(--margin-unit);
+      overflow: hidden;
+    }
+    .lab-header {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.85rem 1.25rem;
+      background: var(--paper-dark);
+      border-bottom: 1px solid var(--border);
+    }
+    .lab-badge {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.2rem 0.55rem;
+      border: 1px solid;
+    }
+    .lab-badge.chroot { border-color: #1a5c1a; color: #1a5c1a; }
+    .lab-badge.biba   { border-color: #00008b; color: #00008b; }
+    .lab-badge.virt   { border-color: #5b0090; color: #5b0090; }
+    .lab-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .lab-body { padding: 1.25rem 1.5rem; }
+    .lab-desc {
+      font-family: var(--font-serif);
+      font-size: 0.92rem;
+      color: var(--ink-light);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    .lab-desc code {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      background: var(--paper-dark);
+      padding: 0.05rem 0.3rem;
+      border-radius: 2px;
+    }
+
+    /* ── Toggle switch ── */
+    .mode-toggle {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+    .mode-btn {
+      padding: 0.45rem 1.1rem;
+      cursor: pointer;
+      background: var(--paper);
+      color: var(--ink-light);
+      border: none;
+      border-right: 1px solid var(--border);
+      transition: background 0.15s, color 0.15s;
+    }
+    .mode-btn:last-child { border-right: none; }
+    .mode-btn.active { background: var(--accent); color: var(--paper); }
+
+    /* ── Hint chips ── */
+    .hint-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .hint-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-lighter);
+      width: 100%;
+    }
+    .hint-chip {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      padding: 0.25rem 0.65rem;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      color: var(--ink-light);
+      cursor: pointer;
+      border-radius: 2px;
+      transition: border-color 0.12s, color 0.12s;
+      user-select: none;
+    }
+    .hint-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Result / output box ── */
+    .result-output {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      font-family: var(--font-mono);
+      font-size: 0.83rem;
+      padding: 1rem 1.2rem;
+      border-radius: 2px;
+      line-height: 1.7;
+      min-height: 3.5rem;
+      transition: all 0.2s;
+    }
+    .result-output .ok     { color: #a6e3a1; }
+    .result-output .deny   { color: #f38ba8; }
+    .result-output .warn   { color: #f9e2af; }
+    .result-output .dim    { color: #585b70; }
+    .result-output .path   { color: #89dceb; }
+    .result-output .val    { color: #cba6f7; font-weight: 600; }
+    .result-output .label  { color: #585b70; }
+
+    /* ══════════════════════════════════════════════════════
+       LAB 1: CHROOT JAIL
+    ══════════════════════════════════════════════════════ */
+
+    .chroot-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    /* Filesystem tree */
+    .fs-panel-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-lighter);
+      margin-bottom: 0.5rem;
+    }
+    .fs-tree {
+      background: #1a1a1a;
+      color: #e0e0e0;
+      font-family: var(--font-mono);
+      font-size: 0.79rem;
+      padding: 1rem 1.1rem;
+      border-radius: 2px;
+      line-height: 1.85;
+      overflow-x: auto;
+    }
+    .fs-entry { display: flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
+    .fs-icon  { width: 1em; text-align: center; flex-shrink: 0; }
+    .fs-name  { }
+    .fs-note  { color: #585b70; font-size: 0.73rem; margin-left: 0.3rem; }
+    .fs-sensitive .fs-name { color: #f38ba8; }
+    .fs-sensitive .fs-icon { color: #f38ba8; }
+
+    /* Jail boundary */
+    .fs-jail-marker {
+      border: 1.5px dashed #f9a825;
+      border-radius: 3px;
+      padding: 0.3rem 0.5rem;
+      margin: 0.15rem 0;
+    }
+    .fs-jail-label {
+      font-size: 0.68rem;
+      color: #f9a825;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.2rem;
+    }
+
+    /* Locked state */
+    .fs-locked { opacity: 0.3; text-decoration: line-through; }
+
+    /* Access test panel */
+    .access-panel { }
+    .access-btn {
+      display: flex;
+      align-items: stretch;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      margin-bottom: 0.55rem;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .access-btn:hover { border-color: var(--ink-light); }
+    .access-btn.active-allow { border-color: #1a5c1a; }
+    .access-btn.active-deny  { border-color: #c0392b; }
+    .access-path {
+      flex: 1;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 0.45rem 0.75rem;
+      background: var(--paper-dark);
+      color: var(--ink);
+      border-right: 1px solid var(--border);
+    }
+    .access-path .note { font-size: 0.7rem; color: var(--ink-lighter); display: block; margin-top: 0.1rem; }
+    .access-verdict {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      min-width: 80px;
+      background: var(--paper);
+    }
+    .verdict-allow { color: #1a5c1a; background: #f0fdf0; }
+    .verdict-deny  { color: #c0392b; background: #fff5f5; }
+    .verdict-none  { color: var(--ink-lighter); }
+
+    .chroot-explanation {
+      margin-top: 0.85rem;
+      padding: 0.75rem 0.9rem;
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      font-family: var(--font-serif);
+      font-size: 0.88rem;
+      color: var(--ink-light);
+      line-height: 1.55;
+      display: none;
+    }
+    .chroot-explanation.show { display: block; }
+    .chroot-explanation strong { color: var(--ink); }
+
+    /* ══════════════════════════════════════════════════════
+       LAB 2: BIBA INTEGRITY MODEL
+    ══════════════════════════════════════════════════════ */
+
+    .biba-layout {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+    .biba-col-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-lighter);
+      margin-bottom: 0.5rem;
+    }
+    .op-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .op-btn {
+      padding: 0.5rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      border: 1.5px solid var(--border);
+      background: var(--paper);
+      color: var(--ink-light);
+      cursor: pointer;
+      border-radius: 2px;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      width: 100%;
+      text-align: center;
+    }
+    .op-btn.selected { border-color: var(--accent); color: var(--accent); background: #fdf4f4; }
+    .op-arrow {
+      font-family: var(--font-mono);
+      font-size: 1.3rem;
+      color: var(--ink-lighter);
+    }
+
+    /* Entity cards for subjects and objects */
+    .entity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .entity-card {
+      border: 1.5px solid var(--border);
+      border-radius: 2px;
+      padding: 0.55rem 0.8rem;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      background: var(--paper);
+    }
+    .entity-card:hover { box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+    .entity-card.selected { box-shadow: 0 0 0 2px currentColor; }
+    .entity-card-name {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 0.15rem;
+    }
+    .entity-card-detail {
+      font-family: var(--font-serif);
+      font-size: 0.75rem;
+      color: var(--ink-lighter);
+    }
+    .level-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.1rem 0.45rem;
+      border-radius: 2px;
+      margin-left: 0.4rem;
+      vertical-align: middle;
+    }
+
+    /* Integrity level colours */
+    .lvl-low    { background: #fff3cd; color: #7a5000; border: 1px solid #ffc107; }
+    .lvl-medium { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    .lvl-high   { background: #d4edda; color: #155724; border: 1px solid #b1dfbb; }
+    .lvl-system { background: #e9d8ff; color: #440090; border: 1px solid #c9a8f5; }
+
+    .entity-card.lvl-border-low    { border-color: #ffc107; }
+    .entity-card.lvl-border-medium { border-color: #5bc0de; }
+    .entity-card.lvl-border-high   { border-color: #5cb85c; }
+    .entity-card.lvl-border-system { border-color: #9B59B6; }
+    .entity-card.selected.lvl-border-low    { box-shadow: 0 0 0 2px #ffc107; }
+    .entity-card.selected.lvl-border-medium { box-shadow: 0 0 0 2px #5bc0de; }
+    .entity-card.selected.lvl-border-high   { box-shadow: 0 0 0 2px #5cb85c; }
+    .entity-card.selected.lvl-border-system { box-shadow: 0 0 0 2px #9B59B6; }
+
+    /* Verdict panel */
+    .biba-verdict {
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 0.85rem;
+    }
+    .biba-verdict-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.7rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+    }
+    .biba-verdict-header.allow  { background: #d4edda; color: #155724; }
+    .biba-verdict-header.deny   { background: #f8d7da; color: #721c24; }
+    .biba-verdict-header.empty  { background: var(--paper-dark); color: var(--ink-lighter); }
+    .verdict-icon { font-size: 1.3rem; }
+    .verdict-rule { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600; margin-left: auto; }
+    .biba-verdict-body {
+      padding: 0.75rem 1rem;
+      font-family: var(--font-serif);
+      font-size: 0.88rem;
+      color: var(--ink-light);
+      line-height: 1.55;
+      border-top: 1px solid var(--border);
+    }
+    .biba-verdict-body strong { color: var(--ink); font-weight: 600; }
+    .biba-verdict-body code {
+      font-family: var(--font-mono);
+      font-size: 0.81rem;
+      background: var(--paper-dark);
+      padding: 0.05rem 0.3rem;
+      border-radius: 2px;
+    }
+
+    /* Rule summary strip */
+    .rule-strip {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .rule-card {
+      flex: 1;
+      border: 1px solid var(--border);
+      padding: 0.7rem 0.9rem;
+      background: var(--paper);
+    }
+    .rule-card-title {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.35rem;
+    }
+    .rule-card-text {
+      font-family: var(--font-serif);
+      font-size: 0.85rem;
+      color: var(--ink-light);
+      line-height: 1.5;
+    }
+    .rule-card-text strong { color: var(--ink); }
+
+    /* ══════════════════════════════════════════════════════
+       LAB 3: VIRTUALIZATION ARCHITECTURE
+    ══════════════════════════════════════════════════════ */
+
+    .virt-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      width: fit-content;
+    }
+    .virt-tab-btn {
+      padding: 0.45rem 1.2rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      border: none;
+      border-right: 1px solid var(--border);
+      background: var(--paper-dark);
+      color: var(--ink-light);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .virt-tab-btn:last-child { border-right: none; }
+    .virt-tab-btn.active { background: #5b0090; color: #fff; }
+
+    .virt-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    /* Stack diagram */
+    .stack-diagram { display: flex; flex-direction: column; gap: 0; }
+    .stack-layer {
+      border: 1.5px solid var(--border);
+      border-bottom: none;
+      padding: 0.6rem 1.1rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      background: var(--paper);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      position: relative;
+      user-select: none;
+    }
+    .stack-layer:last-child { border-bottom: 1.5px solid var(--border); }
+    .stack-layer:hover:not(.stack-divider) { background: var(--paper-dark); }
+    .stack-layer.stack-divider {
+      cursor: default;
+      background: transparent;
+      border-color: transparent;
+      border-bottom: none;
+      padding: 0.2rem 0;
+      text-align: center;
+      font-size: 0.65rem;
+      color: var(--ink-lighter);
+      pointer-events: none;
+    }
+    .stack-layer.stack-hw {
+      background: #1a1a1a;
+      color: #e8e8e8;
+      border-color: #1a1a1a;
+      font-weight: 600;
+    }
+    .stack-layer.stack-hypervisor {
+      background: #f0f0fd;
+      border-color: #a0a0c9;
+      color: #00008b;
+      font-weight: 600;
+    }
+    .stack-layer.stack-hostos {
+      background: #f5f5f5;
+      border-color: #aaa;
+      color: #333;
+    }
+    .stack-layer.stack-guestos {
+      background: var(--paper);
+      border-color: var(--border);
+      color: var(--ink);
+    }
+    .stack-layer.stack-app {
+      background: var(--paper-dark);
+      border-color: var(--border);
+      color: var(--ink-light);
+      font-size: 0.76rem;
+    }
+    .stack-layer.stack-runtime {
+      background: #fdf4f4;
+      border-color: #c9a0a0;
+      color: #8b0000;
+    }
+    .stack-layer.stack-container {
+      background: var(--paper-dark);
+      font-size: 0.76rem;
+      color: var(--ink-light);
+    }
+    .stack-side-by-side {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      margin-bottom: 0;
+    }
+    .stack-side-by-side .stack-layer {
+      border-right: none;
+    }
+    .stack-side-by-side .stack-layer:first-child {
+      border-right: none;
+    }
+    .stack-side-by-side > div:first-child .stack-layer {
+      border-right: none;
+    }
+    /* VM columns inside diagram */
+    .vm-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border-left: 1.5px solid var(--border);
+      border-right: 1.5px solid var(--border);
+    }
+    .vm-col { display: flex; flex-direction: column; }
+    .vm-col:first-child { border-right: 1px solid var(--border); }
+    .vm-col .stack-layer { border-left: none; border-right: none; border-radius: 0; }
+
+    /* Compromise states */
+    .stack-layer.compromised {
+      background: #f8d7da !important;
+      border-color: #c0392b !important;
+      color: #721c24 !important;
+      font-weight: 700;
+    }
+    .stack-layer.compromised::after {
+      content: ' ← COMPROMISED';
+      font-size: 0.65rem;
+      font-weight: 400;
+      color: #c0392b;
+      margin-left: 0.5rem;
+    }
+    .stack-layer.at-risk {
+      background: #fff3cd !important;
+      border-color: #f9a825 !important;
+      color: #7a5000 !important;
+    }
+    .stack-layer.at-risk::after {
+      content: ' ← at risk';
+      font-size: 0.65rem;
+      color: #f9a825;
+      margin-left: 0.5rem;
+    }
+
+    /* Compromise info panel */
+    .compromise-info {
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-family: var(--font-serif);
+      font-size: 0.88rem;
+      color: var(--ink-light);
+      line-height: 1.55;
+      min-height: 5rem;
+      background: var(--paper-dark);
+    }
+    .compromise-info.active-deny  { border-color: #c0392b; background: #fff8f8; }
+    .compromise-info.active-allow { border-color: #1a5c1a; }
+    .compromise-info strong { color: var(--ink); font-weight: 600; }
+    .compromise-info code {
+      font-family: var(--font-mono);
+      font-size: 0.81rem;
+      background: var(--paper-dark);
+      padding: 0.05rem 0.3rem;
+      border-radius: 2px;
+    }
+    .compromise-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-lighter);
+      margin-bottom: 0.5rem;
+    }
+
+    /* Comparison table */
+    .comp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-serif);
+      font-size: 0.88rem;
+      margin-top: 0.5rem;
+    }
+    .comp-table th {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-weight: 500;
+      text-align: left;
+      padding: 0.45rem 0.75rem;
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      color: var(--ink-light);
+    }
+    .comp-table td {
+      padding: 0.45rem 0.75rem;
+      border: 1px solid var(--border);
+      color: var(--ink);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    .comp-table tr:nth-child(even) td { background: var(--paper-dark); }
+    .td-type1 { border-left: 3px solid #00008b !important; }
+    .td-type2 { border-left: 3px solid #1a5c1a !important; }
+    .td-container { border-left: 3px solid #8b0000 !important; }
+    .td-good { color: #155724; }
+    .td-bad  { color: #721c24; }
+    .td-mid  { color: #856404; }
+
+    /* Reset button */
+    .btn-reset-small {
+      padding: 0.35rem 0.9rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      color: var(--ink-light);
+      cursor: pointer;
+      border-radius: 2px;
+      transition: border-color 0.15s, color 0.15s;
+      margin-top: 0.6rem;
+    }
+    .btn-reset-small:hover { border-color: var(--ink); color: var(--ink); }
+
+    @media (max-width: 820px) {
+      .chroot-layout { grid-template-columns: 1fr; }
+      .biba-layout   { grid-template-columns: 1fr; }
+      .virt-layout   { grid-template-columns: 1fr; }
+      .rule-strip    { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <div data-include="header-nested-2"></div>
+
+  <main class="wide-content">
+
+    <div class="breadcrumb">
+      <a href="../../teaching/">Teaching</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="../../teaching/CYB/">Cybersecurity</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>OS Security Labs</span>
+    </div>
+
+    <h1>OS Security Labs</h1>
+    <p class="hero-subtitle">Chroot Jail &middot; Biba Integrity Model &middot; Virtualization Architecture</p>
+
+    <div class="abstract">
+      <p>
+        Three self-contained interactive labs covering core OS security concepts.
+        Each lab lets you manipulate the key variables of a security model and immediately
+        observe the consequence — no server, no installation.
+      </p>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         LAB 1 — CHROOT JAIL
+    ══════════════════════════════════════════════════════════════════════ -->
+
+    <div class="lab-card">
+      <div class="lab-header">
+        <span class="lab-badge chroot">Isolation</span>
+        <span class="lab-title">Lab 1 — Chroot Jail</span>
+      </div>
+      <div class="lab-body">
+        <p class="lab-desc">
+          A <strong>chroot jail</strong> remaps the root of the filesystem for a specific process.
+          From inside the jail, the process believes <code>/</code> literally <em>is</em>
+          the jail directory — it cannot see, traverse, or open anything above it.
+          <br><br>
+          <strong>Scenario:</strong> a web server (<code>nginx</code>, running as <code>www-data</code>)
+          has been exploited. The attacker has arbitrary file-read. Toggle between free and jailed
+          to see what they can reach — then try the access tests.
+        </p>
+
+        <div class="mode-toggle" id="chroot-toggle">
+          <button class="mode-btn active" id="chroot-free-btn" onclick="setChrootMode('free')">Free Process</button>
+          <button class="mode-btn" id="chroot-jail-btn" onclick="setChrootMode('jail')">Chrooted  (root&nbsp;=&nbsp;/srv/www)</button>
+        </div>
+
+        <div class="chroot-layout">
+
+          <!-- Filesystem tree -->
+          <div>
+            <div class="fs-panel-label">Filesystem — attacker's view</div>
+            <div class="fs-tree" id="fs-tree">
+
+              <div class="fs-entry"><span class="fs-icon">/</span><span class="fs-name fs-root-label">/ (system root)</span></div>
+
+              <div class="fs-entry" style="padding-left:1.2rem" data-path="outside">
+                <span class="fs-icon">├─</span><span class="fs-name">bin/</span><span class="fs-note">system binaries</span>
+              </div>
+
+              <div class="fs-entry fs-sensitive" style="padding-left:1.2rem" data-path="outside">
+                <span class="fs-icon">├─</span><span class="fs-name">etc/</span>
+              </div>
+              <div class="fs-entry fs-sensitive" style="padding-left:2.8rem" data-path="outside">
+                <span class="fs-icon">├─</span><span class="fs-name">passwd</span><span class="fs-note">user accounts</span>
+              </div>
+              <div class="fs-entry fs-sensitive" style="padding-left:2.8rem" data-path="outside">
+                <span class="fs-icon">└─</span><span class="fs-name">shadow</span><span class="fs-note">password hashes!</span>
+              </div>
+
+              <div class="fs-entry fs-sensitive" style="padding-left:1.2rem" data-path="outside">
+                <span class="fs-icon">├─</span><span class="fs-name">home/</span>
+              </div>
+              <div class="fs-entry fs-sensitive" style="padding-left:2.8rem" data-path="outside">
+                <span class="fs-icon">└─</span><span class="fs-name">alice/</span>
+              </div>
+              <div class="fs-entry fs-sensitive" style="padding-left:4.4rem" data-path="outside">
+                <span class="fs-icon">└─</span><span class="fs-name">.ssh/id_rsa</span><span class="fs-note">SSH private key!</span>
+              </div>
+
+              <div class="fs-entry fs-sensitive" style="padding-left:1.2rem" data-path="outside">
+                <span class="fs-icon">├─</span><span class="fs-name">proc/1/mem</span><span class="fs-note">process memory</span>
+              </div>
+
+              <div class="fs-entry fs-sensitive" style="padding-left:1.2rem" data-path="outside">
+                <span class="fs-icon">├─</span><span class="fs-name">var/lib/mysql/</span><span class="fs-note">database files</span>
+              </div>
+
+              <!-- Jail boundary -->
+              <div style="padding-left:1.2rem; margin-top:0.3rem;">
+                <div class="fs-jail-marker">
+                  <div class="fs-jail-label">JAIL ROOT: /srv/www</div>
+                  <div class="fs-entry" data-path="inside">
+                    <span class="fs-icon">├─</span><span class="fs-name" style="color:#a6e3a1">index.html</span>
+                  </div>
+                  <div class="fs-entry" data-path="inside">
+                    <span class="fs-icon">├─</span><span class="fs-name" style="color:#a6e3a1">config.php</span><span class="fs-note" style="color:#585b70">db credentials</span>
+                  </div>
+                  <div class="fs-entry" data-path="inside">
+                    <span class="fs-icon">├─</span><span class="fs-name" style="color:#a6e3a1">uploads/</span>
+                  </div>
+                  <div class="fs-entry" data-path="inside">
+                    <span class="fs-icon">└─</span><span class="fs-name" style="color:#a6e3a1">.htaccess</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Access tests -->
+          <div class="access-panel">
+            <div class="fs-panel-label">Access attempts — click to test</div>
+
+            <div class="access-btn" id="acc-shadow" onclick="testAccess('shadow')">
+              <div class="access-path">
+                /etc/shadow
+                <span class="note">Password hashes for all system users</span>
+              </div>
+              <div class="access-verdict verdict-none" id="acc-shadow-v">click</div>
+            </div>
+
+            <div class="access-btn" id="acc-sshkey" onclick="testAccess('sshkey')">
+              <div class="access-path">
+                /home/alice/.ssh/id_rsa
+                <span class="note">Alice's SSH private key</span>
+              </div>
+              <div class="access-verdict verdict-none" id="acc-sshkey-v">click</div>
+            </div>
+
+            <div class="access-btn" id="acc-proc" onclick="testAccess('proc')">
+              <div class="access-path">
+                /proc/1/mem
+                <span class="note">Memory of PID 1 (init)</span>
+              </div>
+              <div class="access-verdict verdict-none" id="acc-proc-v">click</div>
+            </div>
+
+            <div class="access-btn" id="acc-mysql" onclick="testAccess('mysql')">
+              <div class="access-path">
+                /var/lib/mysql/
+                <span class="note">Raw database files</span>
+              </div>
+              <div class="access-verdict verdict-none" id="acc-mysql-v">click</div>
+            </div>
+
+            <div class="access-btn" id="acc-config" onclick="testAccess('config')">
+              <div class="access-path">
+                /srv/www/config.php
+                <span class="note">Web app DB credentials (inside jail)</span>
+              </div>
+              <div class="access-verdict verdict-none" id="acc-config-v">click</div>
+            </div>
+
+            <div class="access-btn" id="acc-escape" onclick="testAccess('escape')">
+              <div class="access-path">
+                ../../../etc/shadow
+                <span class="note">Path traversal attempt (../..)</span>
+              </div>
+              <div class="access-verdict verdict-none" id="acc-escape-v">click</div>
+            </div>
+
+            <div class="chroot-explanation" id="chroot-exp"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         LAB 2 — BIBA INTEGRITY MODEL
+    ══════════════════════════════════════════════════════════════════════ -->
+
+    <div class="lab-card">
+      <div class="lab-header">
+        <span class="lab-badge biba">Integrity</span>
+        <span class="lab-title">Lab 2 — Biba Integrity Model</span>
+      </div>
+      <div class="lab-body">
+        <p class="lab-desc">
+          The Biba model protects <strong>data integrity</strong> — preventing low-trust processes
+          from corrupting high-trust data. Its two rules are elegantly symmetric and directly
+          implemented in Windows as <em>Mandatory Integrity Control (MIC)</em>.
+        </p>
+
+        <div class="rule-strip">
+          <div class="rule-card">
+            <div class="rule-card-title">No Write Up</div>
+            <div class="rule-card-text">
+              A subject <strong>cannot write</strong> to an object at a
+              <strong>higher integrity level</strong>.
+              Low-trust processes cannot contaminate high-trust data.
+            </div>
+          </div>
+          <div class="rule-card">
+            <div class="rule-card-title">No Read Down</div>
+            <div class="rule-card-text">
+              A subject <strong>cannot read</strong> from an object at a
+              <strong>lower integrity level</strong>.
+              High-trust processes should not be influenced by untrustworthy input.
+            </div>
+          </div>
+        </div>
+
+        <div class="hint-strip">
+          <span class="hint-label">Quick scenarios — click to load</span>
+          <span class="hint-chip" onclick="bibaScenario('browser-write-system')">Browser → write → System32</span>
+          <span class="hint-chip" onclick="bibaScenario('email-write-tmp')">Email attachment → write → /tmp</span>
+          <span class="hint-chip" onclick="bibaScenario('daemon-read-tmp')">System daemon → read → /tmp</span>
+          <span class="hint-chip" onclick="bibaScenario('editor-read-doc')">Text editor → read → user doc</span>
+          <span class="hint-chip" onclick="bibaScenario('browser-read-download')">Browser → read → download</span>
+          <span class="hint-chip" onclick="bibaScenario('kernel-write-kernel')">Kernel → write → kernel module</span>
+        </div>
+
+        <div class="biba-layout">
+
+          <!-- Subject column -->
+          <div>
+            <div class="biba-col-label">Subject (process)</div>
+            <div class="entity-list">
+              <div class="entity-card lvl-border-low"  id="subj-browser"  onclick="selectSubject('browser')" data-level="1">
+                <div class="entity-card-name">Web Browser <span class="level-badge lvl-low">Low</span></div>
+                <div class="entity-card-detail">e.g. Chrome renderer sandbox</div>
+              </div>
+              <div class="entity-card lvl-border-low"  id="subj-email"    onclick="selectSubject('email')"   data-level="1">
+                <div class="entity-card-name">Email Attachment Viewer <span class="level-badge lvl-low">Low</span></div>
+                <div class="entity-card-detail">Untrusted external content</div>
+              </div>
+              <div class="entity-card lvl-border-medium" id="subj-editor" onclick="selectSubject('editor')"  data-level="2">
+                <div class="entity-card-name">Text Editor <span class="level-badge lvl-medium">Medium</span></div>
+                <div class="entity-card-detail">Standard user application</div>
+              </div>
+              <div class="entity-card lvl-border-high" id="subj-daemon"   onclick="selectSubject('daemon')"  data-level="3">
+                <div class="entity-card-name">System Daemon <span class="level-badge lvl-high">High</span></div>
+                <div class="entity-card-detail">Elevated OS service</div>
+              </div>
+              <div class="entity-card lvl-border-system" id="subj-kernel" onclick="selectSubject('kernel')"  data-level="4">
+                <div class="entity-card-name">OS Kernel <span class="level-badge lvl-system">System</span></div>
+                <div class="entity-card-detail">Highest trust, full privilege</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Operation column -->
+          <div class="op-selector">
+            <div class="biba-col-label" style="text-align:center">Operation</div>
+            <button class="op-btn" id="op-read"  onclick="selectOp('read')">READ</button>
+            <div class="op-arrow">|</div>
+            <button class="op-btn" id="op-write" onclick="selectOp('write')">WRITE</button>
+            <button class="btn-reset-small" onclick="bibaReset()">Reset</button>
+          </div>
+
+          <!-- Object column -->
+          <div>
+            <div class="biba-col-label">Object (resource)</div>
+            <div class="entity-list">
+              <div class="entity-card lvl-border-low"    id="obj-tmp"    onclick="selectObject('tmp')"    data-level="1">
+                <div class="entity-card-name">/tmp/ download <span class="level-badge lvl-low">Low</span></div>
+                <div class="entity-card-detail">Untrusted, world-writable temp dir</div>
+              </div>
+              <div class="entity-card lvl-border-medium" id="obj-doc"    onclick="selectObject('doc')"    data-level="2">
+                <div class="entity-card-name">~/Documents/report.docx <span class="level-badge lvl-medium">Medium</span></div>
+                <div class="entity-card-detail">Standard user data</div>
+              </div>
+              <div class="entity-card lvl-border-high"   id="obj-sysconf" onclick="selectObject('sysconf')" data-level="3">
+                <div class="entity-card-name">/etc/sudoers <span class="level-badge lvl-high">High</span></div>
+                <div class="entity-card-detail">System configuration — privilege rules</div>
+              </div>
+              <div class="entity-card lvl-border-high"   id="obj-system32" onclick="selectObject('system32')" data-level="3">
+                <div class="entity-card-name">C:\Windows\System32 <span class="level-badge lvl-high">High</span></div>
+                <div class="entity-card-detail">Windows system directory (MIC: High)</div>
+              </div>
+              <div class="entity-card lvl-border-system" id="obj-kmod"   onclick="selectObject('kmod')"   data-level="4">
+                <div class="entity-card-name">/sys/module/kernel <span class="level-badge lvl-system">System</span></div>
+                <div class="entity-card-detail">Kernel modules — system-level trust</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div id="biba-verdict-box" class="biba-verdict">
+          <div id="biba-verdict-header" class="biba-verdict-header empty">
+            <span id="biba-verdict-summary">Select a subject, operation, and object above</span>
+          </div>
+          <div id="biba-verdict-body" class="biba-verdict-body" style="display:none;"></div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         LAB 3 — VIRTUALIZATION ARCHITECTURE & COMPROMISE
+    ══════════════════════════════════════════════════════════════════════ -->
+
+    <div class="lab-card">
+      <div class="lab-header">
+        <span class="lab-badge virt">Architecture</span>
+        <span class="lab-title">Lab 3 — Virtualization Architecture &amp; Compromise Simulator</span>
+      </div>
+      <div class="lab-body">
+        <p class="lab-desc">
+          Select an architecture to see how the software stack is arranged.
+          Then <strong>click any component in the diagram to simulate a compromise</strong>
+          — and see what else falls with it. This is the core question when evaluating isolation guarantees.
+        </p>
+
+        <div class="virt-tabs">
+          <button class="virt-tab-btn active" onclick="setVirtMode('type1')">Type 1 (Native)</button>
+          <button class="virt-tab-btn" onclick="setVirtMode('type2')">Type 2 (Hosted)</button>
+          <button class="virt-tab-btn" onclick="setVirtMode('container')">Containers</button>
+        </div>
+
+        <div class="virt-layout">
+
+          <!-- Stack diagram -->
+          <div>
+            <div class="compromise-label">Architecture Stack — click a layer to compromise it</div>
+            <div id="virt-stack-diagram"></div>
+            <button class="btn-reset-small" onclick="virtReset()">Reset</button>
+          </div>
+
+          <!-- Compromise info -->
+          <div>
+            <div class="compromise-label">Security Analysis</div>
+            <div class="compromise-info" id="virt-info">
+              Click a layer in the stack diagram to see what an attacker who controls
+              that component can reach.
+            </div>
+
+            <div style="margin-top:1.25rem;">
+              <div class="compromise-label">Architecture Comparison</div>
+              <table class="comp-table">
+                <thead>
+                  <tr>
+                    <th>Property</th>
+                    <th class="td-type1">Type 1</th>
+                    <th class="td-type2">Type 2</th>
+                    <th class="td-container">Container</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Hypervisor runs on</td>
+                    <td class="td-type1">Hardware directly</td>
+                    <td class="td-type2">Host OS</td>
+                    <td class="td-container">N/A (container runtime)</td>
+                  </tr>
+                  <tr>
+                    <td>Guest OS</td>
+                    <td class="td-type1 td-good">Full, isolated</td>
+                    <td class="td-type2 td-good">Full, isolated</td>
+                    <td class="td-container td-mid">None — shares host kernel</td>
+                  </tr>
+                  <tr>
+                    <td>Kernel isolation</td>
+                    <td class="td-type1 td-good">Strong</td>
+                    <td class="td-type2 td-mid">Strong (but extra layer)</td>
+                    <td class="td-container td-bad">None — kernel shared</td>
+                  </tr>
+                  <tr>
+                    <td>If hypervisor/runtime compromised</td>
+                    <td class="td-type1 td-bad">All VMs at risk</td>
+                    <td class="td-type2 td-bad">All VMs at risk</td>
+                    <td class="td-container td-bad">All containers at risk</td>
+                  </tr>
+                  <tr>
+                    <td>If Host OS compromised</td>
+                    <td class="td-type1 td-good">Only bare hypervisor at risk</td>
+                    <td class="td-type2 td-bad">Hypervisor + all VMs</td>
+                    <td class="td-container td-bad">Runtime + all containers</td>
+                  </tr>
+                  <tr>
+                    <td>Performance overhead</td>
+                    <td class="td-type1 td-good">Low</td>
+                    <td class="td-type2 td-mid">Medium</td>
+                    <td class="td-container td-good">Very low</td>
+                  </tr>
+                  <tr>
+                    <td>Typical use</td>
+                    <td class="td-type1">VMware vSphere, Hyper-V, KVM</td>
+                    <td class="td-type2">VirtualBox, VMware Workstation</td>
+                    <td class="td-container">Docker, Kubernetes</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <div data-include="footer-nested-2"></div>
+
+  <script src="../../script.js"></script>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       LAB LOGIC
+  ══════════════════════════════════════════════════════════════════════ -->
+  <script>
+  'use strict';
+
+  /* ═══════════════════════════════════════════════════════════════
+     LAB 1 — CHROOT JAIL
+  ═══════════════════════════════════════════════════════════════ */
+
+  let chrootMode = 'free'; // 'free' | 'jail'
+
+  function setChrootMode(mode) {
+    chrootMode = mode;
+    document.getElementById('chroot-free-btn').classList.toggle('active', mode === 'free');
+    document.getElementById('chroot-jail-btn').classList.toggle('active', mode === 'jail');
+
+    // Lock/unlock outside-jail entries
+    document.querySelectorAll('[data-path="outside"]').forEach(el => {
+      el.classList.toggle('fs-locked', mode === 'jail');
+    });
+
+    // Reset verdict buttons
+    const ids = ['shadow','sshkey','proc','mysql','config','escape'];
+    ids.forEach(id => {
+      const btn = document.getElementById('acc-' + id);
+      const v   = document.getElementById('acc-' + id + '-v');
+      btn.classList.remove('active-allow','active-deny');
+      v.className = 'access-verdict verdict-none';
+      v.textContent = 'click';
+    });
+
+    document.getElementById('chroot-exp').className = 'chroot-explanation';
+    document.getElementById('chroot-exp').innerHTML = '';
+  }
+
+  const ACCESS_DATA = {
+    shadow: {
+      path: '/etc/shadow',
+      outside: true,
+      freeResult: {
+        allow: true,
+        content: 'root:$6$abcd1234…:18900:0:99999:7:::\nalice:$6$xyz789…:19200:0:99999:7:::',
+        explanation: `<strong>Access granted.</strong> The process has no chroot restriction —
+          it can open any file it has Unix permission to read. As <code>www-data</code>,
+          this might be blocked by DAC permissions, but a privilege escalation or misconfiguration
+          would expose every password hash on the system.`
+      },
+      jailResult: {
+        allow: false,
+        explanation: `<strong>Access denied.</strong> Inside the jail, <code>/etc/shadow</code>
+          does not exist — the process's root is <code>/srv/www</code>, so the absolute path
+          resolves to <code>/srv/www/etc/shadow</code>, which does not exist.
+          The attacker cannot navigate above the jail root.`
+      }
+    },
+    sshkey: {
+      path: '/home/alice/.ssh/id_rsa',
+      outside: true,
+      freeResult: {
+        allow: true,
+        content: '-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAA…\n-----END OPENSSH PRIVATE KEY-----',
+        explanation: `<strong>Access granted.</strong> With a free process the attacker can attempt
+          to read Alice's SSH private key. If the key doesn't have strict permissions (or the server
+          runs as root), this key can be exfiltrated and used to log in to other systems.`
+      },
+      jailResult: {
+        allow: false,
+        explanation: `<strong>Access denied.</strong> <code>/home/</code> does not exist inside
+          <code>/srv/www</code>. The jailed process sees an empty root with only the web app's files.
+          Alice's private key is completely invisible.`
+      }
+    },
+    proc: {
+      path: '/proc/1/mem',
+      outside: true,
+      freeResult: {
+        allow: true,
+        content: '[binary: process memory of PID 1 — init/systemd]',
+        explanation: `<strong>Access granted (read attempt).</strong> <code>/proc</code> exposes
+          the kernel's view of running processes. A compromised free process could inspect memory
+          of other processes or leak sensitive runtime data — a stepping stone for privilege escalation.`
+      },
+      jailResult: {
+        allow: false,
+        explanation: `<strong>Access denied.</strong> <code>/proc</code> is not mounted inside
+          the jail. The kernel's virtual filesystem is hidden from the jailed process.`
+      }
+    },
+    mysql: {
+      path: '/var/lib/mysql/',
+      outside: true,
+      freeResult: {
+        allow: true,
+        content: 'ibdata1  ib_logfile0  ib_logfile1  shop/  users.ibd  orders.ibd',
+        explanation: `<strong>Access granted.</strong> The attacker can read raw database
+          files directly from disk. This bypasses all SQL access controls — data can be
+          extracted by copying and parsing the binary storage files without ever connecting
+          to the database server.`
+      },
+      jailResult: {
+        allow: false,
+        explanation: `<strong>Access denied.</strong> <code>/var/lib/mysql/</code> is outside
+          the jail root and completely inaccessible. The attacker is limited to the web app's
+          own files — a dramatically reduced impact.`
+      }
+    },
+    config: {
+      path: '/srv/www/config.php',
+      outside: false,
+      freeResult: {
+        allow: true,
+        content: '<?php\n$db_host = "localhost";\n$db_user = "webapp";\n$db_pass = "Pr0d@2024!";\n$db_name = "shop";',
+        explanation: `<strong>Access granted in both modes.</strong> <code>config.php</code>
+          is <em>inside</em> the jail root — a jailed process can still read it.
+          This is the one limitation of chroot: it doesn't protect files within the tree.
+          Database credentials stored in web config are exposed to a compromised web server
+          regardless of jailing. Secrets management (env vars, vaults) is still needed.`
+      },
+      jailResult: {
+        allow: true,
+        content: '<?php\n$db_host = "localhost";\n$db_user = "webapp";\n$db_pass = "Pr0d@2024!";\n$db_name = "shop";',
+        explanation: `<strong>Access granted — this file is inside the jail.</strong>
+          The chroot jail isolates the process from the rest of the filesystem, but
+          <em>cannot</em> protect files within its own tree. This is expected and important:
+          the web server needs to read these files to work. Secrets inside the jail boundary
+          are still accessible to a compromised process.`
+      }
+    },
+    escape: {
+      path: '../../../etc/shadow',
+      outside: true,
+      freeResult: {
+        allow: true,
+        content: 'root:$6$abcd1234…:18900:0:99999:7:::\nalice:$6$xyz789…:19200:0:99999:7:::',
+        explanation: `<strong>Access granted.</strong> Without a jail, path traversal works normally —
+          <code>../../..</code> navigates to the real root and <code>/etc/shadow</code> is reachable.`
+      },
+      jailResult: {
+        allow: false,
+        explanation: `<strong>Access denied — traversal blocked.</strong> Inside the chroot jail,
+          the kernel remaps <code>/</code> to <code>/srv/www</code>. Any path that tries to go above
+          the jail root (via <code>../</code>) is silently stopped at the remapped root.
+          The attacker cannot break out through path traversal alone.
+          <br><br>
+          <em>Note:</em> a sufficiently privileged process (e.g. root inside the jail) <strong>can</strong>
+          escape by calling <code>chroot()</code> again — this is why chroot should never run as root
+          and should be combined with other controls.`
+      }
+    }
+  };
+
+  function testAccess(key) {
+    const data = ACCESS_DATA[key];
+    const isJail = chrootMode === 'jail';
+    const result = isJail ? data.jailResult : data.freeResult;
+
+    const btn = document.getElementById('acc-' + key);
+    const v   = document.getElementById('acc-' + key + '-v');
+    const exp = document.getElementById('chroot-exp');
+
+    // Clear all others
+    ['shadow','sshkey','proc','mysql','config','escape'].forEach(id => {
+      if (id === key) return;
+      document.getElementById('acc-' + id).classList.remove('active-allow','active-deny');
+      const vv = document.getElementById('acc-' + id + '-v');
+      vv.className = 'access-verdict verdict-none';
+      vv.textContent = 'click';
+    });
+
+    // Set verdict
+    if (result.allow) {
+      btn.classList.add('active-allow');
+      btn.classList.remove('active-deny');
+      v.className = 'access-verdict verdict-allow';
+      v.textContent = 'ALLOW';
+    } else {
+      btn.classList.add('active-deny');
+      btn.classList.remove('active-allow');
+      v.className = 'access-verdict verdict-deny';
+      v.textContent = 'DENY';
+    }
+
+    // Show explanation + optional content
+    let html = result.explanation;
+    if (result.allow && result.content) {
+      html += `<br><br><span style="color:var(--ink-lighter);font-family:var(--font-mono);font-size:0.72rem;">File content:</span><br>
+               <span style="font-family:var(--font-mono);font-size:0.78rem;color:var(--ink);">${escHTML(result.content)}</span>`;
+    }
+    exp.innerHTML = html;
+    exp.className = 'chroot-explanation show';
+  }
+
+  function escHTML(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  }
+
+
+  /* ═══════════════════════════════════════════════════════════════
+     LAB 2 — BIBA INTEGRITY MODEL
+  ═══════════════════════════════════════════════════════════════ */
+
+  let bibaState = { subject: null, op: null, object: null };
+
+  const BIBA_LEVELS = { 1: 'Low', 2: 'Medium', 3: 'High', 4: 'System' };
+  const BIBA_LEVEL_CSS = { 1: 'lvl-low', 2: 'lvl-medium', 3: 'lvl-high', 4: 'lvl-system' };
+
+  const BIBA_SUBJECTS = {
+    browser: { label: 'Web Browser',              level: 1 },
+    email:   { label: 'Email Attachment Viewer',  level: 1 },
+    editor:  { label: 'Text Editor',              level: 2 },
+    daemon:  { label: 'System Daemon',            level: 3 },
+    kernel:  { label: 'OS Kernel',                level: 4 },
+  };
+  const BIBA_OBJECTS = {
+    tmp:      { label: '/tmp/ download',             level: 1 },
+    doc:      { label: '~/Documents/report.docx',    level: 2 },
+    sysconf:  { label: '/etc/sudoers',               level: 3 },
+    system32: { label: 'C:\\Windows\\System32',      level: 3 },
+    kmod:     { label: '/sys/module/kernel',          level: 4 },
+  };
+
+  function selectSubject(id) {
+    bibaState.subject = id;
+    // Deselect all, select clicked
+    Object.keys(BIBA_SUBJECTS).forEach(k => {
+      document.getElementById('subj-' + k).classList.remove('selected');
+    });
+    document.getElementById('subj-' + id).classList.add('selected');
+    bibaEvaluate();
+  }
+
+  function selectObject(id) {
+    bibaState.object = id;
+    Object.keys(BIBA_OBJECTS).forEach(k => {
+      document.getElementById('obj-' + k).classList.remove('selected');
+    });
+    document.getElementById('obj-' + id).classList.add('selected');
+    bibaEvaluate();
+  }
+
+  function selectOp(op) {
+    bibaState.op = op;
+    document.getElementById('op-read').classList.toggle('selected', op === 'read');
+    document.getElementById('op-write').classList.toggle('selected', op === 'write');
+    bibaEvaluate();
+  }
+
+  function bibaEvaluate() {
+    const { subject, op, object } = bibaState;
+    if (!subject || !op || !object) return;
+
+    const sData = BIBA_SUBJECTS[subject];
+    const oData = BIBA_OBJECTS[object];
+    const sL = sData.level, oL = oData.level;
+    const sName = BIBA_LEVELS[sL], oName = BIBA_LEVELS[oL];
+
+    let allow, rule, explanation;
+
+    if (op === 'write') {
+      // No write up: subject can only write to level <= subject level
+      allow = oL <= sL;
+      rule = allow ? 'Write Down / Same Level — OK' : 'No Write Up — DENIED';
+      if (allow) {
+        explanation = `<strong>${sData.label}</strong> (integrity level: <strong>${sName}</strong>)
+          is writing to an object at level <strong>${oName}</strong>
+          (${oL <= sL ? 'equal to or lower than' : 'higher than'} the subject).<br><br>
+          ${oL === sL
+            ? 'Same integrity level → write is permitted.'
+            : `Writing <em>down</em> is allowed — a trusted process writing to a less-trusted object
+               is permitted under Biba (though it may downgrade the object's effective trustworthiness).`
+          }`;
+      } else {
+        explanation = `<strong>${sData.label}</strong> (integrity level: <strong>${sName}</strong>)
+          attempted to write to <strong>${oData.label}</strong>
+          (integrity level: <strong>${oName}</strong>), which is <strong>higher</strong>.<br><br>
+          <strong>Biba: No Write Up.</strong> A process at a lower integrity level cannot corrupt
+          data at a higher level. If this were allowed, an attacker who compromised the browser
+          could modify system configuration files — exactly what this rule prevents.<br><br>
+          In <strong>Windows MIC</strong> this is enforced automatically:
+          a Low-integrity process (browser, email reader) cannot write to Medium or High integrity
+          locations regardless of NTFS permissions.`;
+      }
+    } else {
+      // Read: No read down — subject can only read from level >= subject level
+      allow = oL >= sL;
+      rule = allow ? 'Read Up / Same Level — OK' : 'No Read Down — DENIED';
+      if (allow) {
+        explanation = `<strong>${sData.label}</strong> (integrity level: <strong>${sName}</strong>)
+          is reading from <strong>${oData.label}</strong>
+          (integrity level: <strong>${oName}</strong>),
+          which is ${oL === sL ? 'at the same level' : 'at a <strong>higher</strong> integrity level'}.<br><br>
+          ${oL > sL
+            ? `Reading <em>up</em> is permitted — a less-trusted process can read
+               high-integrity data (like configuration files it needs to operate).
+               The data's integrity is not compromised by being read.`
+            : 'Same integrity level → read is permitted.'
+          }`;
+      } else {
+        explanation = `<strong>${sData.label}</strong> (integrity level: <strong>${sName}</strong>)
+          attempted to read from <strong>${oData.label}</strong>
+          (integrity level: <strong>${oName}</strong>), which is <strong>lower</strong>.<br><br>
+          <strong>Biba: No Read Down.</strong> This is the less intuitive rule. Why can't a
+          high-trust process read low-trust data? Because the <em>output</em> of that process
+          would now depend on untrustworthy input — contaminating high-integrity results.<br><br>
+          Example: if a system daemon reads from <code>/tmp</code> (writable by anyone),
+          an attacker could plant a malicious file there and influence the daemon's behavior.
+          Biba prevents this by blocking the read entirely.`;
+      }
+    }
+
+    const headerEl = document.getElementById('biba-verdict-header');
+    const summaryEl = document.getElementById('biba-verdict-summary');
+    const bodyEl = document.getElementById('biba-verdict-body');
+    const ruleEl = headerEl.querySelector ? null : null;
+
+    headerEl.className = 'biba-verdict-header ' + (allow ? 'allow' : 'deny');
+    summaryEl.innerHTML =
+      `<span class="verdict-icon">${allow ? '&#10003;' : '&#10007;'}</span>&nbsp;
+       <strong>${allow ? 'ALLOWED' : 'DENIED'}</strong> &nbsp;—&nbsp;
+       ${escHTML(sData.label)} <span class="level-badge ${BIBA_LEVEL_CSS[sL]}">${sName}</span>
+       &nbsp;→&nbsp; <strong>${op.toUpperCase()}</strong> &nbsp;→&nbsp;
+       ${escHTML(oData.label)} <span class="level-badge ${BIBA_LEVEL_CSS[oL]}">${oName}</span>
+       <span class="verdict-rule">${rule}</span>`;
+
+    bodyEl.innerHTML = explanation;
+    bodyEl.style.display = 'block';
+  }
+
+  function bibaReset() {
+    bibaState = { subject: null, op: null, object: null };
+    [...document.querySelectorAll('.entity-card')].forEach(el => el.classList.remove('selected'));
+    document.getElementById('op-read').classList.remove('selected');
+    document.getElementById('op-write').classList.remove('selected');
+    const h = document.getElementById('biba-verdict-header');
+    h.className = 'biba-verdict-header empty';
+    document.getElementById('biba-verdict-summary').textContent = 'Select a subject, operation, and object above';
+    document.getElementById('biba-verdict-body').style.display = 'none';
+  }
+
+  function bibaScenario(id) {
+    const preset = {
+      'browser-write-system': { s:'browser',  op:'write', o:'system32' },
+      'email-write-tmp':      { s:'email',    op:'write', o:'tmp'      },
+      'daemon-read-tmp':      { s:'daemon',   op:'read',  o:'tmp'      },
+      'editor-read-doc':      { s:'editor',   op:'read',  o:'doc'      },
+      'browser-read-download':{ s:'browser',  op:'read',  o:'tmp'      },
+      'kernel-write-kernel':  { s:'kernel',   op:'write', o:'kmod'     },
+    }[id];
+    if (!preset) return;
+    selectSubject(preset.s);
+    selectOp(preset.op);
+    selectObject(preset.o);
+  }
+
+
+  /* ═══════════════════════════════════════════════════════════════
+     LAB 3 — VIRTUALIZATION
+  ═══════════════════════════════════════════════════════════════ */
+
+  let virtMode = 'type1';
+
+  /* Each architecture is described as a list of "layers".
+     Each layer has: id, label, cssClass, clickable (bool),
+     and blastRadius: array of layer ids that become "at-risk" when this is compromised. */
+
+  const VIRT_STACKS = {
+    type1: {
+      layers: [
+        { id: 'hw',   label: 'Physical Hardware',    cls: 'stack-hw',         clickable: true },
+        { id: 'hv',   label: 'Hypervisor (Type 1)',  cls: 'stack-hypervisor', clickable: true },
+        // VM columns rendered specially
+        { id: 'vms',  label: '__vm_columns__' },
+      ],
+      vms: [
+        {
+          id: 'vm1',
+          layers: [
+            { id: 'vm1-os',  label: 'VM 1 — Guest OS',  cls: 'stack-guestos', clickable: true },
+            { id: 'vm1-app', label: 'App A',             cls: 'stack-app',     clickable: true },
+          ]
+        },
+        {
+          id: 'vm2',
+          layers: [
+            { id: 'vm2-os',  label: 'VM 2 — Guest OS',  cls: 'stack-guestos', clickable: true },
+            { id: 'vm2-app', label: 'App B',             cls: 'stack-app',     clickable: true },
+          ]
+        }
+      ],
+      blast: {
+        'hw':      { ids: ['hv','vm1-os','vm1-app','vm2-os','vm2-app'],
+                     info: `<strong>Physical hardware compromised.</strong> At this level (physical access, firmware exploit, supply-chain attack)
+                            an attacker has access to everything — the hypervisor, both VMs, and all data on disk.
+                            This is why data centers enforce strict physical access controls.` },
+        'hv':      { ids: ['vm1-os','vm1-app','vm2-os','vm2-app'],
+                     info: `<strong>Hypervisor compromised — all VMs fall.</strong> The hypervisor manages all VMs and can read
+                            any guest's memory, pause or terminate VMs, and inspect all storage.
+                            This is why securing the hypervisor is the single most critical task in a virtualized infrastructure.
+                            A compromised hypervisor makes all tenant isolation guarantees void.<br><br>
+                            In Type 1, the hypervisor runs <strong>directly on hardware</strong> — its attack surface is smaller
+                            than Type 2 because there is no host OS underneath it.` },
+        'vm1-os':  { ids: ['vm1-app'],
+                     info: `<strong>VM 1's guest OS compromised.</strong> Only VM 1 and its applications are affected.
+                            VM 2 is <em>completely isolated</em> — it does not share an OS, kernel, or address space with VM 1.
+                            The hypervisor enforces this boundary in hardware.<br><br>
+                            This is the core value proposition of VMs: tenant isolation even under full OS-level compromise.` },
+        'vm1-app': { ids: [],
+                     info: `<strong>Application in VM 1 compromised.</strong> Only this single application is directly affected.
+                            To impact the guest OS or other VMs, the attacker would need a further privilege escalation
+                            (app → guest OS) or a hypervisor escape exploit (guest OS → hypervisor).
+                            Defense in depth is working as intended.` },
+        'vm2-os':  { ids: ['vm2-app'],
+                     info: `<strong>VM 2's guest OS compromised.</strong> Only VM 2 is affected. VM 1 is isolated and unaffected.` },
+        'vm2-app': { ids: [],
+                     info: `<strong>Application in VM 2 compromised.</strong> Only this application is directly affected.` },
+      }
+    },
+
+    type2: {
+      layers: [
+        { id: 'hw',   label: 'Physical Hardware',    cls: 'stack-hw',         clickable: true },
+        { id: 'hostos', label: 'Host OS',            cls: 'stack-hostos',     clickable: true },
+        { id: 'hv',   label: 'Hypervisor (Type 2)',  cls: 'stack-hypervisor', clickable: true },
+        { id: 'vms',  label: '__vm_columns__' },
+      ],
+      vms: [
+        {
+          id: 'vm1',
+          layers: [
+            { id: 'vm1-os',  label: 'VM 1 — Guest OS',  cls: 'stack-guestos', clickable: true },
+            { id: 'vm1-app', label: 'App A',             cls: 'stack-app',     clickable: true },
+          ]
+        },
+        {
+          id: 'vm2',
+          layers: [
+            { id: 'vm2-os',  label: 'VM 2 — Guest OS',  cls: 'stack-guestos', clickable: true },
+            { id: 'vm2-app', label: 'App B',             cls: 'stack-app',     clickable: true },
+          ]
+        }
+      ],
+      blast: {
+        'hw':     { ids: ['hostos','hv','vm1-os','vm1-app','vm2-os','vm2-app'],
+                    info: `<strong>Physical hardware compromised.</strong> Everything above falls — host OS, hypervisor, and all VMs.` },
+        'hostos': { ids: ['hv','vm1-os','vm1-app','vm2-os','vm2-app'],
+                    info: `<strong>Host OS compromised — hypervisor and all VMs fall.</strong> This is the key weakness of Type 2.
+                           The hypervisor runs <em>inside</em> the host OS, so an attacker who owns the host OS also owns the hypervisor,
+                           and therefore all VMs.<br><br>
+                           Compare to Type 1: there the hypervisor runs directly on hardware, so a host OS compromise
+                           does not exist as an attack surface. Type 2 has a fundamentally larger exposure.` },
+        'hv':     { ids: ['vm1-os','vm1-app','vm2-os','vm2-app'],
+                    info: `<strong>Hypervisor compromised — all VMs fall.</strong> Same outcome as Type 1:
+                           the hypervisor has full visibility into all VMs. However, in Type 2, the host OS is
+                           <em>below</em> the hypervisor and is not compromised by this path alone.` },
+        'vm1-os': { ids: ['vm1-app'],
+                    info: `<strong>VM 1's guest OS compromised.</strong> VM 2 and the host OS are isolated and unaffected.` },
+        'vm1-app':{ ids: [],
+                    info: `<strong>Application in VM 1 compromised.</strong> Only this application is directly affected.` },
+        'vm2-os': { ids: ['vm2-app'],
+                    info: `<strong>VM 2's guest OS compromised.</strong> VM 1 and the host OS are unaffected.` },
+        'vm2-app':{ ids: [],
+                    info: `<strong>Application in VM 2 compromised.</strong> Only this application.` },
+      }
+    },
+
+    container: {
+      layers: [
+        { id: 'hw',      label: 'Physical Hardware',     cls: 'stack-hw',       clickable: true },
+        { id: 'hostos',  label: 'Host OS + Kernel',      cls: 'stack-hostos',   clickable: true },
+        { id: 'runtime', label: 'Container Runtime (Docker / containerd)', cls: 'stack-runtime', clickable: true },
+        { id: 'ctrs',    label: '__container_columns__' },
+      ],
+      containers: [
+        {
+          id: 'c1',
+          layers: [
+            { id: 'c1-app', label: 'Container 1 — App A', cls: 'stack-container', clickable: true },
+          ]
+        },
+        {
+          id: 'c2',
+          layers: [
+            { id: 'c2-app', label: 'Container 2 — App B', cls: 'stack-container', clickable: true },
+          ]
+        }
+      ],
+      blast: {
+        'hw':      { ids: ['hostos','runtime','c1-app','c2-app'],
+                     info: `<strong>Physical hardware compromised.</strong> Everything is at risk.` },
+        'hostos':  { ids: ['runtime','c1-app','c2-app'],
+                     info: `<strong>Host OS / kernel compromised — all containers fall.</strong>
+                            Unlike VMs, containers do <strong>not</strong> have independent kernels.
+                            All containers share the host OS kernel directly. If the kernel is compromised
+                            — for example via a kernel exploit triggered from inside a container —
+                            every container on the host is affected simultaneously.<br><br>
+                            This is the fundamental security tradeoff containers make for their
+                            performance and density advantages. In high-security environments,
+                            container workloads are sometimes placed inside VMs for kernel isolation.` },
+        'runtime': { ids: ['c1-app','c2-app'],
+                     info: `<strong>Container runtime compromised — all containers fall.</strong>
+                            The runtime manages namespaces and cgroups for all containers. A compromised
+                            runtime can escape container boundaries, attach to other container filesystems,
+                            or inject into running processes.<br><br>
+                            This is why keeping the container runtime (Docker daemon, containerd) updated
+                            and running with minimal privileges is critical.` },
+        'c1-app':  { ids: [],
+                     info: `<strong>Container 1 compromised.</strong> Container 2 is isolated via Linux
+                            namespaces (PID, network, mount, IPC) and cgroups.
+                            A standard code execution inside Container 1 cannot reach Container 2
+                            or the host — as long as no kernel vulnerability is triggered and the
+                            runtime is not misconfigured (e.g. no privileged containers, no host path mounts).` },
+        'c2-app':  { ids: [],
+                     info: `<strong>Container 2 compromised.</strong> Container 1 is isolated and unaffected by this path.` },
+      }
+    }
+  };
+
+  function setVirtMode(mode) {
+    virtMode = mode;
+    document.querySelectorAll('.virt-tab-btn').forEach((btn, i) => {
+      const modes = ['type1','type2','container'];
+      btn.classList.toggle('active', modes[i] === mode);
+    });
+    renderVirtStack();
+    document.getElementById('virt-info').className = 'compromise-info';
+    document.getElementById('virt-info').innerHTML =
+      'Click a layer in the stack diagram to see what an attacker who controls that component can reach.';
+  }
+
+  function renderVirtStack() {
+    const stack = VIRT_STACKS[virtMode];
+    const container = document.getElementById('virt-stack-diagram');
+    container.innerHTML = '';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'stack-diagram';
+
+    stack.layers.forEach(layer => {
+      if (layer.label === '__vm_columns__') {
+        // Render VM columns side by side
+        const vmWrap = document.createElement('div');
+        vmWrap.className = 'vm-columns';
+        stack.vms.forEach(vm => {
+          const col = document.createElement('div');
+          col.className = 'vm-col';
+          vm.layers.forEach(vl => {
+            const el = createLayerEl(vl);
+            col.appendChild(el);
+          });
+          vmWrap.appendChild(col);
+        });
+        wrapper.appendChild(vmWrap);
+      } else if (layer.label === '__container_columns__') {
+        const vmWrap = document.createElement('div');
+        vmWrap.className = 'vm-columns';
+        stack.containers.forEach(c => {
+          const col = document.createElement('div');
+          col.className = 'vm-col';
+          c.layers.forEach(cl => {
+            const el = createLayerEl(cl);
+            col.appendChild(el);
+          });
+          vmWrap.appendChild(col);
+        });
+        wrapper.appendChild(vmWrap);
+      } else {
+        wrapper.appendChild(createLayerEl(layer));
+      }
+    });
+
+    container.appendChild(wrapper);
+  }
+
+  function createLayerEl(layer) {
+    const el = document.createElement('div');
+    el.className = 'stack-layer ' + (layer.cls || '');
+    el.id = 'vl-' + layer.id;
+    el.textContent = layer.label;
+    if (layer.clickable) {
+      el.onclick = () => virtCompromise(layer.id);
+    }
+    return el;
+  }
+
+  function virtCompromise(id) {
+    const stack = VIRT_STACKS[virtMode];
+    const blastInfo = stack.blast[id];
+    if (!blastInfo) return;
+
+    // Clear all states
+    const allIds = getAllLayerIds(stack);
+    allIds.forEach(lid => {
+      const el = document.getElementById('vl-' + lid);
+      if (el) { el.classList.remove('compromised','at-risk'); }
+    });
+
+    // Mark compromised
+    const el = document.getElementById('vl-' + id);
+    if (el) el.classList.add('compromised');
+
+    // Mark at-risk
+    blastInfo.ids.forEach(rid => {
+      const rel = document.getElementById('vl-' + rid);
+      if (rel) rel.classList.add('at-risk');
+    });
+
+    const infoEl = document.getElementById('virt-info');
+    infoEl.className = 'compromise-info active-deny';
+    infoEl.innerHTML = blastInfo.info;
+  }
+
+  function getAllLayerIds(stack) {
+    const ids = stack.layers.filter(l => l.id && l.label !== '__vm_columns__' && l.label !== '__container_columns__').map(l => l.id);
+    if (stack.vms) stack.vms.forEach(vm => vm.layers.forEach(l => ids.push(l.id)));
+    if (stack.containers) stack.containers.forEach(c => c.layers.forEach(l => ids.push(l.id)));
+    return ids;
+  }
+
+  function virtReset() {
+    const stack = VIRT_STACKS[virtMode];
+    getAllLayerIds(stack).forEach(id => {
+      const el = document.getElementById('vl-' + id);
+      if (el) el.classList.remove('compromised','at-risk');
+    });
+    const infoEl = document.getElementById('virt-info');
+    infoEl.className = 'compromise-info';
+    infoEl.innerHTML = 'Click a layer in the stack diagram to see what an attacker who controls that component can reach.';
+  }
+
+  /* ── Init ── */
+  renderVirtStack();
+  </script>
+</body>
+</html>
