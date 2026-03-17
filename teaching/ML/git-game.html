@@ -1,0 +1,2229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Git Game - interactive Git & GitHub learning game for the Machine Learning course by Moreno La Quatra, Kore University of Enna.">
+  <meta property="og:title" content="Git Game - ML - Moreno La Quatra">
+  <meta property="og:url" content="https://mlaquatra.me/teaching/ML/git-game.html">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+  <link rel="canonical" href="https://mlaquatra.me/teaching/ML/git-game.html">
+  <title>Git Game &mdash; ML &mdash; Moreno La Quatra</title>
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="icon" href="../../mlq-logo.png" type="image/png">
+
+  <style>
+    /* ── Game chrome ── */
+    .game-banner {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: #e8e8e8;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: var(--margin-unit);
+      border: 1px solid #2a2a4a;
+      position: relative;
+      overflow: hidden;
+    }
+    .game-banner::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .game-banner h1 {
+      font-family: var(--font-mono);
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      color: #e8e8e8;
+    }
+    .game-banner p {
+      font-family: var(--font-serif);
+      font-size: 0.95rem;
+      color: #a0a8c0;
+      margin: 0;
+      text-align: left;
+    }
+
+    /* ── Score bar ── */
+    .score-bar {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 0.65rem 1.25rem;
+      margin-bottom: var(--margin-unit);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+    }
+    .score-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .score-label {
+      color: var(--ink-lighter);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.65rem;
+    }
+    .score-value {
+      font-weight: 600;
+      color: var(--ink);
+      font-size: 0.95rem;
+    }
+    .score-value.points { color: #b8860b; }
+    .score-value.streak { color: #1a5c1a; }
+    .score-value.level  { color: var(--accent); }
+
+    .progress-track {
+      flex: 1;
+      min-width: 120px;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #d4442a);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+      width: 0%;
+    }
+
+    /* ── Level selector ── */
+    .level-nav {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      margin-bottom: var(--margin-unit);
+    }
+    .level-btn {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 0.35rem 0.75rem;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      color: var(--ink-light);
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .level-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .level-btn.active {
+      background: var(--accent);
+      color: var(--paper);
+      border-color: var(--accent);
+    }
+    .level-btn.completed {
+      border-color: #1a5c1a;
+      color: #1a5c1a;
+    }
+    .level-btn.completed::after {
+      content: '✓';
+      margin-left: 0.3rem;
+      font-size: 0.65rem;
+    }
+    .level-btn.locked {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* ── Mission briefing ── */
+    .mission-card {
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: var(--margin-unit);
+    }
+    .mission-badge {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.15rem 0.5rem;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      display: inline-block;
+      margin-bottom: 0.65rem;
+    }
+    .mission-title {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--ink);
+    }
+    .mission-desc {
+      font-family: var(--font-serif);
+      font-size: 0.92rem;
+      color: var(--ink-light);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Task checklist ── */
+    .task-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.45rem 0;
+      font-family: var(--font-serif);
+      font-size: 0.88rem;
+      color: var(--ink-light);
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+    .task-item:last-child { border-bottom: none; }
+    .task-check {
+      width: 18px;
+      height: 18px;
+      border: 1.5px solid var(--border);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      font-size: 0.7rem;
+      color: transparent;
+      transition: all 0.2s;
+    }
+    .task-item.done .task-check {
+      border-color: #1a5c1a;
+      background: #1a5c1a;
+      color: white;
+    }
+    .task-item.done {
+      color: var(--ink-lighter);
+    }
+    .task-points {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: #b8860b;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* ── Hint button ── */
+    .hint-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 0.75rem;
+    }
+    .btn-hint {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.3rem 0.85rem;
+      border: 1px solid #b8860b;
+      background: transparent;
+      color: #b8860b;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-hint:hover { background: #b8860b; color: white; }
+    .btn-hint:disabled { opacity: 0.4; cursor: not-allowed; }
+    .hint-cost {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--ink-lighter);
+    }
+    .hint-text {
+      background: #fffbe6;
+      border: 1px solid #ffe082;
+      padding: 0.6rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #5d4e00;
+      margin-top: 0.5rem;
+      display: none;
+      line-height: 1.5;
+    }
+    .hint-text.show { display: block; }
+
+    /* ── Two-column layout: Terminal + Visualization ── */
+    .game-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: var(--margin-unit);
+    }
+    @media (max-width: 900px) {
+      .game-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Simulated Terminal ── */
+    .sim-terminal {
+      background: #1e1e2e;
+      border: 1px solid #313244;
+      display: flex;
+      flex-direction: column;
+      min-height: 420px;
+      max-height: 520px;
+    }
+    .term-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.85rem;
+      background: #181825;
+      border-bottom: 1px solid #313244;
+    }
+    .term-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .term-dot.r { background: #f38ba8; }
+    .term-dot.y { background: #f9e2af; }
+    .term-dot.g { background: #a6e3a1; }
+    .term-title {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: #6c7086;
+      margin-left: 0.5rem;
+    }
+    .term-body {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      overflow-y: auto;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: #cdd6f4;
+    }
+    .term-body::-webkit-scrollbar { width: 4px; }
+    .term-body::-webkit-scrollbar-thumb { background: #45475a; border-radius: 2px; }
+
+    .term-line { margin-bottom: 2px; white-space: pre-wrap; word-break: break-all; }
+    .term-line .prompt { color: #a6e3a1; }
+    .term-line .path   { color: #89b4fa; }
+    .term-line .cmd    { color: #cdd6f4; }
+    .term-line.output  { color: #bac2de; }
+    .term-line.error   { color: #f38ba8; }
+    .term-line.success { color: #a6e3a1; }
+    .term-line.info    { color: #89b4fa; }
+    .term-line.warning { color: #f9e2af; }
+
+    .term-input-row {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      border-top: 1px solid #313244;
+      background: #181825;
+    }
+    .term-prompt-label {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #a6e3a1;
+      white-space: nowrap;
+      margin-right: 0.5rem;
+    }
+    .term-prompt-path {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #89b4fa;
+      white-space: nowrap;
+      margin-right: 0.5rem;
+    }
+    .term-input {
+      flex: 1;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #cdd6f4;
+      caret-color: #a6e3a1;
+    }
+    .term-input::placeholder { color: #585b70; }
+
+    /* ── Git Visualization Panel ── */
+    .viz-panel {
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      min-height: 420px;
+      max-height: 520px;
+      overflow-y: auto;
+    }
+    .viz-panel::-webkit-scrollbar { width: 4px; }
+    .viz-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .viz-panel-header {
+      padding: 0.5rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--ink-lighter);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--paper);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .viz-tab {
+      padding: 0.3rem 0.7rem;
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: none;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--ink-lighter);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: all 0.15s;
+    }
+    .viz-tab:hover { color: var(--ink); }
+    .viz-tab.active {
+      border-color: var(--border);
+      background: var(--paper-dark);
+      color: var(--accent);
+    }
+    .viz-content {
+      flex: 1;
+      padding: 0.85rem;
+    }
+
+    /* ── Git Area boxes ── */
+    .git-area {
+      border: 1px solid var(--border);
+      background: var(--paper);
+      margin-bottom: 0.65rem;
+      min-height: 50px;
+    }
+    .git-area-header {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.3rem 0.65rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .area-working  .git-area-header { background: #fff8e1; color: #7a6200; }
+    .area-staging  .git-area-header { background: #e3f2fd; color: #0d47a1; }
+    .area-repo     .git-area-header { background: #e8f5e9; color: #1b5e20; }
+    .area-remote   .git-area-header { background: #f3e5f5; color: #4a148c; }
+
+    .git-area-body {
+      padding: 0.4rem 0.65rem;
+      min-height: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .file-chip {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 2px;
+      border: 1px solid;
+      transition: all 0.3s ease;
+      animation: chipIn 0.35s ease;
+      position: relative;
+    }
+    @keyframes chipIn {
+      from { opacity: 0; transform: translateY(-8px) scale(0.9); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .file-chip.new       { border-color: #4caf50; background: #e8f5e9; color: #2e7d32; }
+    .file-chip.modified  { border-color: #ff9800; background: #fff3e0; color: #e65100; }
+    .file-chip.staged    { border-color: #2196f3; background: #e3f2fd; color: #1565c0; }
+    .file-chip.committed { border-color: #1b5e20; background: #c8e6c9; color: #1b5e20; }
+    .file-chip.deleted   { border-color: #f44336; background: #ffebee; color: #c62828; text-decoration: line-through; }
+    .file-chip.ignored   { border-color: #9e9e9e; background: #f5f5f5; color: #757575; opacity: 0.6; }
+
+    .empty-area {
+      font-family: var(--font-serif);
+      font-size: 0.78rem;
+      color: var(--ink-lighter);
+      font-style: italic;
+      padding: 0.3rem 0;
+    }
+
+    /* ── Commit graph ── */
+    .commit-graph {
+      padding: 0.5rem 0;
+    }
+    .commit-node {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      margin-bottom: 0.1rem;
+      animation: nodeIn 0.3s ease;
+      font-size: 0.78rem;
+    }
+    @keyframes nodeIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .commit-rail {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 20px;
+      flex-shrink: 0;
+    }
+    .commit-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: var(--paper);
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .commit-dot.merge { border-color: #6a0dad; background: #f3e5f5; }
+    .commit-dot.head  { background: var(--accent); }
+    .commit-line {
+      width: 2px;
+      flex: 1;
+      min-height: 14px;
+      background: var(--border);
+    }
+    .commit-detail {
+      flex: 1;
+      padding-bottom: 0.3rem;
+    }
+    .commit-hash {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: #b8860b;
+    }
+    .commit-msg {
+      font-family: var(--font-serif);
+      font-size: 0.8rem;
+      color: var(--ink);
+    }
+    .commit-branch {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 2px;
+      border: 1px solid;
+      margin-left: 0.4rem;
+    }
+    .branch-main     { border-color: #1a5c1a; color: #1a5c1a; background: #e8f5e9; }
+    .branch-feature  { border-color: #0d47a1; color: #0d47a1; background: #e3f2fd; }
+    .branch-hotfix   { border-color: #c62828; color: #c62828; background: #ffebee; }
+    .branch-head     { border-color: #6a0dad; color: #6a0dad; background: #f3e5f5; }
+
+    /* ── Conflict editor ── */
+    .conflict-editor {
+      background: #1e1e2e;
+      border: 1px solid #313244;
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #cdd6f4;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      margin-bottom: 0.75rem;
+      display: none;
+    }
+    .conflict-editor.show { display: block; }
+    .conflict-ours   { background: rgba(166,227,161,0.15); display: block; padding: 0.1rem 0.4rem; }
+    .conflict-theirs { background: rgba(243,139,168,0.15); display: block; padding: 0.1rem 0.4rem; }
+    .conflict-marker { color: #f9e2af; font-weight: 600; display: block; }
+    .conflict-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .btn-resolve {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.35rem 1rem;
+      border: 1px solid;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: transparent;
+    }
+    .btn-resolve.ours   { border-color: #1a5c1a; color: #1a5c1a; }
+    .btn-resolve.theirs { border-color: #c62828; color: #c62828; }
+    .btn-resolve.both   { border-color: #0d47a1; color: #0d47a1; }
+    .btn-resolve:hover  { color: white; }
+    .btn-resolve.ours:hover   { background: #1a5c1a; }
+    .btn-resolve.theirs:hover { background: #c62828; }
+    .btn-resolve.both:hover   { background: #0d47a1; }
+
+    /* ── .gitignore tester ── */
+    .ignore-tester {
+      display: none;
+    }
+    .ignore-tester.show { display: block; }
+    .ignore-file-tree {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      line-height: 1.7;
+    }
+    .ignore-file-tree .ignored {
+      color: var(--ink-lighter);
+      text-decoration: line-through;
+      opacity: 0.5;
+    }
+    .ignore-file-tree .tracked {
+      color: var(--ink);
+    }
+
+    /* ── Level complete overlay ── */
+    .level-complete {
+      display: none;
+      background: var(--paper);
+      border: 2px solid #1a5c1a;
+      padding: 1.5rem 2rem;
+      text-align: center;
+      margin-bottom: var(--margin-unit);
+      animation: popIn 0.4s ease;
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .level-complete.show { display: block; }
+    .level-complete h3 {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      color: #1a5c1a;
+      margin-bottom: 0.3rem;
+    }
+    .level-complete .earned {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      color: #b8860b;
+      margin-bottom: 0.5rem;
+    }
+    .btn-next-level {
+      font-family: var(--font-serif);
+      font-size: 0.95rem;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: var(--paper);
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-top: 0.5rem;
+    }
+    .btn-next-level:hover { background: var(--accent-light); }
+
+    /* ── Achievements ── */
+    .achievement-toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: #1a1a2e;
+      color: #e8e8e8;
+      padding: 0.85rem 1.25rem;
+      border: 1px solid #b8860b;
+      border-left: 4px solid #b8860b;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      z-index: 9999;
+      animation: slideInRight 0.4s ease, fadeOut 0.5s ease 3s forwards;
+      max-width: 320px;
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(100px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeOut {
+      to { opacity: 0; transform: translateX(60px); }
+    }
+    .achievement-toast .ach-title {
+      color: #f9e2af;
+      font-weight: 600;
+      margin-bottom: 0.15rem;
+    }
+    .achievement-toast .ach-desc {
+      font-size: 0.72rem;
+      color: #a0a8c0;
+    }
+
+    /* ── Utility ── */
+    .hidden { display: none !important; }
+    .mt-1 { margin-top: 0.65rem; }
+
+    /* ── Free-play info ── */
+    .sandbox-info {
+      background: #e3f2fd;
+      border: 1px solid #90caf9;
+      border-left: 4px solid #1976d2;
+      padding: 0.75rem 1.1rem;
+      font-family: var(--font-serif);
+      font-size: 0.85rem;
+      color: #0d2f5e;
+      line-height: 1.55;
+      margin-bottom: 0.75rem;
+    }
+
+    main.wide-content { max-width: var(--wide-width); }
+  </style>
+</head>
+<body>
+
+  <div data-include="header-nested-2"></div>
+
+  <main class="wide-content">
+
+    <div class="breadcrumb">
+      <a href="../../teaching/">Teaching</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="index.html">Machine Learning</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>Git Game</span>
+    </div>
+
+    <!-- ════════════════════════════════════════════ Banner ── -->
+    <div class="game-banner">
+      <h1>$ git game <span style="animation: blink 1s step-end infinite;">_</span></h1>
+      <p>Master Git &amp; GitHub interactively &mdash; type real commands, earn points, level up.</p>
+      <style>@keyframes blink { 50% { opacity: 0; } }</style>
+    </div>
+
+    <!-- ════════════════════════════════════════════ Score Bar ── -->
+    <div class="score-bar">
+      <div class="score-item">
+        <span class="score-label">Score</span>
+        <span class="score-value points" id="totalScore">0</span>
+      </div>
+      <div class="score-item">
+        <span class="score-label">Streak</span>
+        <span class="score-value streak" id="streak">0</span>
+      </div>
+      <div class="score-item">
+        <span class="score-label">Level</span>
+        <span class="score-value level" id="currentLevelLabel">1 / 8</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressBar"></div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════ Level Nav ── -->
+    <div class="level-nav" id="levelNav"></div>
+
+    <!-- ════════════════════════════════════════════ Mission Card ── -->
+    <div class="mission-card" id="missionCard">
+      <div class="mission-badge" id="missionBadge">Level 1</div>
+      <div class="mission-title" id="missionTitle"></div>
+      <div class="mission-desc" id="missionDesc"></div>
+      <ul class="task-list" id="taskList"></ul>
+      <div class="hint-row">
+        <button class="btn-hint" id="btnHint" onclick="showHint()">Show Hint</button>
+        <span class="hint-cost" id="hintCost">-5 pts</span>
+      </div>
+      <div class="hint-text" id="hintText"></div>
+    </div>
+
+    <!-- ════════════════════════════════════════════ Level Complete ── -->
+    <div class="level-complete" id="levelComplete">
+      <h3>Level Complete!</h3>
+      <div class="earned" id="earnedPoints"></div>
+      <p style="font-family:var(--font-serif);font-size:0.9rem;color:var(--ink-light);margin-bottom:0.5rem;" id="levelCompleteMsg"></p>
+      <button class="btn-next-level" onclick="goNextLevel()">Next Level →</button>
+    </div>
+
+    <!-- ════════════════════════════════════════════ Game Grid ── -->
+    <div class="game-grid">
+
+      <!-- ── Terminal ── -->
+      <div class="sim-terminal">
+        <div class="term-header">
+          <span class="term-dot r"></span>
+          <span class="term-dot y"></span>
+          <span class="term-dot g"></span>
+          <span class="term-title">git-game - zsh</span>
+        </div>
+        <div class="term-body" id="termBody">
+          <div class="term-line info">Welcome to Git Game! Type git commands below.</div>
+          <div class="term-line info">Type <span style="color:#f9e2af;">help</span> for available commands.</div>
+        </div>
+        <div class="term-input-row">
+          <span class="term-prompt-label" id="promptUser">student@ml</span>
+          <span class="term-prompt-path" id="promptPath">~</span>
+          <span style="color:#a6e3a1;font-family:var(--font-mono);font-size:0.8rem;">$&nbsp;</span>
+          <input class="term-input" id="termInput" type="text" placeholder="type a git command..." autocomplete="off" spellcheck="false" autofocus>
+        </div>
+      </div>
+
+      <!-- ── Visualization ── -->
+      <div class="viz-panel">
+        <div class="viz-panel-header">
+          <button class="viz-tab active" data-tab="areas" onclick="switchVizTab('areas',this)">Areas</button>
+          <button class="viz-tab" data-tab="graph" onclick="switchVizTab('graph',this)">Commit Graph</button>
+          <button class="viz-tab" data-tab="branches" onclick="switchVizTab('branches',this)">Branches</button>
+        </div>
+        <div class="viz-content" id="vizAreas">
+          <div class="git-area area-working">
+            <div class="git-area-header"><span>Working Directory</span><span id="wdCount">0 files</span></div>
+            <div class="git-area-body" id="areaWorking"><span class="empty-area">no files yet</span></div>
+          </div>
+          <div class="git-area area-staging">
+            <div class="git-area-header"><span>Staging Area (Index)</span><span id="saCount">0 files</span></div>
+            <div class="git-area-body" id="areaStaging"><span class="empty-area">nothing staged</span></div>
+          </div>
+          <div class="git-area area-repo">
+            <div class="git-area-header"><span>Local Repository</span><span id="repoCount">0 commits</span></div>
+            <div class="git-area-body" id="areaRepo"><span class="empty-area">no commits</span></div>
+          </div>
+          <div class="git-area area-remote">
+            <div class="git-area-header"><span>Remote (origin)</span><span id="remoteCount">-</span></div>
+            <div class="git-area-body" id="areaRemote"><span class="empty-area">no remote configured</span></div>
+          </div>
+        </div>
+        <div class="viz-content hidden" id="vizGraph">
+          <div class="commit-graph" id="commitGraph">
+            <span class="empty-area">no commits yet</span>
+          </div>
+        </div>
+        <div class="viz-content hidden" id="vizBranches">
+          <div id="branchList">
+            <span class="empty-area">no branches yet</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ════════════════════════════════════════════ Conflict resolver (shown when needed) ── -->
+    <div class="conflict-editor" id="conflictEditor"></div>
+    <div class="conflict-actions hidden" id="conflictActions">
+      <button class="btn-resolve ours"   onclick="resolveConflict('ours')">Accept Ours (main)</button>
+      <button class="btn-resolve theirs" onclick="resolveConflict('theirs')">Accept Theirs (feature)</button>
+      <button class="btn-resolve both"   onclick="resolveConflict('both')">Accept Both</button>
+    </div>
+
+  </main>
+
+  <div data-include="footer-nested-2"></div>
+
+  <script src="../../script.js"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   GIT GAME ENGINE
+   A fully simulated Git environment with scoring & levels.
+   ═══════════════════════════════════════════════════════════════════ */
+(() => {
+'use strict';
+
+/* ── State ── */
+const S = {
+  score: 0,
+  streak: 0,
+  bestStreak: 0,
+  currentLevel: 0,
+  hintsUsed: 0,
+  completedLevels: new Set(),
+  achievements: new Set(),
+
+  // simulated git state
+  initialized: false,
+  cwd: '~',
+  projectDir: '',
+  workingDir: {},      // filename → {status:'new'|'modified'|'deleted', content:''}
+  stagingArea: {},     // filename → content
+  branches: { },       // branchName → [commits]
+  currentBranch: 'main',
+  HEAD: null,
+  commits: [],         // [{hash, msg, branch, files:{}, timestamp}]
+  remotes: {},         // name → url
+  remoteBranches: {},  // branchName → [commits]
+  pushed: false,
+  gitignorePatterns: [],
+  stash: [],
+  tags: {},
+  lfsPatterns: [],
+  configDone: false,
+  conflictActive: false,
+  conflictFile: '',
+  conflictOurs: '',
+  conflictTheirs: '',
+  history: [],         // command history
+  historyIdx: -1,
+};
+
+/* ── Levels ── */
+const LEVELS = [
+  {
+    id: 1,
+    title: 'First Steps - Initialize a Repository',
+    badge: 'Level 1 · Basics',
+    desc: 'Every Git journey begins with <code>git init</code>. Create a project directory, navigate into it, and initialize your first repository.',
+    tasks: [
+      { id: 'mkdir',   text: 'Create a project directory with <code>mkdir ml-project</code>', pts: 10, cmd: 'mkdir' },
+      { id: 'cd',      text: 'Navigate into it with <code>cd ml-project</code>', pts: 10, cmd: 'cd' },
+      { id: 'init',    text: 'Initialize Git with <code>git init</code>', pts: 20, cmd: 'git init' },
+      { id: 'status1', text: 'Check the status with <code>git status</code>', pts: 10, cmd: 'git status' },
+    ],
+    hint: 'Commands in order: mkdir ml-project → cd ml-project → git init → git status',
+    completionMsg: 'You created your first Git repository! The invisible .git folder now tracks everything.',
+  },
+  {
+    id: 2,
+    title: 'Stage & Commit - Your First Snapshot',
+    badge: 'Level 2 · Core Workflow',
+    desc: 'Files move through three areas: Working Directory → Staging Area → Repository. Create some files, stage them, and commit.',
+    tasks: [
+      { id: 'touch1',  text: 'Create <code>README.md</code> with <code>touch README.md</code>', pts: 10, cmd: 'touch' },
+      { id: 'touch2',  text: 'Create <code>train.py</code> with <code>touch train.py</code>', pts: 10, cmd: 'touch' },
+      { id: 'add1',    text: 'Stage README.md with <code>git add README.md</code>', pts: 15, cmd: 'git add' },
+      { id: 'addall',  text: 'Stage all files with <code>git add .</code>', pts: 15, cmd: 'git add' },
+      { id: 'commit1', text: 'Commit with <code>git commit -m "Initial commit"</code>', pts: 25, cmd: 'git commit' },
+    ],
+    hint: 'touch README.md → touch train.py → git add README.md → git add . → git commit -m "Initial commit"',
+    completionMsg: 'You\'ve made your first commit! Each commit is a permanent snapshot in your project\'s history.',
+  },
+  {
+    id: 3,
+    title: 'Modify & Track - Understanding Diffs',
+    badge: 'Level 3 · Changes',
+    desc: 'Edit existing files, see what changed, and make a new commit. This is the daily Git routine.',
+    tasks: [
+      { id: 'echo1',  text: 'Edit a file: <code>echo "import torch" > train.py</code>', pts: 10, cmd: 'echo' },
+      { id: 'status2',text: 'Check what changed: <code>git status</code>', pts: 10, cmd: 'git status' },
+      { id: 'diff1',  text: 'See the diff: <code>git diff</code>', pts: 15, cmd: 'git diff' },
+      { id: 'add2',   text: 'Stage the changes: <code>git add train.py</code>', pts: 10, cmd: 'git add' },
+      { id: 'commit2',text: 'Commit: <code>git commit -m "Add torch import"</code>', pts: 20, cmd: 'git commit' },
+      { id: 'log1',   text: 'View history: <code>git log --oneline</code>', pts: 15, cmd: 'git log' },
+    ],
+    hint: 'echo "import torch" > train.py → git status → git diff → git add train.py → git commit -m "..." → git log --oneline',
+    completionMsg: 'You can now track changes like a pro! The diff shows exactly what was modified.',
+  },
+  {
+    id: 4,
+    title: 'Branching Out - Parallel Worlds',
+    badge: 'Level 4 · Branches',
+    desc: 'Branches let you experiment without breaking your main code. Create a branch, switch to it, and make a commit there.',
+    tasks: [
+      { id: 'branch1',   text: 'Create a branch: <code>git branch new-feature</code>', pts: 15, cmd: 'git branch' },
+      { id: 'checkout1', text: 'Switch to it: <code>git checkout new-feature</code>', pts: 15, cmd: 'git checkout' },
+      { id: 'touch3',    text: 'Create <code>model.py</code>: <code>touch model.py</code>', pts: 10, cmd: 'touch' },
+      { id: 'add3',      text: 'Stage it: <code>git add model.py</code>', pts: 10, cmd: 'git add' },
+      { id: 'commit3',   text: 'Commit: <code>git commit -m "Add model architecture"</code>', pts: 20, cmd: 'git commit' },
+      { id: 'checkoutm', text: 'Switch back: <code>git checkout main</code>', pts: 10, cmd: 'git checkout' },
+    ],
+    hint: 'git branch new-feature → git checkout new-feature → touch model.py → git add model.py → git commit → git checkout main',
+    completionMsg: 'Notice how model.py disappears when you switch back to main - it only exists on the feature branch!',
+  },
+  {
+    id: 5,
+    title: 'Merge - Bringing It Together',
+    badge: 'Level 5 · Merge',
+    desc: 'Your feature is ready. Merge it into main and see the commit graph update.',
+    tasks: [
+      { id: 'merge1', text: 'Merge feature branch: <code>git merge new-feature</code>', pts: 30, cmd: 'git merge' },
+      { id: 'log2',   text: 'Check the log: <code>git log --oneline</code>', pts: 10, cmd: 'git log' },
+      { id: 'branchd',text: 'Delete merged branch: <code>git branch -d new-feature</code>', pts: 15, cmd: 'git branch' },
+    ],
+    hint: 'Make sure you\'re on main first (git checkout main), then: git merge new-feature → git log --oneline → git branch -d new-feature',
+    completionMsg: 'Clean merge! The feature branch changes are now part of main.',
+  },
+  {
+    id: 6,
+    title: 'Merge Conflicts - Don\'t Panic!',
+    badge: 'Level 6 · Conflicts',
+    desc: 'Conflicts happen when the same lines are edited on different branches. Create a conflict, then resolve it.',
+    tasks: [
+      { id: 'branch2',   text: 'Create & switch: <code>git checkout -b experiment</code>', pts: 10, cmd: 'git checkout' },
+      { id: 'echo2',     text: 'Edit train.py: <code>echo "lr = 0.001" > train.py</code>', pts: 10, cmd: 'echo' },
+      { id: 'add4',      text: 'Stage & commit: <code>git commit -am "Set lr to 0.001"</code>', pts: 15, cmd: 'git commit' },
+      { id: 'checkoutm2',text: 'Switch to main: <code>git checkout main</code>', pts: 10, cmd: 'git checkout' },
+      { id: 'echo3',     text: 'Edit train.py differently: <code>echo "lr = 0.0005" > train.py</code>', pts: 10, cmd: 'echo' },
+      { id: 'add5',      text: 'Stage & commit: <code>git commit -am "Set lr to 0.0005"</code>', pts: 15, cmd: 'git commit' },
+      { id: 'merge2',    text: 'Merge (will conflict!): <code>git merge experiment</code>', pts: 10, cmd: 'git merge' },
+      { id: 'resolve',   text: 'Resolve the conflict using the buttons below', pts: 30, cmd: 'resolve' },
+    ],
+    hint: 'Create the conflict by editing train.py differently on two branches, then merge. Use the conflict resolution panel that appears to pick a resolution.',
+    completionMsg: 'You survived your first merge conflict! In real projects, communicate with teammates to avoid them.',
+  },
+  {
+    id: 7,
+    title: 'Remote Operations - Connect to GitHub',
+    badge: 'Level 7 · Remotes',
+    desc: 'Push your code to a remote repository (simulated GitHub) and learn the push/pull workflow.',
+    tasks: [
+      { id: 'remote1', text: 'Add remote: <code>git remote add origin https://github.com/you/ml-project.git</code>', pts: 15, cmd: 'git remote' },
+      { id: 'push1',   text: 'Push to remote: <code>git push -u origin main</code>', pts: 25, cmd: 'git push' },
+      { id: 'pull1',   text: 'Pull from remote: <code>git pull origin main</code>', pts: 15, cmd: 'git pull' },
+    ],
+    hint: 'git remote add origin <url> → git push -u origin main → git pull origin main',
+    completionMsg: 'Your code is now on GitHub! Others can clone it and collaborate with you.',
+  },
+  {
+    id: 8,
+    title: '.gitignore - Keeping Secrets',
+    badge: 'Level 8 · Ignore',
+    desc: 'ML projects have large files (datasets, checkpoints) that shouldn\'t be tracked. Create a .gitignore.',
+    tasks: [
+      { id: 'ignore1', text: 'Create .gitignore: <code>touch .gitignore</code>', pts: 10, cmd: 'touch' },
+      { id: 'echo4',   text: 'Ignore Python cache: <code>echo "*.pyc" >> .gitignore</code>', pts: 10, cmd: 'echo' },
+      { id: 'echo5',   text: 'Ignore data folder: <code>echo "data/" >> .gitignore</code>', pts: 10, cmd: 'echo' },
+      { id: 'echo6',   text: 'Ignore checkpoints: <code>echo "*.pt" >> .gitignore</code>', pts: 10, cmd: 'echo' },
+      { id: 'touch4',  text: 'Try creating an ignored file: <code>touch model.pyc</code>', pts: 10, cmd: 'touch' },
+      { id: 'status3', text: 'Check status - ignored files should not appear: <code>git status</code>', pts: 10, cmd: 'git status' },
+      { id: 'add6',    text: 'Stage & commit .gitignore: <code>git add .gitignore && git commit -m "Add gitignore"</code>', pts: 20, cmd: 'git commit' },
+    ],
+    hint: 'Create .gitignore, add patterns (*.pyc, data/, *.pt), then create a .pyc file and run git status to see it is ignored.',
+    completionMsg: 'Excellent! Your repo will stay clean. Always ignore build artifacts, large data, and secrets.',
+  },
+];
+
+const TOTAL_POSSIBLE_POINTS = LEVELS.reduce((sum, l) => sum + l.tasks.reduce((s, t) => s + t.pts, 0), 0);
+
+/* ── Achievements ── */
+const ACH = {
+  first_commit:   { title: 'First Blood',          desc: 'Made your first commit' },
+  streak_3:       { title: 'On a Roll',             desc: '3 correct commands in a row' },
+  streak_5:       { title: 'Combo Master',           desc: '5 correct commands in a row' },
+  streak_10:      { title: 'Unstoppable',            desc: '10 correct commands in a row' },
+  branch_master:  { title: 'Branch Manager',         desc: 'Created your first branch' },
+  conflict_hero:  { title: 'Conflict Survivor',      desc: 'Resolved a merge conflict' },
+  pushed:         { title: 'Going Remote',            desc: 'Pushed to a remote for the first time' },
+  all_levels:     { title: 'Git Grandmaster',         desc: 'Completed all 8 levels' },
+  no_hints:       { title: 'No Help Needed',          desc: 'Completed a level without hints' },
+  speed_demon:    { title: 'Speed Demon',             desc: 'Completed a level in under 60 seconds' },
+};
+
+let levelStartTime = Date.now();
+let levelHintUsed = false;
+
+/* ── Helpers ── */
+function $(id) { return document.getElementById(id); }
+function rHash() { return Math.random().toString(16).slice(2, 9); }
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ── UI Update ── */
+function updateScoreUI() {
+  $('totalScore').textContent = S.score;
+  $('streak').textContent = S.streak;
+  const lvl = LEVELS[S.currentLevel];
+  $('currentLevelLabel').textContent = `${lvl ? lvl.id : '?'} / ${LEVELS.length}`;
+  const pct = (S.score / TOTAL_POSSIBLE_POINTS) * 100;
+  $('progressBar').style.width = Math.min(pct, 100) + '%';
+}
+
+function buildLevelNav() {
+  const nav = $('levelNav');
+  nav.innerHTML = '';
+  LEVELS.forEach((l, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'level-btn';
+    btn.textContent = `Level ${l.id}`;
+    if (i === S.currentLevel) btn.classList.add('active');
+    if (S.completedLevels.has(i)) btn.classList.add('completed');
+    if (i > 0 && !S.completedLevels.has(i - 1) && i !== S.currentLevel) btn.classList.add('locked');
+    btn.onclick = () => {
+      if (i > 0 && !S.completedLevels.has(i - 1) && i !== S.currentLevel) return;
+      loadLevel(i);
+    };
+    nav.appendChild(btn);
+  });
+}
+
+function loadLevel(idx) {
+  S.currentLevel = idx;
+  const l = LEVELS[idx];
+  $('missionBadge').textContent = l.badge;
+  $('missionTitle').textContent = l.title;
+  $('missionDesc').innerHTML = l.desc;
+  $('hintText').classList.remove('show');
+  $('hintText').textContent = '';
+  $('btnHint').disabled = false;
+  $('levelComplete').classList.remove('show');
+  levelStartTime = Date.now();
+  levelHintUsed = false;
+
+  const ul = $('taskList');
+  ul.innerHTML = '';
+  l.tasks.forEach(t => {
+    const li = document.createElement('li');
+    li.className = 'task-item';
+    li.id = 'task-' + t.id;
+    li.innerHTML = `<span class="task-check">✓</span><span>${t.text}</span><span class="task-points">+${t.pts}</span>`;
+    ul.appendChild(li);
+  });
+
+  buildLevelNav();
+  updateScoreUI();
+}
+
+function completeTask(taskId) {
+  const el = document.getElementById('task-' + taskId);
+  if (!el || el.classList.contains('done')) return false;
+  el.classList.add('done');
+  const lvl = LEVELS[S.currentLevel];
+  const task = lvl.tasks.find(t => t.id === taskId);
+  if (task) {
+    S.score += task.pts;
+    S.streak++;
+    if (S.streak > S.bestStreak) S.bestStreak = S.streak;
+  }
+  updateScoreUI();
+  checkStreakAchievements();
+  // Check if level is complete
+  const allDone = lvl.tasks.every(t => {
+    const e = document.getElementById('task-' + t.id);
+    return e && e.classList.contains('done');
+  });
+  if (allDone) finishLevel();
+  return true;
+}
+
+function failStreak() {
+  S.streak = 0;
+  updateScoreUI();
+}
+
+function checkStreakAchievements() {
+  if (S.streak >= 3)  grantAchievement('streak_3');
+  if (S.streak >= 5)  grantAchievement('streak_5');
+  if (S.streak >= 10) grantAchievement('streak_10');
+}
+
+function finishLevel() {
+  S.completedLevels.add(S.currentLevel);
+  const lvl = LEVELS[S.currentLevel];
+  $('levelComplete').classList.add('show');
+  $('earnedPoints').textContent = `Level ${lvl.id} cleared!`;
+  $('levelCompleteMsg').textContent = lvl.completionMsg;
+  buildLevelNav();
+  // time-based achievement
+  const elapsed = (Date.now() - levelStartTime) / 1000;
+  if (elapsed < 60) grantAchievement('speed_demon');
+  if (!levelHintUsed) grantAchievement('no_hints');
+  if (S.completedLevels.size === LEVELS.length) grantAchievement('all_levels');
+}
+
+function goNextLevel() {
+  $('levelComplete').classList.remove('show');
+  if (S.currentLevel < LEVELS.length - 1) {
+    loadLevel(S.currentLevel + 1);
+  }
+}
+
+function showHint() {
+  const lvl = LEVELS[S.currentLevel];
+  $('hintText').textContent = lvl.hint;
+  $('hintText').classList.add('show');
+  $('btnHint').disabled = true;
+  S.score = Math.max(0, S.score - 5);
+  levelHintUsed = true;
+  updateScoreUI();
+}
+
+function grantAchievement(key) {
+  if (S.achievements.has(key)) return;
+  S.achievements.add(key);
+  const a = ACH[key];
+  if (!a) return;
+  const toast = document.createElement('div');
+  toast.className = 'achievement-toast';
+  toast.innerHTML = `<div class="ach-title">🏆 ${a.title}</div><div class="ach-desc">${a.desc}</div>`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+}
+
+/* ── Visualization ── */
+function switchVizTab(tab, btn) {
+  document.querySelectorAll('.viz-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  $('vizAreas').classList.toggle('hidden', tab !== 'areas');
+  $('vizGraph').classList.toggle('hidden', tab !== 'graph');
+  $('vizBranches').classList.toggle('hidden', tab !== 'branches');
+}
+
+function renderAreas() {
+  // Working Directory
+  const wd = $('areaWorking');
+  const wdFiles = Object.entries(S.workingDir);
+  if (wdFiles.length === 0) {
+    wd.innerHTML = '<span class="empty-area">no files yet</span>';
+  } else {
+    wd.innerHTML = wdFiles.map(([f, info]) => {
+      // check if ignored
+      if (isIgnored(f)) return `<span class="file-chip ignored" title="ignored">${escHtml(f)}</span>`;
+      return `<span class="file-chip ${info.status}" title="${info.status}">${escHtml(f)}</span>`;
+    }).join('');
+  }
+  $('wdCount').textContent = wdFiles.length + ' file' + (wdFiles.length !== 1 ? 's' : '');
+
+  // Staging Area
+  const sa = $('areaStaging');
+  const saFiles = Object.keys(S.stagingArea);
+  if (saFiles.length === 0) {
+    sa.innerHTML = '<span class="empty-area">nothing staged</span>';
+  } else {
+    sa.innerHTML = saFiles.map(f => `<span class="file-chip staged">${escHtml(f)}</span>`).join('');
+  }
+  $('saCount').textContent = saFiles.length + ' file' + (saFiles.length !== 1 ? 's' : '');
+
+  // Repo
+  $('repoCount').textContent = S.commits.length + ' commit' + (S.commits.length !== 1 ? 's' : '');
+  if (S.commits.length > 0) {
+    const latest = S.commits[S.commits.length - 1];
+    const fnames = Object.keys(latest.files);
+    $('areaRepo').innerHTML = fnames.map(f => `<span class="file-chip committed">${escHtml(f)}</span>`).join('');
+  } else {
+    $('areaRepo').innerHTML = '<span class="empty-area">no commits</span>';
+  }
+
+  // Remote
+  const remoteNames = Object.keys(S.remotes);
+  if (remoteNames.length > 0) {
+    $('remoteCount').textContent = remoteNames.join(', ');
+    if (S.pushed) {
+      const latest = S.commits[S.commits.length - 1];
+      const fnames = Object.keys(latest.files);
+      $('areaRemote').innerHTML = fnames.map(f => `<span class="file-chip committed">${escHtml(f)}</span>`).join('');
+    } else {
+      $('areaRemote').innerHTML = '<span class="empty-area">not yet pushed</span>';
+    }
+  } else {
+    $('remoteCount').textContent = '-';
+    $('areaRemote').innerHTML = '<span class="empty-area">no remote configured</span>';
+  }
+}
+
+function renderCommitGraph() {
+  const g = $('commitGraph');
+  if (S.commits.length === 0) {
+    g.innerHTML = '<span class="empty-area">no commits yet</span>';
+    return;
+  }
+  g.innerHTML = '';
+  const reversed = [...S.commits].reverse();
+  reversed.forEach((c, i) => {
+    const isHead = (i === 0);
+    const isMerge = c.msg.toLowerCase().startsWith('merge');
+    const branchClass = c.branch === 'main' ? 'branch-main' : (c.branch === 'experiment' || c.branch === 'hotfix' ? 'branch-hotfix' : 'branch-feature');
+    let node = document.createElement('div');
+    node.className = 'commit-node';
+    node.innerHTML = `
+      <div class="commit-rail">
+        <div class="commit-dot ${isHead ? 'head' : ''} ${isMerge ? 'merge' : ''}"></div>
+        ${i < reversed.length - 1 ? '<div class="commit-line"></div>' : ''}
+      </div>
+      <div class="commit-detail">
+        <span class="commit-hash">${c.hash}</span>
+        ${isHead ? '<span class="commit-branch branch-head">HEAD</span>' : ''}
+        <span class="commit-branch ${branchClass}">${escHtml(c.branch)}</span>
+        <div class="commit-msg">${escHtml(c.msg)}</div>
+      </div>
+    `;
+    g.appendChild(node);
+  });
+}
+
+function renderBranches() {
+  const bl = $('branchList');
+  const branches = Object.keys(S.branches);
+  if (branches.length === 0) {
+    bl.innerHTML = '<span class="empty-area">no branches yet</span>';
+    return;
+  }
+  bl.innerHTML = branches.map(b => {
+    const isCurrent = b === S.currentBranch;
+    const commitCount = S.branches[b].length;
+    const cls = b === 'main' ? 'branch-main' : (b === 'experiment' || b === 'hotfix' ? 'branch-hotfix' : 'branch-feature');
+    return `<div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;">
+      ${isCurrent ? '<span style="color:var(--accent);font-family:var(--font-mono);font-size:0.8rem;">→</span>' : '<span style="width:12px;display:inline-block;"></span>'}
+      <span class="commit-branch ${cls}" style="font-size:0.72rem;">${escHtml(b)}</span>
+      <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--ink-lighter);">${commitCount} commit${commitCount !== 1 ? 's' : ''}</span>
+      ${isCurrent ? '<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--accent);">(HEAD)</span>' : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderAll() {
+  renderAreas();
+  renderCommitGraph();
+  renderBranches();
+}
+
+function isIgnored(filename) {
+  for (const p of S.gitignorePatterns) {
+    // simple pattern matching
+    if (p.endsWith('/') && filename.startsWith(p)) return true;
+    if (p.startsWith('*.')) {
+      const ext = p.slice(1);
+      if (filename.endsWith(ext)) return true;
+    }
+    if (p === filename) return true;
+  }
+  return false;
+}
+
+/* ── Build all tracked files from commit history ── */
+function getAllTrackedFiles() {
+  const files = {};
+  const branchCommits = S.branches[S.currentBranch] || [];
+  for (const hash of branchCommits) {
+    const c = S.commits.find(x => x.hash === hash);
+    if (c) Object.assign(files, c.files);
+  }
+  return files;
+}
+
+/* ── Terminal ── */
+const termBody = $('termBody');
+const termInput = $('termInput');
+
+function termPrint(text, cls = 'output') {
+  const div = document.createElement('div');
+  div.className = 'term-line ' + cls;
+  div.innerHTML = text;
+  termBody.appendChild(div);
+  termBody.scrollTop = termBody.scrollHeight;
+}
+
+function termPrintCmd(cmd) {
+  const pathStr = S.cwd;
+  termPrint(`<span class="prompt">student@ml</span> <span class="path">${escHtml(pathStr)}</span> $ <span class="cmd">${escHtml(cmd)}</span>`, '');
+}
+
+function updatePrompt() {
+  $('promptPath').textContent = S.cwd;
+}
+
+/* ── Command Dispatcher ── */
+function execCommand(raw) {
+  const cmd = raw.trim();
+  if (!cmd) return;
+
+  S.history.push(cmd);
+  S.historyIdx = S.history.length;
+  termPrintCmd(cmd);
+
+  const parts = cmd.split(/\s+/);
+  const base = parts[0];
+
+  // Meta commands
+  if (base === 'help') return cmdHelp();
+  if (base === 'clear') { termBody.innerHTML = ''; return; }
+  if (base === 'reset-game') { location.reload(); return; }
+
+  // Filesystem commands
+  if (base === 'mkdir') return cmdMkdir(parts);
+  if (base === 'cd') return cmdCd(parts);
+  if (base === 'touch') return cmdTouch(parts);
+  if (base === 'echo') return cmdEcho(raw);
+  if (base === 'ls') return cmdLs();
+  if (base === 'cat') return cmdCat(parts);
+  if (base === 'pwd') return cmdPwd();
+
+  // Git commands
+  if (base === 'git') return cmdGit(parts, raw);
+
+  termPrint(`command not found: ${escHtml(base)}. Type <span style="color:#f9e2af;">help</span> for available commands.`, 'error');
+  failStreak();
+}
+
+function cmdHelp() {
+  termPrint('Available commands:', 'info');
+  termPrint('  mkdir <dir>       Create a directory', '');
+  termPrint('  cd <dir>          Change directory', '');
+  termPrint('  touch <file>      Create an empty file', '');
+  termPrint('  echo "text" > f   Write text to a file', '');
+  termPrint('  echo "text" >> f  Append text to a file', '');
+  termPrint('  ls                List files', '');
+  termPrint('  cat <file>        Show file contents', '');
+  termPrint('  pwd               Print working directory', '');
+  termPrint('  clear             Clear terminal', '');
+  termPrint('', '');
+  termPrint('Git commands:', 'info');
+  termPrint('  git init             Initialize repository', '');
+  termPrint('  git status           Show status', '');
+  termPrint('  git add <file>       Stage a file', '');
+  termPrint('  git add .            Stage all files', '');
+  termPrint('  git commit -m "msg"  Commit staged changes', '');
+  termPrint('  git commit -am "msg" Stage tracked + commit', '');
+  termPrint('  git diff             Show unstaged changes', '');
+  termPrint('  git log [--oneline]  Show commit history', '');
+  termPrint('  git branch [name]    List or create branches', '');
+  termPrint('  git branch -d <b>    Delete a branch', '');
+  termPrint('  git checkout <b>     Switch branch', '');
+  termPrint('  git checkout -b <b>  Create & switch branch', '');
+  termPrint('  git merge <branch>   Merge a branch', '');
+  termPrint('  git remote add ...   Add a remote', '');
+  termPrint('  git push             Push to remote', '');
+  termPrint('  git pull             Pull from remote', '');
+  termPrint('  git stash            Stash changes', '');
+  termPrint('  git stash pop        Apply stashed changes', '');
+}
+
+/* ── Filesystem Commands ── */
+function cmdMkdir(parts) {
+  if (parts.length < 2) { termPrint('usage: mkdir <directory>', 'error'); failStreak(); return; }
+  const name = parts[1];
+  S.projectDir = name;
+  termPrint(`Created directory: ${escHtml(name)}`, 'success');
+  completeTask('mkdir');
+}
+
+function cmdCd(parts) {
+  if (parts.length < 2) { termPrint('usage: cd <directory>', 'error'); failStreak(); return; }
+  const target = parts[1];
+  if (target === '..') {
+    if (S.cwd !== '~') {
+      const segments = S.cwd.split('/');
+      segments.pop();
+      S.cwd = segments.join('/') || '~';
+    }
+  } else if (S.projectDir && (target === S.projectDir || target === './' + S.projectDir)) {
+    S.cwd = '~/' + S.projectDir;
+  } else if (target === '~') {
+    S.cwd = '~';
+  } else {
+    S.cwd = S.cwd === '~' ? '~/' + target : S.cwd + '/' + target;
+  }
+  updatePrompt();
+  completeTask('cd');
+}
+
+function cmdTouch(parts) {
+  if (parts.length < 2) { termPrint('usage: touch <file>', 'error'); failStreak(); return; }
+  if (!S.initialized && !S.projectDir) {
+    termPrint('hint: create a project directory first.', 'warning');
+  }
+  const fname = parts[1];
+  if (!S.workingDir[fname]) {
+    S.workingDir[fname] = { status: 'new', content: '' };
+  }
+  termPrint(`Created file: ${escHtml(fname)}`, 'success');
+  renderAll();
+  // Task detection
+  if (fname === 'README.md') completeTask('touch1');
+  else if (fname === 'train.py') completeTask('touch2');
+  else if (fname === 'model.py') completeTask('touch3');
+  else if (fname === '.gitignore') completeTask('ignore1');
+  else if (fname.endsWith('.pyc')) completeTask('touch4');
+}
+
+function cmdEcho(raw) {
+  // parse: echo "content" > file  OR echo "content" >> file
+  const appendMatch = raw.match(/echo\s+["'](.*)["']\s*>>\s*(\S+)/);
+  const writeMatch = raw.match(/echo\s+["'](.*)["']\s*>\s*(\S+)/);
+  if (appendMatch) {
+    const [, content, fname] = appendMatch;
+    if (S.workingDir[fname]) {
+      S.workingDir[fname].content += (S.workingDir[fname].content ? '\n' : '') + content;
+      S.workingDir[fname].status = 'modified';
+    } else {
+      S.workingDir[fname] = { status: 'new', content };
+    }
+    // .gitignore patterns
+    if (fname === '.gitignore') {
+      S.gitignorePatterns.push(content.trim());
+    }
+    termPrint(`Appended to ${escHtml(fname)}`, 'success');
+    renderAll();
+    // task detection for gitignore
+    if (content.trim() === '*.pyc') completeTask('echo4');
+    if (content.trim() === 'data/') completeTask('echo5');
+    if (content.trim() === '*.pt') completeTask('echo6');
+    return;
+  }
+  if (writeMatch) {
+    const [, content, fname] = writeMatch;
+    const existed = !!S.workingDir[fname];
+    S.workingDir[fname] = { status: existed ? 'modified' : 'new', content };
+    // .gitignore patterns
+    if (fname === '.gitignore') {
+      S.gitignorePatterns = content.trim().split('\n').map(l => l.trim()).filter(Boolean);
+    }
+    termPrint(`Wrote to ${escHtml(fname)}`, 'success');
+    renderAll();
+    // task detection
+    if (fname === 'train.py' && content.includes('import torch')) completeTask('echo1');
+    if (fname === 'train.py' && content.includes('lr = 0.001')) completeTask('echo2');
+    if (fname === 'train.py' && content.includes('lr = 0.0005')) completeTask('echo3');
+    return;
+  }
+  termPrint('usage: echo "text" > file  or  echo "text" >> file', 'error');
+  failStreak();
+}
+
+function cmdLs() {
+  const files = Object.keys(S.workingDir);
+  if (files.length === 0) {
+    termPrint('(empty directory)', '');
+  } else {
+    files.forEach(f => {
+      const ignored = isIgnored(f);
+      const style = ignored ? 'color:#585b70;' : '';
+      termPrint(`<span style="${style}">${escHtml(f)}${ignored ? '  (ignored)' : ''}</span>`, '');
+    });
+  }
+  if (S.initialized) {
+    termPrint('<span style="color:#585b70;">.git/</span>', '');
+  }
+}
+
+function cmdCat(parts) {
+  if (parts.length < 2) { termPrint('usage: cat <file>', 'error'); return; }
+  const f = parts[1];
+  if (S.workingDir[f]) {
+    termPrint(escHtml(S.workingDir[f].content || '(empty file)'), '');
+  } else {
+    termPrint(`cat: ${escHtml(f)}: No such file`, 'error');
+  }
+}
+
+function cmdPwd() {
+  termPrint(S.cwd, '');
+}
+
+/* ── Git Commands ── */
+function cmdGit(parts, raw) {
+  if (parts.length < 2) { termPrint('usage: git <command>', 'error'); failStreak(); return; }
+  const sub = parts[1];
+
+  switch (sub) {
+    case 'init':     return gitInit();
+    case 'status':   return gitStatus();
+    case 'add':      return gitAdd(parts);
+    case 'commit':   return gitCommit(raw);
+    case 'diff':     return gitDiff();
+    case 'log':      return gitLog(parts);
+    case 'branch':   return gitBranch(parts);
+    case 'checkout': return gitCheckout(parts);
+    case 'merge':    return gitMerge(parts);
+    case 'remote':   return gitRemote(parts, raw);
+    case 'push':     return gitPush(parts);
+    case 'pull':     return gitPull(parts);
+    case 'stash':    return gitStash(parts);
+    case 'clone':    return gitClone(parts);
+    case 'tag':      return gitTag(parts);
+    case 'config':   return gitConfig(raw);
+    case 'lfs':      return gitLfs(parts, raw);
+    default:
+      termPrint(`git: '${escHtml(sub)}' is not a git command.`, 'error');
+      failStreak();
+  }
+}
+
+function requireInit() {
+  if (!S.initialized) {
+    termPrint('fatal: not a git repository (or any parent up to mount point /)', 'error');
+    termPrint('hint: run <span style="color:#f9e2af;">git init</span> first.', 'warning');
+    return false;
+  }
+  return true;
+}
+
+function gitInit() {
+  if (S.initialized) {
+    termPrint('Reinitialized existing Git repository', 'warning');
+    return;
+  }
+  S.initialized = true;
+  S.branches['main'] = [];
+  S.currentBranch = 'main';
+  termPrint('Initialized empty Git repository in ' + S.cwd + '/.git/', 'success');
+  renderAll();
+  completeTask('init');
+}
+
+function gitStatus() {
+  if (!requireInit()) return;
+
+  const branch = S.currentBranch;
+  termPrint(`On branch <span style="color:#a6e3a1;">${escHtml(branch)}</span>`, 'info');
+
+  if (S.commits.length === 0 && Object.keys(S.stagingArea).length === 0 && Object.keys(S.workingDir).length === 0) {
+    termPrint('No commits yet', '');
+    termPrint('nothing to commit (create/copy files and use "git add" to track)', '');
+  } else {
+    // Staged files
+    const staged = Object.keys(S.stagingArea);
+    if (staged.length > 0) {
+      termPrint('Changes to be committed:', 'success');
+      staged.forEach(f => termPrint(`  <span style="color:#a6e3a1;">new file:   ${escHtml(f)}</span>`, ''));
+      termPrint('', '');
+    }
+
+    // Unstaged changes (modified/new files in working dir not in staging)
+    const unstaged = Object.entries(S.workingDir).filter(([f, info]) =>
+      !S.stagingArea[f] && !isIgnored(f)
+    );
+    const modified = unstaged.filter(([,info]) => info.status === 'modified');
+    const untracked = unstaged.filter(([,info]) => info.status === 'new');
+
+    if (modified.length > 0) {
+      termPrint('Changes not staged for commit:', 'warning');
+      modified.forEach(([f]) => termPrint(`  <span style="color:#f38ba8;">modified:   ${escHtml(f)}</span>`, ''));
+      termPrint('', '');
+    }
+
+    if (untracked.length > 0) {
+      termPrint('Untracked files:', 'warning');
+      untracked.forEach(([f]) => termPrint(`  <span style="color:#f38ba8;">${escHtml(f)}</span>`, ''));
+    }
+
+    if (staged.length === 0 && modified.length === 0 && untracked.length === 0) {
+      termPrint('nothing to commit, working tree clean', 'success');
+    }
+  }
+
+  completeTask('status1');
+  completeTask('status2');
+  completeTask('status3');
+}
+
+function gitAdd(parts) {
+  if (!requireInit()) return;
+  if (parts.length < 3) { termPrint('usage: git add <file|.>', 'error'); failStreak(); return; }
+
+  const target = parts[2];
+  if (target === '.' || target === '-A') {
+    let count = 0;
+    for (const [f, info] of Object.entries(S.workingDir)) {
+      if (!isIgnored(f) && !S.stagingArea[f]) {
+        S.stagingArea[f] = info.content;
+        count++;
+      }
+    }
+    termPrint(`Staged ${count} file(s)`, 'success');
+    completeTask('addall');
+  } else {
+    if (!S.workingDir[target]) {
+      termPrint(`fatal: pathspec '${escHtml(target)}' did not match any files`, 'error');
+      failStreak();
+      return;
+    }
+    if (isIgnored(target)) {
+      termPrint(`The following paths are ignored by one of your .gitignore files:\n${escHtml(target)}`, 'warning');
+      return;
+    }
+    S.stagingArea[target] = S.workingDir[target].content;
+    termPrint(`Staged: ${escHtml(target)}`, 'success');
+    // task detection
+    if (target === 'README.md') completeTask('add1');
+    if (target === 'train.py') { completeTask('add2'); completeTask('add4'); completeTask('add5'); }
+    if (target === 'model.py') completeTask('add3');
+    if (target === '.gitignore') completeTask('add6');
+  }
+  renderAll();
+}
+
+function gitCommit(raw) {
+  if (!requireInit()) return;
+
+  // Handle -am (stage tracked + commit)
+  const amMatch = raw.match(/git\s+commit\s+-am\s+["'](.+?)["']/);
+  const mMatch = raw.match(/git\s+commit\s+-m\s+["'](.+?)["']/);
+
+  // combined git add .gitignore && git commit -m "..."
+  const comboMatch = raw.match(/git\s+add\s+(\S+)\s*&&\s*git\s+commit\s+-m\s+["'](.+?)["']/);
+  if (comboMatch) {
+    const [, file, msg] = comboMatch;
+    // do the add
+    if (S.workingDir[file] && !isIgnored(file)) {
+      S.stagingArea[file] = S.workingDir[file].content;
+      if (file === '.gitignore') completeTask('add6');
+    }
+    // now commit
+    return doCommit(msg);
+  }
+
+  if (amMatch) {
+    const msg = amMatch[1];
+    // stage all tracked modified files
+    for (const [f, info] of Object.entries(S.workingDir)) {
+      if (info.status === 'modified' && !isIgnored(f)) {
+        S.stagingArea[f] = info.content;
+      }
+    }
+    completeTask('add4');
+    completeTask('add5');
+    return doCommit(msg);
+  }
+
+  if (mMatch) {
+    return doCommit(mMatch[1]);
+  }
+
+  termPrint('usage: git commit -m "message"', 'error');
+  failStreak();
+}
+
+function doCommit(msg) {
+  if (Object.keys(S.stagingArea).length === 0) {
+    termPrint('nothing to commit (use "git add" to stage files)', 'warning');
+    return;
+  }
+
+  const hash = rHash();
+  const allFiles = { ...getAllTrackedFiles() };
+  for (const [f, content] of Object.entries(S.stagingArea)) {
+    allFiles[f] = content;
+  }
+
+  const commit = {
+    hash,
+    msg,
+    branch: S.currentBranch,
+    files: { ...allFiles },
+    timestamp: new Date().toISOString(),
+  };
+
+  S.commits.push(commit);
+  S.branches[S.currentBranch].push(hash);
+  S.HEAD = hash;
+
+  // Update working dir statuses
+  for (const f of Object.keys(S.stagingArea)) {
+    if (S.workingDir[f]) S.workingDir[f].status = 'committed';
+  }
+  S.stagingArea = {};
+
+  termPrint(`[<span style="color:#a6e3a1;">${escHtml(S.currentBranch)}</span> ${hash}] ${escHtml(msg)}`, 'success');
+  termPrint(` ${Object.keys(allFiles).length} file(s) changed`, '');
+
+  renderAll();
+
+  // Task detection
+  if (S.commits.length === 1) {
+    completeTask('commit1');
+    grantAchievement('first_commit');
+  }
+  completeTask('commit2');
+  completeTask('commit3');
+
+  // Level 6 specific commits
+  if (msg.toLowerCase().includes('lr') || msg.toLowerCase().includes('learning') || msg.toLowerCase().includes('0.001')) completeTask('add4');
+  if (msg.toLowerCase().includes('lr') || msg.toLowerCase().includes('learning') || msg.toLowerCase().includes('0.0005')) completeTask('add5');
+
+  // Level 8
+  if (msg.toLowerCase().includes('gitignore') || msg.toLowerCase().includes('ignore')) completeTask('add6');
+
+  // Generic commit task completions
+  const lvl = LEVELS[S.currentLevel];
+  if (lvl) {
+    lvl.tasks.forEach(t => {
+      if (t.cmd === 'git commit' && !document.getElementById('task-' + t.id)?.classList.contains('done')) {
+        completeTask(t.id);
+      }
+    });
+  }
+}
+
+function gitDiff() {
+  if (!requireInit()) return;
+  const modified = Object.entries(S.workingDir).filter(([f, info]) => info.status === 'modified' && !S.stagingArea[f]);
+  if (modified.length === 0) {
+    termPrint('(no unstaged changes)', '');
+  } else {
+    modified.forEach(([f, info]) => {
+      termPrint(`<span style="color:#89b4fa;">diff --git a/${escHtml(f)} b/${escHtml(f)}</span>`, '');
+      termPrint(`<span style="color:#f38ba8;">--- a/${escHtml(f)}</span>`, '');
+      termPrint(`<span style="color:#a6e3a1;">+++ b/${escHtml(f)}</span>`, '');
+      termPrint(`<span style="color:#a6e3a1;">+ ${escHtml(info.content)}</span>`, '');
+    });
+  }
+  completeTask('diff1');
+}
+
+function gitLog(parts) {
+  if (!requireInit()) return;
+  if (S.commits.length === 0) {
+    termPrint('fatal: your current branch does not have any commits yet', 'error');
+    return;
+  }
+
+  const oneline = parts.includes('--oneline');
+  const branchCommitHashes = new Set(S.branches[S.currentBranch] || []);
+  // Show commits relevant to current branch
+  const relevant = S.commits.filter(c => branchCommitHashes.has(c.hash));
+  const reversed = [...relevant].reverse();
+
+  if (oneline) {
+    reversed.forEach(c => {
+      termPrint(`<span style="color:#f9e2af;">${c.hash.slice(0,7)}</span> ${escHtml(c.msg)}`, '');
+    });
+  } else {
+    reversed.forEach(c => {
+      termPrint(`<span style="color:#f9e2af;">commit ${c.hash}</span>`, '');
+      termPrint(`Author: student <student@ml.course>`, '');
+      termPrint(`Date:   ${new Date(c.timestamp).toLocaleString()}`, '');
+      termPrint('', '');
+      termPrint(`    ${escHtml(c.msg)}`, '');
+      termPrint('', '');
+    });
+  }
+  completeTask('log1');
+  completeTask('log2');
+}
+
+function gitBranch(parts) {
+  if (!requireInit()) return;
+
+  // git branch -d <name>
+  if (parts[2] === '-d' && parts[3]) {
+    const name = parts[3];
+    if (!S.branches[name]) {
+      termPrint(`error: branch '${escHtml(name)}' not found.`, 'error');
+      failStreak();
+      return;
+    }
+    if (name === S.currentBranch) {
+      termPrint(`error: Cannot delete branch '${escHtml(name)}' checked out.`, 'error');
+      return;
+    }
+    delete S.branches[name];
+    termPrint(`Deleted branch ${escHtml(name)}.`, 'success');
+    renderAll();
+    completeTask('branchd');
+    return;
+  }
+
+  // git branch <name>
+  if (parts[2] && !parts[2].startsWith('-')) {
+    const name = parts[2];
+    if (S.branches[name]) {
+      termPrint(`fatal: A branch named '${escHtml(name)}' already exists.`, 'error');
+      failStreak();
+      return;
+    }
+    S.branches[name] = [...(S.branches[S.currentBranch] || [])];
+    termPrint(`Created branch: ${escHtml(name)}`, 'success');
+    renderAll();
+    completeTask('branch1');
+    completeTask('branch2');
+    grantAchievement('branch_master');
+    return;
+  }
+
+  // git branch (list)
+  const branches = Object.keys(S.branches);
+  branches.forEach(b => {
+    const prefix = b === S.currentBranch ? '* ' : '  ';
+    const style = b === S.currentBranch ? 'color:#a6e3a1;' : '';
+    termPrint(`<span style="${style}">${prefix}${escHtml(b)}</span>`, '');
+  });
+}
+
+function gitCheckout(parts) {
+  if (!requireInit()) return;
+
+  // git checkout -b <name>
+  if (parts[2] === '-b' && parts[3]) {
+    const name = parts[3];
+    if (S.branches[name]) {
+      termPrint(`fatal: A branch named '${escHtml(name)}' already exists.`, 'error');
+      failStreak();
+      return;
+    }
+    S.branches[name] = [...(S.branches[S.currentBranch] || [])];
+    S.currentBranch = name;
+    termPrint(`Switched to a new branch '${escHtml(name)}'`, 'success');
+    // Restore files for this branch
+    restoreBranchFiles();
+    renderAll();
+    grantAchievement('branch_master');
+    completeTask('branch1');
+    completeTask('branch2');
+    completeTask('checkout1');
+    return;
+  }
+
+  // git checkout <branch>
+  if (parts[2]) {
+    const name = parts[2];
+    if (!S.branches[name]) {
+      termPrint(`error: pathspec '${escHtml(name)}' did not match any file(s) known to git`, 'error');
+      failStreak();
+      return;
+    }
+    S.currentBranch = name;
+    termPrint(`Switched to branch '${escHtml(name)}'`, 'success');
+    restoreBranchFiles();
+    renderAll();
+    if (name !== 'main') completeTask('checkout1');
+    if (name === 'main') { completeTask('checkoutm'); completeTask('checkoutm2'); }
+    return;
+  }
+
+  termPrint('usage: git checkout <branch> or git checkout -b <new-branch>', 'error');
+  failStreak();
+}
+
+function restoreBranchFiles() {
+  // Rebuild working dir from branch's commits
+  const tracked = getAllTrackedFiles();
+  // Keep only files in the branch commits + any new uncommitted files
+  const newWorkingDir = {};
+  for (const [f, content] of Object.entries(tracked)) {
+    newWorkingDir[f] = { status: 'committed', content };
+  }
+  // keep untracked new files
+  for (const [f, info] of Object.entries(S.workingDir)) {
+    if (info.status === 'new' && !tracked[f]) {
+      newWorkingDir[f] = info;
+    }
+  }
+  S.workingDir = newWorkingDir;
+  S.stagingArea = {};
+}
+
+function gitMerge(parts) {
+  if (!requireInit()) return;
+  if (parts.length < 3) { termPrint('usage: git merge <branch>', 'error'); failStreak(); return; }
+
+  const source = parts[2];
+  if (!S.branches[source]) {
+    termPrint(`merge: ${escHtml(source)} - not something we can merge`, 'error');
+    failStreak();
+    return;
+  }
+
+  const currentHashes = new Set(S.branches[S.currentBranch]);
+  const sourceHashes = S.branches[source];
+  const newCommits = sourceHashes.filter(h => !currentHashes.has(h));
+
+  if (newCommits.length === 0) {
+    termPrint('Already up to date.', 'success');
+    return;
+  }
+
+  // Check for conflicts - compare last commit files on both branches
+  const ourFiles = getAllTrackedFiles();
+  const savedBranch = S.currentBranch;
+  S.currentBranch = source;
+  const theirFiles = getAllTrackedFiles();
+  S.currentBranch = savedBranch;
+
+  // Detect file-level conflicts
+  let hasConflict = false;
+  let conflictFileName = '';
+  for (const [f, theirContent] of Object.entries(theirFiles)) {
+    if (ourFiles[f] !== undefined && ourFiles[f] !== theirContent) {
+      hasConflict = true;
+      conflictFileName = f;
+      break;
+    }
+  }
+
+  if (hasConflict) {
+    termPrint(`Auto-merging ${escHtml(conflictFileName)}`, 'warning');
+    termPrint(`CONFLICT (content): Merge conflict in ${escHtml(conflictFileName)}`, 'error');
+    termPrint('Automatic merge failed; fix conflicts and then commit the result.', 'error');
+
+    S.conflictActive = true;
+    S.conflictFile = conflictFileName;
+    S.conflictOurs = ourFiles[conflictFileName];
+    S.conflictTheirs = theirFiles[conflictFileName];
+
+    // Show conflict editor
+    const ce = $('conflictEditor');
+    ce.innerHTML = `<span class="conflict-marker">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD (${escHtml(S.currentBranch)})</span><span class="conflict-ours">${escHtml(S.conflictOurs)}</span><span class="conflict-marker">=======</span><span class="conflict-theirs">${escHtml(S.conflictTheirs)}</span><span class="conflict-marker">&gt;&gt;&gt;&gt;&gt;&gt;&gt; ${escHtml(source)}</span>`;
+    ce.classList.add('show');
+    $('conflictActions').classList.remove('hidden');
+
+    completeTask('merge2');
+    return;
+  }
+
+  // Fast-forward or regular merge
+  for (const h of newCommits) {
+    S.branches[S.currentBranch].push(h);
+  }
+
+  // Create merge commit
+  const mergedFiles = { ...ourFiles, ...theirFiles };
+  const mergeHash = rHash();
+  const mergeCommit = {
+    hash: mergeHash,
+    msg: `Merge branch '${source}' into ${S.currentBranch}`,
+    branch: S.currentBranch,
+    files: mergedFiles,
+    timestamp: new Date().toISOString(),
+  };
+  S.commits.push(mergeCommit);
+  S.branches[S.currentBranch].push(mergeHash);
+  S.HEAD = mergeHash;
+
+  // Update working dir
+  for (const [f, content] of Object.entries(mergedFiles)) {
+    S.workingDir[f] = { status: 'committed', content };
+  }
+
+  termPrint(`Merge made by the 'ort' strategy.`, 'success');
+  termPrint(` ${Object.keys(theirFiles).length} file(s) merged`, '');
+
+  renderAll();
+  completeTask('merge1');
+}
+
+function resolveConflict(choice) {
+  if (!S.conflictActive) return;
+
+  let resolvedContent;
+  if (choice === 'ours') resolvedContent = S.conflictOurs;
+  else if (choice === 'theirs') resolvedContent = S.conflictTheirs;
+  else resolvedContent = S.conflictOurs + '\n' + S.conflictTheirs;
+
+  S.workingDir[S.conflictFile] = { status: 'modified', content: resolvedContent };
+  S.stagingArea[S.conflictFile] = resolvedContent;
+
+  // Auto-commit the resolution
+  const mergeHash = rHash();
+  const allFiles = { ...getAllTrackedFiles() };
+  allFiles[S.conflictFile] = resolvedContent;
+
+  const mergeCommit = {
+    hash: mergeHash,
+    msg: `Merge conflict resolved in ${S.conflictFile}`,
+    branch: S.currentBranch,
+    files: allFiles,
+    timestamp: new Date().toISOString(),
+  };
+  S.commits.push(mergeCommit);
+  S.branches[S.currentBranch].push(mergeHash);
+  S.HEAD = mergeHash;
+  S.stagingArea = {};
+  S.workingDir[S.conflictFile].status = 'committed';
+
+  S.conflictActive = false;
+  $('conflictEditor').classList.remove('show');
+  $('conflictActions').classList.add('hidden');
+
+  termPrint(`Conflict in ${escHtml(S.conflictFile)} resolved (${choice}).`, 'success');
+  termPrint(`[${escHtml(S.currentBranch)} ${mergeHash}] Merge conflict resolved`, 'success');
+
+  renderAll();
+  completeTask('resolve');
+  grantAchievement('conflict_hero');
+}
+// expose globally
+window.resolveConflict = resolveConflict;
+
+function gitRemote(parts, raw) {
+  if (!requireInit()) return;
+  if (parts[2] === 'add' && parts[3] && parts[4]) {
+    S.remotes[parts[3]] = parts[4];
+    termPrint(`Remote '${escHtml(parts[3])}' added: ${escHtml(parts[4])}`, 'success');
+    renderAll();
+    completeTask('remote1');
+    return;
+  }
+  if (parts[2] === '-v' || !parts[2]) {
+    const remotes = Object.entries(S.remotes);
+    if (remotes.length === 0) {
+      termPrint('(no remotes configured)', '');
+    } else {
+      remotes.forEach(([n, u]) => {
+        termPrint(`${escHtml(n)}\t${escHtml(u)} (fetch)`, '');
+        termPrint(`${escHtml(n)}\t${escHtml(u)} (push)`, '');
+      });
+    }
+    return;
+  }
+  termPrint('usage: git remote add <name> <url>', 'error');
+  failStreak();
+}
+
+function gitPush(parts) {
+  if (!requireInit()) return;
+  if (Object.keys(S.remotes).length === 0) {
+    termPrint("fatal: No configured push destination.", 'error');
+    termPrint("hint: use git remote add <name> <url>", 'warning');
+    failStreak();
+    return;
+  }
+  if (S.commits.length === 0) {
+    termPrint('error: src refspec main does not match any', 'error');
+    return;
+  }
+
+  const branchCommits = S.branches[S.currentBranch] || [];
+  S.pushed = true;
+  S.remoteBranches[S.currentBranch] = [...branchCommits];
+
+  termPrint(`Enumerating objects: ${branchCommits.length}, done.`, '');
+  termPrint('Counting objects: 100%, done.', '');
+  termPrint('Writing objects: 100%, done.', '');
+  termPrint(`Branch '${escHtml(S.currentBranch)}' set up to track remote branch.`, 'success');
+  termPrint(`To ${escHtml(Object.values(S.remotes)[0])}`, '');
+  termPrint(` * [new branch]      ${escHtml(S.currentBranch)} -> ${escHtml(S.currentBranch)}`, 'success');
+
+  renderAll();
+  completeTask('push1');
+  grantAchievement('pushed');
+}
+
+function gitPull(parts) {
+  if (!requireInit()) return;
+  if (Object.keys(S.remotes).length === 0) {
+    termPrint("fatal: No remote configured.", 'error');
+    return;
+  }
+  termPrint('Already up to date.', 'success');
+  completeTask('pull1');
+}
+
+function gitStash(parts) {
+  if (!requireInit()) return;
+  if (parts[2] === 'pop') {
+    if (S.stash.length === 0) {
+      termPrint('No stash entries found.', 'error');
+      return;
+    }
+    const stashed = S.stash.pop();
+    Object.assign(S.workingDir, stashed);
+    termPrint('Applied stash and dropped stash@{0}.', 'success');
+    renderAll();
+    return;
+  }
+  // stash save
+  const toStash = {};
+  for (const [f, info] of Object.entries(S.workingDir)) {
+    if (info.status !== 'committed') {
+      toStash[f] = { ...info };
+    }
+  }
+  if (Object.keys(toStash).length === 0) {
+    termPrint('No local changes to save', '');
+    return;
+  }
+  S.stash.push(toStash);
+  // Reset working dir to committed state
+  for (const f of Object.keys(toStash)) {
+    delete S.workingDir[f];
+  }
+  S.stagingArea = {};
+  termPrint(`Saved working directory: stash@{${S.stash.length - 1}}`, 'success');
+  renderAll();
+}
+
+function gitClone(parts) {
+  if (parts.length < 3) { termPrint('usage: git clone <url>', 'error'); return; }
+  termPrint(`Cloning into 'project'...`, '');
+  termPrint('remote: Enumerating objects: done.', '');
+  termPrint('remote: Counting objects: 100%, done.', '');
+  termPrint('Receiving objects: 100%, done.', 'success');
+}
+
+function gitTag(parts) {
+  if (!requireInit()) return;
+  if (!parts[2]) {
+    const tags = Object.entries(S.tags);
+    if (tags.length === 0) termPrint('(no tags)', '');
+    else tags.forEach(([t]) => termPrint(t, ''));
+    return;
+  }
+  S.tags[parts[2]] = S.HEAD;
+  termPrint(`Tag '${escHtml(parts[2])}' created at ${S.HEAD}`, 'success');
+}
+
+function gitConfig(raw) {
+  if (raw.includes('user.name') || raw.includes('user.email')) {
+    S.configDone = true;
+    termPrint('Configuration saved.', 'success');
+  } else {
+    termPrint('usage: git config --global user.name "Your Name"', '');
+  }
+}
+
+function gitLfs(parts, raw) {
+  if (parts[2] === 'install') {
+    termPrint('Git LFS initialized.', 'success');
+    return;
+  }
+  if (parts[2] === 'track') {
+    const pattern = raw.match(/track\s+["'](.+?)["']/);
+    if (pattern) {
+      S.lfsPatterns.push(pattern[1]);
+      termPrint(`Tracking "${escHtml(pattern[1])}"`, 'success');
+    }
+    return;
+  }
+  termPrint('usage: git lfs install | git lfs track "*.ext"', '');
+}
+
+/* ── Terminal Input Handler ── */
+termInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const cmd = termInput.value;
+    termInput.value = '';
+    execCommand(cmd);
+  }
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (S.historyIdx > 0) {
+      S.historyIdx--;
+      termInput.value = S.history[S.historyIdx];
+    }
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (S.historyIdx < S.history.length - 1) {
+      S.historyIdx++;
+      termInput.value = S.history[S.historyIdx];
+    } else {
+      S.historyIdx = S.history.length;
+      termInput.value = '';
+    }
+  }
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    autocomplete();
+  }
+});
+
+/* ── Tab Auto-complete ── */
+function autocomplete() {
+  const val = termInput.value;
+  const completions = [
+    'git init', 'git status', 'git add ', 'git add .', 'git commit -m "',
+    'git commit -am "', 'git diff', 'git log', 'git log --oneline',
+    'git branch ', 'git branch -d ', 'git checkout ', 'git checkout -b ',
+    'git merge ', 'git remote add origin ', 'git push -u origin main',
+    'git push', 'git pull origin main', 'git pull', 'git stash', 'git stash pop',
+    'git clone ', 'git tag ', 'git config --global ',
+    'mkdir ', 'cd ', 'touch ', 'echo ', 'ls', 'cat ', 'pwd', 'clear', 'help',
+  ];
+  const matches = completions.filter(c => c.startsWith(val) && c !== val);
+  if (matches.length === 1) {
+    termInput.value = matches[0];
+  } else if (matches.length > 1) {
+    termPrint(matches.join('  '), 'info');
+  }
+}
+
+/* ── Expose globals ── */
+window.showHint = showHint;
+window.goNextLevel = goNextLevel;
+window.switchVizTab = switchVizTab;
+
+/* ── Init ── */
+loadLevel(0);
+renderAll();
+termInput.focus();
+
+// Click anywhere in terminal to focus input
+document.querySelector('.sim-terminal').addEventListener('click', () => termInput.focus());
+
+})();
+</script>
+
+</body>
+</html>
