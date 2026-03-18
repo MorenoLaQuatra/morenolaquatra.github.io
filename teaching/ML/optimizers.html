@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Optimizer Comparison: SGD, SGD+Momentum, RMSProp, Adam - interactive visualization for the Machine Learning course by Moreno La Quatra, Kore University of Enna.">
+  <meta property="og:title" content="Optimizer Comparison - ML - Moreno La Quatra">
+  <meta property="og:url" content="https://mlaquatra.me/teaching/ML/optimizers.html">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+  <link rel="canonical" href="https://mlaquatra.me/teaching/ML/optimizers.html">
+  <title>Optimizer Comparison - ML - Moreno La Quatra</title>
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="icon" href="../../mlq-logo.png" type="image/png">
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+
+  <style>
+    /* ── Layout ── */
+    main.wide-content { max-width: 960px; }
+
+    /* ── Loss surface callout box ── */
+    .loss-box {
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.4rem;
+      margin-bottom: var(--margin-unit);
+    }
+    .loss-box-title {
+      font-family: var(--font-display);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    .loss-box-formula { margin: 0.4rem 0 0.65rem; }
+    .loss-box-desc {
+      font-family: var(--font-serif);
+      font-size: 0.88rem;
+      color: var(--ink-light);
+      line-height: 1.6;
+      margin: 0;
+      text-align: left;
+      hyphens: none;
+    }
+    .loss-box-desc strong { color: var(--ink); }
+
+    /* ── Canvas wrapper ── */
+    .canvas-frame {
+      background: #fefdfb;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 0.75rem;
+    }
+    #vizCanvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      cursor: crosshair;
+    }
+    .canvas-label {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: rgba(26,26,26,0.4);
+      pointer-events: none;
+    }
+    .canvas-label.axis-x { bottom: 6px; left: 50%; transform: translateX(-50%); }
+    .canvas-label.axis-y {
+      right: 6px; top: 50%;
+      transform: translateY(-50%) rotate(90deg);
+      transform-origin: center;
+    }
+
+    /* ── Controls bar ── */
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 0.6rem 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .btn-ctrl {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      padding: 0.35rem 1rem;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      color: var(--ink);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn-ctrl:hover { border-color: var(--ink); }
+    .btn-ctrl.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--paper);
+    }
+    .btn-ctrl.primary:hover { background: var(--accent-light); border-color: var(--accent-light); }
+    .ctrl-sep { width: 1px; height: 22px; background: var(--border); flex-shrink: 0; }
+
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .slider-label {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      color: var(--ink-lighter);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    .slider-val {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--accent);
+      min-width: 34px;
+      text-align: right;
+    }
+    input[type=range] {
+      width: 76px;
+      height: 4px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* ── Toggle row ── */
+    .toggle-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+    }
+    .algo-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      cursor: pointer;
+      user-select: none;
+      padding: 0.28rem 0.7rem;
+      border: 1.5px solid;
+      transition: all 0.15s;
+    }
+    .algo-toggle .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .algo-toggle.off { opacity: 0.35; }
+
+    /* ── Algo cards ── */
+    .algo-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+      margin-bottom: var(--margin-unit);
+    }
+    @media (max-width: 780px) { .algo-cards { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .algo-cards { grid-template-columns: 1fr; } }
+
+    .algo-card {
+      border: 1.5px solid;
+      padding: 0.7rem 0.85rem;
+      background: var(--paper);
+    }
+    .algo-card-name {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      margin-bottom: 0.45rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .algo-card-name .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .algo-stat { display: flex; justify-content: space-between; margin-bottom: 0.18rem; }
+    .algo-stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--ink-lighter);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .algo-stat-val { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; color: var(--ink); }
+    .algo-loss-bar-wrap {
+      margin-top: 0.42rem;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .algo-loss-bar { height: 100%; border-radius: 2px; transition: width 0.2s ease; }
+
+    /* ── Math explainer ── */
+    .explainer-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      margin-bottom: var(--margin-unit);
+    }
+    @media (max-width: 680px) { .explainer-grid { grid-template-columns: 1fr; } }
+
+    .explainer-card {
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 0.95rem 1.1rem;
+    }
+    .explainer-card-title {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .explainer-card-title .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    /* KaTeX formula display */
+    .formula-display {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.85rem;
+      margin-bottom: 0.65rem;
+      overflow-x: auto;
+      text-align: center;
+    }
+    .formula-display .katex-display { margin: 0.2rem 0; }
+
+    .explainer-text {
+      font-family: var(--font-serif);
+      font-size: 0.84rem;
+      color: var(--ink-light);
+      line-height: 1.6;
+      margin: 0;
+      text-align: left;
+      hyphens: none;
+    }
+
+    /* Clickable parameter tokens */
+    .param-token {
+      display: inline-block;
+      cursor: pointer;
+      border-bottom: 1.5px dashed var(--accent);
+      color: var(--accent);
+      padding: 0 1px;
+      transition: background 0.12s;
+    }
+    .param-token:hover { background: rgba(139,0,0,0.07); }
+
+    /* Parameter callout popup */
+    .param-callout {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      background: var(--paper);
+      border: 1.5px solid var(--accent);
+      padding: 0.85rem 1.1rem;
+      max-width: 280px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+    .param-callout.show { display: block; }
+    .param-callout-symbol {
+      font-size: 1.6rem;
+      text-align: center;
+      margin-bottom: 0.4rem;
+    }
+    .param-callout-name {
+      font-family: var(--font-display);
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.3rem;
+      text-align: center;
+    }
+    .param-callout-def {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--ink-lighter);
+      margin-bottom: 0.4rem;
+      text-align: center;
+    }
+    .param-callout-body {
+      font-family: var(--font-serif);
+      font-size: 0.82rem;
+      color: var(--ink-light);
+      line-height: 1.55;
+      text-align: left;
+      border-top: 1px solid var(--border);
+      padding-top: 0.4rem;
+      margin-top: 0.2rem;
+    }
+    .param-callout-typical {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--accent);
+      margin-top: 0.35rem;
+    }
+    .callout-close {
+      position: absolute; top: 6px; right: 8px;
+      font-size: 0.8rem; cursor: pointer; color: var(--ink-lighter);
+      background: none; border: none; padding: 0;
+    }
+    .callout-close:hover { color: var(--ink); }
+
+    /* ── Insight box ── */
+    .insight-info {
+      background: #edf7ed;
+      border: 1px solid #b2d8b2;
+      border-left: 4px solid #1a5c1a;
+      padding: 0.7rem 1.1rem;
+      font-family: var(--font-serif);
+      font-size: 0.88rem;
+      color: #1a3a1a;
+      line-height: 1.6;
+      margin-bottom: var(--margin-unit);
+    }
+    .insight-info strong { font-weight: 600; }
+
+    /* ── Step counter ── */
+    .step-readout {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--ink-lighter);
+      margin-left: auto;
+    }
+    .step-readout .val { color: var(--ink); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <div data-include="header-nested-2"></div>
+
+  <!-- Parameter callout (singleton) -->
+  <div class="param-callout" id="paramCallout">
+    <button class="callout-close" id="calloutCloseBtn" aria-label="Close">&#215;</button>
+    <div class="param-callout-symbol" id="calloutSymbol"></div>
+    <div class="param-callout-name"   id="calloutName"></div>
+    <div class="param-callout-def"    id="calloutDef"></div>
+    <div class="param-callout-body"   id="calloutBody"></div>
+    <div class="param-callout-typical" id="calloutTypical"></div>
+  </div>
+
+  <main class="wide-content">
+
+    <div class="breadcrumb">
+      <a href="../../teaching/">Teaching</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="index.html">Machine Learning</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>Optimizer Comparison</span>
+    </div>
+
+    <h1>Optimization in Action</h1>
+
+    <!-- Loss surface callout -->
+    <div class="loss-box">
+      <div class="loss-box-title">The test surface</div>
+      <div class="loss-box-formula">
+        $$\mathcal{L}(\theta_1,\,\theta_2) \;=\; \theta_1^2 \;+\; 10\,\theta_2^2$$
+      </div>
+      <p class="loss-box-desc">
+        This is an <strong>elongated bowl</strong>: the curvature along $\theta_2$ is 10 times
+        larger than along $\theta_1$. The unique minimum is $(\theta_1^*,\theta_2^*)=(0,0)$.
+        The gradient is $\nabla\mathcal{L} = [2\theta_1,\; 20\theta_2]$, so the $\theta_2$
+        direction generates gradients 10 times larger than $\theta_1$. This
+        <strong>ill-conditioning</strong> (condition number = 10) is exactly what breaks plain SGD
+        and motivates adaptive optimizers: a single learning rate cannot simultaneously be
+        &ldquo;right&rdquo; for a steep axis and a shallow one.
+      </p>
+    </div>
+
+    <!-- ── Toggle row ── -->
+    <div class="toggle-row" id="toggleRow"></div>
+
+    <!-- ── Canvas ── -->
+    <div class="canvas-frame" id="canvasFrame">
+      <canvas id="vizCanvas"></canvas>
+      <span class="canvas-label axis-x">$\theta_1$</span>
+      <span class="canvas-label axis-y">$\theta_2$</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-bar">
+      <button class="btn-ctrl primary" id="btnPlay" onclick="togglePlay()">&#9654; Play</button>
+      <button class="btn-ctrl" onclick="resetAll()">&#8635; Reset</button>
+      <div class="ctrl-sep"></div>
+      <div class="slider-group">
+        <span class="slider-label">Speed</span>
+        <input type="range" id="sldSpeed" min="1" max="10" value="2" oninput="updateSpeed()">
+        <span class="slider-val" id="valSpeed">2</span>
+      </div>
+      <div class="slider-group">
+        <span class="slider-label">
+          <span class="param-token" data-key="eta" onclick="openCallout(event,'eta')">&#951;</span>
+          (LR)
+        </span>
+        <input type="range" id="sldLR" min="1" max="30" value="10" step="1" oninput="updateLR()">
+        <span class="slider-val" id="valLR">0.10</span>
+      </div>
+      <div class="slider-group">
+        <span class="slider-label">
+          <span class="param-token" data-key="beta" onclick="openCallout(event,'beta')">&#946;</span>
+          (mom.)
+        </span>
+        <input type="range" id="sldBeta" min="1" max="19" value="9" step="1" oninput="updateBeta()">
+        <span class="slider-val" id="valBeta">0.90</span>
+      </div>
+      <div class="ctrl-sep"></div>
+      <label style="display:flex;align-items:center;gap:0.4rem;font-family:var(--font-mono);font-size:0.72rem;color:var(--ink-lighter);cursor:pointer;">
+        <input type="checkbox" id="chkVectors" checked onchange="renderAll()"> vectors
+      </label>
+      <label style="display:flex;align-items:center;gap:0.4rem;font-family:var(--font-mono);font-size:0.72rem;color:var(--ink-lighter);cursor:pointer;">
+        <input type="checkbox" id="chkTrails" checked onchange="renderAll()"> trails
+      </label>
+      <div class="step-readout">step <span class="val" id="stepCount">0</span></div>
+    </div>
+
+    <!-- ── Algo Cards ── -->
+    <div class="algo-cards" id="algoCards"></div>
+
+    <!-- Insight -->
+    <div class="insight-info" id="dynamicInsight">
+      Press <strong>Play</strong> to start. All optimizers begin at
+      $(-5,\;3)$ with the same learning rate. Watch how each one handles the
+      steep $\theta_2$ direction differently.
+    </div>
+
+    <!-- Algorithm explainers -->
+    <h2>The Algorithms</h2>
+
+    <div class="explainer-grid">
+
+      <!-- SGD -->
+      <div class="explainer-card">
+        <div class="explainer-card-title">
+          <span class="dot" style="background:#c0392b;"></span> SGD
+        </div>
+        <div class="formula-display">
+          $$\theta_{t+1} = \theta_t - \eta \cdot \nabla\mathcal{L}(\theta_t)$$
+        </div>
+        <p class="explainer-text">
+          The simplest rule: step in the direction of steepest descent, scaled by the
+          learning rate
+          <span class="param-token" data-key="eta" onclick="openCallout(event,'eta')">$\eta$</span>.
+          No memory of past gradients.
+          On our elongated surface the $\theta_2$ gradient ($=20\theta_2$) is so large
+          that any $\eta$ fast enough to move along $\theta_1$ will cause SGD to overshoot
+          and oscillate on $\theta_2$. Watch the red trail bounce vertically.
+        </p>
+      </div>
+
+      <!-- SGD + Momentum -->
+      <div class="explainer-card">
+        <div class="explainer-card-title">
+          <span class="dot" style="background:#2471a3;"></span> SGD + Momentum
+        </div>
+        <div class="formula-display">
+          $$v_t = \beta\, v_{t-1} + (1-\beta)\,\nabla\mathcal{L}(\theta_t)$$
+          $$\theta_{t+1} = \theta_t - \eta\, v_t$$
+        </div>
+        <p class="explainer-text">
+          Maintains a <em>velocity</em>
+          <span class="param-token" data-key="vt" onclick="openCallout(event,'vt')">$v_t$</span>:
+          a running average of past gradients weighted by
+          <span class="param-token" data-key="beta" onclick="openCallout(event,'beta')">$\beta$</span>.
+          Along $\theta_2$, consecutive gradients alternate sign and cancel in the average.
+          Along $\theta_1$ they always agree and compound, accelerating progress.
+          Watch the blue velocity arrow straighten out over time.
+        </p>
+      </div>
+
+      <!-- RMSProp -->
+      <div class="explainer-card">
+        <div class="explainer-card-title">
+          <span class="dot" style="background:#1e8449;"></span> RMSProp
+        </div>
+        <div class="formula-display">
+          $$s_t = \beta\, s_{t-1} + (1-\beta)\,(\nabla\mathcal{L})^2$$
+          $$\theta_{t+1} = \theta_t - \frac{\eta}{\sqrt{s_t + \varepsilon}}\,\nabla\mathcal{L}(\theta_t)$$
+        </div>
+        <p class="explainer-text">
+          Instead of tracking the gradient itself, tracks its <em>squared</em> running average
+          <span class="param-token" data-key="st" onclick="openCallout(event,'st')">$s_t$</span>.
+          Dividing by $\sqrt{s_t}$ normalises each dimension independently.
+          <span class="param-token" data-key="eps" onclick="openCallout(event,'eps')">$\varepsilon$</span>
+          prevents division by zero when $s_t \approx 0$ in early steps.
+          Both axes receive an appropriately sized update regardless of curvature.
+        </p>
+      </div>
+
+      <!-- Adam -->
+      <div class="explainer-card">
+        <div class="explainer-card-title">
+          <span class="dot" style="background:#d68910;"></span> Adam
+        </div>
+        <div class="formula-display">
+          $$m_t = \beta_1 m_{t-1} + (1-\beta_1)\,\nabla\mathcal{L}$$
+          $$v_t = \beta_2 v_{t-1} + (1-\beta_2)\,(\nabla\mathcal{L})^2$$
+          $$\theta_{t+1} = \theta_t - \frac{\eta}{\sqrt{\hat{v}_t}+\varepsilon}\,\hat{m}_t$$
+        </div>
+        <p class="explainer-text">
+          Combines momentum (first moment
+          <span class="param-token" data-key="mt" onclick="openCallout(event,'mt')">$m_t$</span>)
+          and per-parameter scaling (second moment
+          <span class="param-token" data-key="vt2" onclick="openCallout(event,'vt2')">$v_t$</span>),
+          with bias correction via
+          <span class="param-token" data-key="mhat" onclick="openCallout(event,'mhat')">$\hat{m}_t,\hat{v}_t$</span>
+          to offset the zero-initialisation artifact in early steps.
+          <span class="param-token" data-key="b1b2" onclick="openCallout(event,'b1b2')">$\beta_1, \beta_2$</span>
+          defaults (0.9, 0.999) work well across most deep learning tasks.
+        </p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <div data-include="footer-nested-2"></div>
+
+  <script src="../../script.js"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   OPTIMIZER VISUALIZATION ENGINE
+   Loss: L(x,y) = x² + 10y²   Gradient: [2x, 20y]
+   ═══════════════════════════════════════════════════════════════ */
+(() => {
+'use strict';
+
+/* ── Design tokens ── */
+const ALGOS = [
+  { key: 'sgd',      label: 'SGD',              color: '#c0392b', colorAlpha: 'rgba(192,57,43,',  border: '#c0392b' },
+  { key: 'momentum', label: 'SGD + Momentum',    color: '#2471a3', colorAlpha: 'rgba(36,113,163,', border: '#2471a3' },
+  { key: 'rmsprop',  label: 'RMSProp',           color: '#1e8449', colorAlpha: 'rgba(30,132,73,',  border: '#1e8449' },
+  { key: 'adam',     label: 'Adam',              color: '#d68910', colorAlpha: 'rgba(214,137,16,', border: '#d68910' },
+];
+
+/* ── Hyper-params ── */
+let LR    = 0.10;   // learning rate (shared)
+let BETA  = 0.90;   // momentum / RMSProp β
+const BETA1_ADAM = 0.9;
+const BETA2_ADAM = 0.999;
+const EPS = 1e-8;
+const MAX_LOSS_INIT = (-5)*(-5) + 10*3*3;   // loss at start = 25+90 = 115
+
+/* ── Loss landscape ── */
+const X_MIN = -7, X_MAX = 7;
+const Y_MIN = -5, Y_MAX = 5;
+
+function loss(x, y)  { return x*x + 10*y*y; }
+function gradX(x, _) { return 2*x; }
+function gradY(_, y) { return 20*y; }
+
+/* ── Starting point ── */
+const X0 = -5, Y0 = 3;
+
+/* ── Optimizer state factory ── */
+function makeState(key) {
+  return {
+    key,
+    x: X0, y: Y0,
+    vx: 0, vy: 0,    // velocity / 1st moment
+    sx: 0, sy: 0,    // 2nd moment (adam/rms)
+    t: 0,
+    trail: [{ x: X0, y: Y0 }],
+    done: false,
+    steps: 0,
+  };
+}
+
+let states = {};
+ALGOS.forEach(a => { states[a.key] = makeState(a.key); });
+let visible = { sgd: true, momentum: true, rmsprop: true, adam: true };
+
+/* ── Step functions ── */
+function stepSGD(s) {
+  const gx = gradX(s.x, s.y), gy = gradY(s.x, s.y);
+  s.vx = gx; s.vy = gy;    // "velocity" = raw gradient for display
+  s.x -= LR * gx;
+  s.y -= LR * gy;
+}
+
+function stepMomentum(s) {
+  const gx = gradX(s.x, s.y), gy = gradY(s.x, s.y);
+  s.vx = BETA * s.vx + (1 - BETA) * gx;
+  s.vy = BETA * s.vy + (1 - BETA) * gy;
+  s.x -= LR * s.vx;
+  s.y -= LR * s.vy;
+}
+
+function stepRMSProp(s) {
+  const gx = gradX(s.x, s.y), gy = gradY(s.x, s.y);
+  s.sx = BETA * s.sx + (1 - BETA) * gx * gx;
+  s.sy = BETA * s.sy + (1 - BETA) * gy * gy;
+  s.vx = gx / (Math.sqrt(s.sx) + EPS);   // effective velocity for display
+  s.vy = gy / (Math.sqrt(s.sy) + EPS);
+  s.x -= LR * s.vx;
+  s.y -= LR * s.vy;
+}
+
+function stepAdam(s) {
+  s.t++;
+  const gx = gradX(s.x, s.y), gy = gradY(s.x, s.y);
+  s.vx = BETA1_ADAM * s.vx + (1 - BETA1_ADAM) * gx;
+  s.vy = BETA1_ADAM * s.vy + (1 - BETA1_ADAM) * gy;
+  s.sx = BETA2_ADAM * s.sx + (1 - BETA2_ADAM) * gx * gx;
+  s.sy = BETA2_ADAM * s.sy + (1 - BETA2_ADAM) * gy * gy;
+  const mhx = s.vx / (1 - Math.pow(BETA1_ADAM, s.t));
+  const mhy = s.vy / (1 - Math.pow(BETA1_ADAM, s.t));
+  const vhx = s.sx / (1 - Math.pow(BETA2_ADAM, s.t));
+  const vhy = s.sy / (1 - Math.pow(BETA2_ADAM, s.t));
+  s.x -= LR / (Math.sqrt(vhx) + EPS) * mhx;
+  s.y -= LR / (Math.sqrt(vhy) + EPS) * mhy;
+}
+
+const stepFns = { sgd: stepSGD, momentum: stepMomentum, rmsprop: stepRMSProp, adam: stepAdam };
+
+function advanceAll(nSteps) {
+  for (let n = 0; n < nSteps; n++) {
+    ALGOS.forEach(({ key }) => {
+      const s = states[key];
+      if (s.done || !visible[key]) return;
+      stepFns[key](s);
+      // clamp to canvas range
+      s.x = Math.max(X_MIN, Math.min(X_MAX, s.x));
+      s.y = Math.max(Y_MIN, Math.min(Y_MAX, s.y));
+      s.steps++;
+      s.trail.push({ x: s.x, y: s.y });
+      if (s.trail.length > 400) s.trail.shift();
+      if (loss(s.x, s.y) < 0.0001) s.done = true;
+    });
+  }
+}
+
+/* ── Canvas setup ── */
+const canvas = document.getElementById('vizCanvas');
+const ctx = canvas.getContext('2d');
+const LOGICAL_W = 800, LOGICAL_H = 500;
+let DPR = 1;
+
+function resizeCanvas() {
+  DPR = window.devicePixelRatio || 1;
+  const frame = document.getElementById('canvasFrame');
+  const cssW = frame.clientWidth;
+  const cssH = Math.round(cssW * LOGICAL_H / LOGICAL_W);
+  canvas.style.width  = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  canvas.width  = Math.round(cssW * DPR);
+  canvas.height = Math.round(cssH * DPR);
+  ctx.setTransform(DPR * cssW / LOGICAL_W, 0, 0, DPR * cssH / LOGICAL_H, 0, 0);
+  heatmapCache = null;   // invalidate
+  renderAll();
+}
+
+/* ── Coordinate mapping ── */
+function toCanvasX(x) { return (x - X_MIN) / (X_MAX - X_MIN) * LOGICAL_W; }
+function toCanvasY(y) { return (1 - (y - Y_MIN) / (Y_MAX - Y_MIN)) * LOGICAL_H; }
+
+/* ── Heatmap (pre-rendered) ── */
+let heatmapCache = null;
+function buildHeatmap() {
+  const W = 200, H = 125;   // low-res grid, will be drawn scaled
+  const offscreen = document.createElement('canvas');
+  offscreen.width = W; offscreen.height = H;
+  const oc = offscreen.getContext('2d');
+  const imageData = oc.createImageData(W, H);
+  const data = imageData.data;
+
+  const maxL = loss(X_MAX, Y_MAX);
+
+  for (let py = 0; py < H; py++) {
+    for (let px = 0; px < W; px++) {
+      const wx = X_MIN + (px / W) * (X_MAX - X_MIN);
+      const wy = Y_MAX - (py / H) * (Y_MAX - Y_MIN);
+      const l = loss(wx, wy);
+      const t = Math.pow(Math.min(l / maxL, 1), 0.38);
+
+      // light palette: paper white -> warm cream -> gold -> orange -> dark red -> maroon
+      let r, g, b;
+      if (t < 0.25) {
+        const f = t / 0.25;
+        r = Math.round(254 + f * (251 - 254));
+        g = Math.round(253 + f * (228 - 253));
+        b = Math.round(251 + f * (132 - 251));
+      } else if (t < 0.55) {
+        const f = (t - 0.25) / 0.30;
+        r = Math.round(251 + f * (220 - 251));
+        g = Math.round(228 + f * (100 - 228));
+        b = Math.round(132 + f * (40  - 132));
+      } else if (t < 0.80) {
+        const f = (t - 0.55) / 0.25;
+        r = Math.round(220 + f * (160 - 220));
+        g = Math.round(100 + f * (20  - 100));
+        b = Math.round(40  + f * (20  - 40));
+      } else {
+        const f = (t - 0.80) / 0.20;
+        r = Math.round(160 + f * (80  - 160));
+        g = Math.round(20  + f * (0   - 20));
+        b = Math.round(20  + f * (0   - 20));
+      }
+      const idx = (py * W + px) * 4;
+      data[idx]   = r;
+      data[idx+1] = g;
+      data[idx+2] = b;
+      data[idx+3] = 255;
+    }
+  }
+  oc.putImageData(imageData, 0, 0);
+  heatmapCache = offscreen;
+}
+
+/* ── Contour lines ── */
+const CONTOUR_LEVELS = [2, 5, 10, 20, 40, 80, 140];
+function drawContours() {
+  const SAMPLES = 400;
+  ctx.save();
+  ctx.globalAlpha = 0.25;
+  CONTOUR_LEVELS.forEach(level => {
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(26,26,26,1)';
+    ctx.lineWidth = 0.55;
+    // Approximate contour by scanning columns
+    for (let px = 0; px <= SAMPLES; px++) {
+      const wx = X_MIN + (px / SAMPLES) * (X_MAX - X_MIN);
+      // L(wx,y) = level  =>  10y² = level - wx²  =>  y = ±sqrt((level-wx²)/10)
+      const inner = (level - wx * wx) / 10;
+      if (inner < 0) continue;
+      const wyPos =  Math.sqrt(inner);
+      const wyNeg = -Math.sqrt(inner);
+      const cx = toCanvasX(wx);
+      const cyP = toCanvasY(wyPos);
+      const cyN = toCanvasY(wyNeg);
+      if (px === 0) {
+        ctx.moveTo(cx, cyP);
+      } else {
+        ctx.lineTo(cx, cyP);
+      }
+    }
+    ctx.stroke();
+    ctx.beginPath();
+    for (let px = 0; px <= SAMPLES; px++) {
+      const wx = X_MIN + (px / SAMPLES) * (X_MAX - X_MIN);
+      const inner = (level - wx * wx) / 10;
+      if (inner < 0) continue;
+      const wyNeg = -Math.sqrt(inner);
+      const cx = toCanvasX(wx);
+      const cyN = toCanvasY(wyNeg);
+      if (px === 0) ctx.moveTo(cx, cyN);
+      else ctx.lineTo(cx, cyN);
+    }
+    ctx.stroke();
+  });
+  ctx.restore();
+}
+
+/* ── Arrow helper ── */
+function drawArrow(x1, y1, x2, y2, color, lineW, headSize) {
+  const dx = x2 - x1, dy = y2 - y1;
+  const len = Math.sqrt(dx*dx + dy*dy);
+  if (len < 1) return;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = lineW;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  // Arrowhead
+  const angle = Math.atan2(dy, dx);
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - headSize * Math.cos(angle - 0.4), y2 - headSize * Math.sin(angle - 0.4));
+  ctx.lineTo(x2 - headSize * Math.cos(angle + 0.4), y2 - headSize * Math.sin(angle + 0.4));
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+/* ── Main render ── */
+function renderAll() {
+  if (!heatmapCache) buildHeatmap();
+
+  ctx.clearRect(0, 0, LOGICAL_W, LOGICAL_H);
+  ctx.drawImage(heatmapCache, 0, 0, LOGICAL_W, LOGICAL_H);
+  drawContours();
+
+  // Minimum marker
+  const ox = toCanvasX(0), oy = toCanvasY(0);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(26,26,26,0.5)';
+  ctx.lineWidth = 1;
+  for (let r = 4; r <= 10; r += 3) {
+    ctx.beginPath();
+    ctx.arc(ox, oy, r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.fillStyle = 'rgba(26,26,26,0.65)';
+  ctx.font = 'bold 9px monospace';
+  ctx.fillText('min', ox + 8, oy + 4);
+  ctx.restore();
+
+  // Starting point
+  const sx0 = toCanvasX(X0), sy0 = toCanvasY(Y0);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(26,26,26,0.35)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(sx0, sy0, 5, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(26,26,26,0.4)';
+  ctx.font = '8px monospace';
+  ctx.fillText('start', sx0 + 7, sy0 + 3);
+  ctx.restore();
+
+  const showTrails   = document.getElementById('chkTrails').checked;
+  const showVectors  = document.getElementById('chkVectors').checked;
+
+  ALGOS.forEach(({ key, color, colorAlpha }) => {
+    if (!visible[key]) return;
+    const s = states[key];
+
+    // Trail
+    if (showTrails && s.trail.length > 1) {
+      ctx.save();
+      for (let i = 1; i < s.trail.length; i++) {
+        const alpha = 0.15 + 0.7 * (i / s.trail.length);
+        ctx.strokeStyle = colorAlpha + alpha + ')';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(toCanvasX(s.trail[i-1].x), toCanvasY(s.trail[i-1].y));
+        ctx.lineTo(toCanvasX(s.trail[i].x),   toCanvasY(s.trail[i].y));
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    const cx = toCanvasX(s.x), cy = toCanvasY(s.y);
+
+    // Velocity vector
+    if (showVectors && (s.vx !== 0 || s.vy !== 0)) {
+      const VEC_SCALE = 3.5;
+      const ex = cx - toCanvasX(s.x + s.vx * VEC_SCALE) + cx;   // endpoint (inverted: negative = direction of update)
+      const ey = cy - toCanvasY(s.y + s.vy * VEC_SCALE) + cy;
+      // Actually: update direction is -v, so arrow goes from current pos toward current pos - v*scale
+      const arrowEndX = toCanvasX(s.x - s.vx * 0.4);
+      const arrowEndY = toCanvasY(s.y - s.vy * 0.08);  // y-scale needs account for canvas Y-flip and different axes
+      // Proper: map the velocity to canvas space delta
+      const dvx = (s.vx * 0.4 / (X_MAX - X_MIN)) * LOGICAL_W;
+      const dvy = (s.vy * 0.04 / (Y_MAX - Y_MIN)) * LOGICAL_H;
+      drawArrow(cx, cy, cx - dvx, cy + dvy, color, 1.5, 5);
+    }
+
+    // Dot
+    ctx.save();
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Label near dot
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.font = 'bold 8px monospace';
+    ctx.fillText(key.toUpperCase(), cx + 7, cy - 5);
+    ctx.restore();
+  });
+}
+
+/* ── UI: toggle buttons ── */
+function buildToggles() {
+  const row = document.getElementById('toggleRow');
+  row.innerHTML = '';
+  ALGOS.forEach(({ key, label, color, border }) => {
+    const btn = document.createElement('div');
+    btn.className = 'algo-toggle' + (visible[key] ? '' : ' off');
+    btn.style.borderColor = border;
+    btn.style.color = visible[key] ? border : 'var(--ink-lighter)';
+    btn.innerHTML = `<span class="dot" style="background:${color};"></span>${label}`;
+    btn.onclick = () => {
+      visible[key] = !visible[key];
+      btn.classList.toggle('off', !visible[key]);
+      btn.style.color = visible[key] ? border : 'var(--ink-lighter)';
+      renderAll();
+      updateCards();
+    };
+    row.appendChild(btn);
+  });
+}
+
+/* ── UI: algo cards ── */
+function buildCards() {
+  const container = document.getElementById('algoCards');
+  container.innerHTML = '';
+  ALGOS.forEach(({ key, label, color, border }) => {
+    const card = document.createElement('div');
+    card.className = 'algo-card';
+    card.id = 'card-' + key;
+    card.style.borderColor = border;
+    card.innerHTML = `
+      <div class="algo-card-name">
+        <span class="dot" style="background:${color};"></span>${label}
+      </div>
+      <div class="algo-stat">
+        <span class="algo-stat-label">Loss</span>
+        <span class="algo-stat-val" id="card-loss-${key}">115.0000</span>
+      </div>
+      <div class="algo-stat">
+        <span class="algo-stat-label">Position</span>
+        <span class="algo-stat-val" id="card-pos-${key}">(-5.00, 3.00)</span>
+      </div>
+      <div class="algo-stat">
+        <span class="algo-stat-label">|velocity|</span>
+        <span class="algo-stat-val" id="card-vel-${key}">0.0000</span>
+      </div>
+      <div class="algo-stat">
+        <span class="algo-stat-label">Steps</span>
+        <span class="algo-stat-val" id="card-steps-${key}">0</span>
+      </div>
+      <div class="algo-loss-bar-wrap">
+        <div class="algo-loss-bar" id="card-bar-${key}" style="background:${color};width:0%;"></div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function updateCards() {
+  let anyDone = false;
+  let allDone = true;
+  ALGOS.forEach(({ key }) => {
+    const s = states[key];
+    if (!visible[key]) return;
+    const l = loss(s.x, s.y);
+    const vel = Math.sqrt(s.vx * s.vx + s.vy * s.vy);
+    document.getElementById('card-loss-' + key).textContent  = l.toFixed(4);
+    document.getElementById('card-pos-'  + key).textContent  = `(${s.x.toFixed(2)}, ${s.y.toFixed(2)})`;
+    document.getElementById('card-vel-'  + key).textContent  = vel.toFixed(4);
+    document.getElementById('card-steps-'+ key).textContent  = s.steps;
+    const pct = Math.max(0, 100 - (l / MAX_LOSS_INIT) * 100);
+    document.getElementById('card-bar-' + key).style.width = pct.toFixed(1) + '%';
+    if (!s.done) allDone = false;
+    if (s.done)  anyDone = true;
+  });
+
+  // Insight text
+  const maxSteps = Math.max(...ALGOS.map(a => visible[a.key] ? states[a.key].steps : 0));
+  const insight = document.getElementById('dynamicInsight');
+  if (maxSteps === 0) {
+    insight.innerHTML = 'Press <strong>Play</strong> to start. All optimizers begin at $(−5,\\;3)$.';
+  } else if (maxSteps < 20) {
+    insight.innerHTML = '<strong>First steps.</strong> Note the $\\theta_2$ gradient at the start: $20 \\times 3 = 60$. With $\\eta = 0.10$, SGD steps by $6$ on $\\theta_2$, overshooting to $-3$ immediately. Momentum is already averaging these large and opposing gradients. RMSProp and Adam are normalising per dimension using the squared gradient.';
+  } else if (maxSteps < 60) {
+    insight.innerHTML = '<strong>Diverging strategies.</strong> SGD ricochets on $\\theta_2$ (the trail bounces up and down). Momentum\'s velocity arrow is shortening vertically but growing horizontally. RMSProp and Adam move nearly diagonally toward the minimum because per-dimension scaling has equalised the effective step sizes.';
+  } else {
+    insight.innerHTML = `<strong>${maxSteps} steps in.</strong> Compare the loss values in the cards above. Try dragging the $\\eta$ slider to see SGD diverge while Adam stays stable. Set $\\beta$ near 0 to watch Momentum degrade toward plain SGD.`;
+  }
+  if (window.renderMathInElement) {
+    renderMathInElement(insight, { delimiters: [{left:'$',right:'$',display:false}], throwOnError:false });
+  }
+
+  // Step counter
+  document.getElementById('stepCount').textContent = maxSteps;
+}
+
+/* ── Animation loop ── */
+let animId = null;
+let playing = false;
+let speed = 2;
+
+function togglePlay() {
+  playing = !playing;
+  const btn = document.getElementById('btnPlay');
+  if (playing) {
+    btn.textContent = '⏸ Pause';
+    btn.classList.add('primary');
+    loop();
+  } else {
+    btn.textContent = '▶ Play';
+    clearTimeout(animId);
+  }
+}
+window.togglePlay = togglePlay;
+
+function loop() {
+  if (!playing) return;
+  advanceAll(speed);
+  renderAll();
+  updateCards();
+  animId = requestAnimationFrame(loop);
+}
+
+function resetAll() {
+  playing = false;
+  clearTimeout(animId);
+  document.getElementById('btnPlay').textContent = '▶ Play';
+  document.getElementById('btnPlay').classList.remove('primary');
+  ALGOS.forEach(({ key }) => { states[key] = makeState(key); });
+  renderAll();
+  updateCards();
+}
+window.resetAll = resetAll;
+
+function updateSpeed() {
+  speed = parseInt(document.getElementById('sldSpeed').value);
+  document.getElementById('valSpeed').textContent = speed;
+}
+window.updateSpeed = updateSpeed;
+
+function updateLR() {
+  const v = parseInt(document.getElementById('sldLR').value);
+  LR = v / 100;
+  document.getElementById('valLR').textContent = LR.toFixed(2);
+}
+window.updateLR = updateLR;
+
+function updateBeta() {
+  const v = parseInt(document.getElementById('sldBeta').value);
+  BETA = v / 20;
+  document.getElementById('valBeta').textContent = BETA.toFixed(2);
+}
+window.updateBeta = updateBeta;
+
+/* ── Init ── */
+buildToggles();
+buildCards();
+resizeCanvas();
+updateCards();
+
+window.addEventListener('resize', () => {
+  clearTimeout(window._resizeTimer);
+  window._resizeTimer = setTimeout(resizeCanvas, 120);
+});
+
+// Step one frame to show starting dot
+renderAll();
+
+})();
+
+/* ================================================================
+   PARAMETER CALLOUT SYSTEM
+   ================================================================ */
+const PARAM_DATA = {
+  eta: {
+    symbol: 'η',
+    name: 'Learning Rate',
+    def: 'η ∈ (0, 1)',
+    body: 'Controls how large each parameter update is. A high η speeds up training but risks overshooting or diverging. A low η is stable but slow. There is no universally correct value; it must be tuned per problem.',
+    typical: 'Typical: 0.001 to 0.1'
+  },
+  beta: {
+    symbol: 'β',
+    name: 'Momentum Coefficient',
+    def: 'β ∈ [0, 1)',
+    body: 'Controls how much of the past velocity to retain. β = 0 reduces momentum to plain SGD. β = 0.9 means the velocity is a weighted average over roughly the last 10 gradient steps (1/(1−0.9) = 10). High β smooths oscillations but can overshoot.',
+    typical: 'Typical: 0.9'
+  },
+  vt: {
+    symbol: 'v_t',
+    name: 'Velocity (Momentum)',
+    def: 'Running average of gradients',
+    body: 'In SGD with Momentum, v_t accumulates a direction based on the gradient history. Gradients consistently pointing the same way build up speed; alternating (oscillating) gradients cancel each other out, damping the trajectory.',
+    typical: 'Initialised at 0'
+  },
+  st: {
+    symbol: 's_t',
+    name: 'Squared Gradient Average',
+    def: 'Running average of (∇L)²',
+    body: 'In RMSProp, s_t tracks the mean of squared gradients per parameter. Dividing the update by √s_t normalises each dimension: parameters with historically large gradients get a smaller effective step, preventing overshooting on steep axes.',
+    typical: 'Initialised at 0'
+  },
+  eps: {
+    symbol: 'ε',
+    name: 'Epsilon',
+    def: 'ε > 0, very small constant',
+    body: 'Added inside the square root denominator to prevent division by zero at the start of training (before s_t or v_t have built up). It has negligible effect once training is underway.',
+    typical: 'Typical: 1e-8'
+  },
+  mt: {
+    symbol: 'm_t',
+    name: 'First Moment (Adam)',
+    def: 'Biased estimate of E[∇L]',
+    body: 'Adam\'s first moment m_t is an exponential moving average of the gradient, essentially the same as momentum in SGD with Momentum. It provides the direction of the update. Used after bias correction: m̂_t = m_t / (1 − β₁ᵗ).',
+    typical: 'β₁ = 0.9 (typical)'
+  },
+  vt2: {
+    symbol: 'v_t',
+    name: 'Second Moment (Adam)',
+    def: 'Biased estimate of E[(∇L)²]',
+    body: 'Adam\'s second moment v_t is an exponential moving average of squared gradients, the same idea as RMSProp. It scales the step size per parameter. Used after bias correction: v̂_t = v_t / (1 − β₂ᵗ).',
+    typical: 'β₂ = 0.999 (typical)'
+  },
+  mhat: {
+    symbol: 'm̂_t, v̂_t',
+    name: 'Bias-Corrected Moments',
+    def: 'm̂_t = m_t / (1 − β₁ᵗ)',
+    body: 'At step t=1 with β₁=0.9, m₁ = 0.1·∇L is much smaller than the true gradient. Dividing by (1 − 0.9) = 0.1 corrects it: m̂₁ = ∇L. The correction fades as t grows and becomes negligible after the first tens of steps.',
+    typical: 'Adam-specific feature'
+  },
+  b1b2: {
+    symbol: 'β₁, β₂',
+    name: 'Adam Betas',
+    def: 'β₁ for 1st moment, β₂ for 2nd',
+    body: 'β₁ controls the momentum direction (lower = more reactive to recent gradients). β₂ controls per-parameter scale adaptation. Because squared gradients are noisier, β₂ is set higher (0.999) to give a more stable estimate.',
+    typical: 'β₁ = 0.9,  β₂ = 0.999'
+  },
+};
+
+function openCallout(event, key) {
+  event.stopPropagation();
+  const p = PARAM_DATA[key];
+  if (!p) return;
+  const box = document.getElementById('paramCallout');
+  document.getElementById('calloutSymbol').textContent  = p.symbol;
+  document.getElementById('calloutName').textContent    = p.name;
+  document.getElementById('calloutDef').textContent     = p.def;
+  document.getElementById('calloutBody').textContent    = p.body;
+  document.getElementById('calloutTypical').textContent = p.typical;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let left = event.clientX + 14, top = event.clientY + 14;
+  box.style.display = 'block';
+  const bw = box.offsetWidth || 280, bh = box.offsetHeight || 190;
+  if (left + bw > vw - 10) left = Math.max(10, event.clientX - bw - 14);
+  if (top  + bh > vh - 10) top  = Math.max(10, event.clientY - bh - 14);
+  box.style.left = left + 'px';
+  box.style.top  = top  + 'px';
+  box.classList.add('show');
+}
+window.openCallout = openCallout;
+
+function closeCallout() {
+  document.getElementById('paramCallout').classList.remove('show');
+}
+window.closeCallout = closeCallout;
+
+document.getElementById('calloutCloseBtn').addEventListener('click', function(e) {
+  e.stopPropagation();
+  closeCallout();
+});
+
+document.addEventListener('click', e => {
+  const box = document.getElementById('paramCallout');
+  if (box && box.classList.contains('show') &&
+      !box.contains(e.target) &&
+      !e.target.classList.contains('param-token')) {
+    box.classList.remove('show');
+  }
+});
+</script>
+
+</body>
+</html>
