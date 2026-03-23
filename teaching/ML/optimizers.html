@@ -1059,67 +1059,67 @@ renderAll();
    ================================================================ */
 const PARAM_DATA = {
   eta: {
-    symbol: 'η',
+    symbol: '$\\eta$',
     name: 'Learning Rate',
-    def: 'η ∈ (0, 1)',
-    body: 'Controls how large each parameter update is. A high η speeds up training but risks overshooting or diverging. A low η is stable but slow. There is no universally correct value; it must be tuned per problem.',
+    def: '\\(\\eta \\in (0, 1)\\)',
+    body: 'Controls how large each parameter update is. A high \\(\\eta\\) speeds up training but risks overshooting or diverging. A low \\(\\eta\\) is stable but slow. There is no universally correct value; it must be tuned.',
     typical: 'Typical: 0.001 to 0.1'
   },
   beta: {
-    symbol: 'β',
+    symbol: '$\\beta$',
     name: 'Momentum Coefficient',
-    def: 'β ∈ [0, 1)',
-    body: 'Controls how much of the past velocity to retain. β = 0 reduces momentum to plain SGD. β = 0.9 means the velocity is a weighted average over roughly the last 10 gradient steps (1/(1−0.9) = 10). High β smooths oscillations but can overshoot.',
+    def: '\\(\\beta \\in [0, 1)\\)',
+    body: 'Controls how much of the past velocity to retain. \\(\\beta = 0\\) reduces momentum to plain SGD. \\(\\beta = 0.9\\) averages over roughly the last 10 gradient steps. High \\(\\beta\\) smooths oscillations but can overshoot.',
     typical: 'Typical: 0.9'
   },
   vt: {
-    symbol: 'v_t',
+    symbol: '$v_t$',
     name: 'Velocity (Momentum)',
-    def: 'Running average of gradients',
-    body: 'In SGD with Momentum, v_t accumulates a direction based on the gradient history. Gradients consistently pointing the same way build up speed; alternating (oscillating) gradients cancel each other out, damping the trajectory.',
+    def: '\\(v_t = \\beta v_{t-1} + (1-\\beta)\\nabla\\mathcal{L}\\)',
+    body: 'Accumulates a direction based on past gradients. Gradients consistently pointing the same way build up speed; alternating gradients cancel, damping oscillations.',
     typical: 'Initialised at 0'
   },
   st: {
-    symbol: 's_t',
+    symbol: '$s_t$',
     name: 'Squared Gradient Average',
-    def: 'Running average of (∇L)²',
-    body: 'In RMSProp, s_t tracks the mean of squared gradients per parameter. Dividing the update by √s_t normalises each dimension: parameters with historically large gradients get a smaller effective step, preventing overshooting on steep axes.',
+    def: '\\(s_t = \\beta s_{t-1} + (1-\\beta)(\\nabla\\mathcal{L})^2\\)',
+    body: 'Tracks the mean of squared gradients per parameter. Dividing by \\(\\sqrt{s_t}\\) normalises each dimension: large-gradient axes get a smaller effective step, preventing overshooting on steep axes.',
     typical: 'Initialised at 0'
   },
   eps: {
-    symbol: 'ε',
+    symbol: '$\\varepsilon$',
     name: 'Epsilon',
-    def: 'ε > 0, very small constant',
-    body: 'Added inside the square root denominator to prevent division by zero at the start of training (before s_t or v_t have built up). It has negligible effect once training is underway.',
+    def: '\\(\\varepsilon > 0\\), very small constant',
+    body: 'Added inside the square root denominator to prevent division by zero when \\(s_t \\approx 0\\) at the start of training. Negligible once \\(s_t\\) has built up.',
     typical: 'Typical: 1e-8'
   },
   mt: {
-    symbol: 'm_t',
+    symbol: '$m_t$',
     name: 'First Moment (Adam)',
-    def: 'Biased estimate of E[∇L]',
-    body: 'Adam\'s first moment m_t is an exponential moving average of the gradient, essentially the same as momentum in SGD with Momentum. It provides the direction of the update. Used after bias correction: m̂_t = m_t / (1 − β₁ᵗ).',
-    typical: 'β₁ = 0.9 (typical)'
+    def: '\\(m_t = \\beta_1 m_{t-1} + (1-\\beta_1)\\nabla\\mathcal{L}\\)',
+    body: "Adam's first moment is an exponential moving average of the gradient — the direction of the update. Used after bias correction: \\(\\hat{m}_t = m_t / (1 - \\beta_1^t)\\).",
+    typical: '\\(\\beta_1 = 0.9\\) (typical)'
   },
   vt2: {
-    symbol: 'v_t',
+    symbol: '$v_t$',
     name: 'Second Moment (Adam)',
-    def: 'Biased estimate of E[(∇L)²]',
-    body: 'Adam\'s second moment v_t is an exponential moving average of squared gradients, the same idea as RMSProp. It scales the step size per parameter. Used after bias correction: v̂_t = v_t / (1 − β₂ᵗ).',
-    typical: 'β₂ = 0.999 (typical)'
+    def: '\\(v_t = \\beta_2 v_{t-1} + (1-\\beta_2)(\\nabla\\mathcal{L})^2\\)',
+    body: "Adam's second moment is an exponential moving average of squared gradients, the same idea as RMSProp. It scales the step size per parameter. Used after bias correction: \\(\\hat{v}_t = v_t / (1 - \\beta_2^t)\\).",
+    typical: '\\(\\beta_2 = 0.999\\) (typical)'
   },
   mhat: {
-    symbol: 'm̂_t, v̂_t',
+    symbol: '$\\hat{m}_t,\\, \\hat{v}_t$',
     name: 'Bias-Corrected Moments',
-    def: 'm̂_t = m_t / (1 − β₁ᵗ)',
-    body: 'At step t=1 with β₁=0.9, m₁ = 0.1·∇L is much smaller than the true gradient. Dividing by (1 − 0.9) = 0.1 corrects it: m̂₁ = ∇L. The correction fades as t grows and becomes negligible after the first tens of steps.',
+    def: '\\(\\hat{m}_t = m_t / (1 - \\beta_1^t)\\)',
+    body: 'At step \\(t=1\\) with \\(\\beta_1=0.9\\), \\(m_1 = 0.1\\cdot\\nabla\\mathcal{L}\\) is much smaller than the true gradient. Dividing by \\(1-0.9=0.1\\) corrects it to \\(\\hat{m}_1 = \\nabla\\mathcal{L}\\). The correction fades as \\(t\\) grows.',
     typical: 'Adam-specific feature'
   },
   b1b2: {
-    symbol: 'β₁, β₂',
+    symbol: '$\\beta_1,\\, \\beta_2$',
     name: 'Adam Betas',
-    def: 'β₁ for 1st moment, β₂ for 2nd',
-    body: 'β₁ controls the momentum direction (lower = more reactive to recent gradients). β₂ controls per-parameter scale adaptation. Because squared gradients are noisier, β₂ is set higher (0.999) to give a more stable estimate.',
-    typical: 'β₁ = 0.9,  β₂ = 0.999'
+    def: '\\(\\beta_1\\) for 1st moment, \\(\\beta_2\\) for 2nd',
+    body: '\\(\\beta_1\\) controls how quickly the momentum direction changes. \\(\\beta_2\\) controls per-parameter scale adaptation. Squared gradients are noisier, so \\(\\beta_2\\) is set higher (0.999) for a more stable estimate.',
+    typical: '\\(\\beta_1 = 0.9,\\; \\beta_2 = 0.999\\)'
   },
 };
 
@@ -1128,15 +1128,20 @@ function openCallout(event, key) {
   const p = PARAM_DATA[key];
   if (!p) return;
   const box = document.getElementById('paramCallout');
-  document.getElementById('calloutSymbol').textContent  = p.symbol;
-  document.getElementById('calloutName').textContent    = p.name;
-  document.getElementById('calloutDef').textContent     = p.def;
-  document.getElementById('calloutBody').textContent    = p.body;
-  document.getElementById('calloutTypical').textContent = p.typical;
+  document.getElementById('calloutSymbol').innerHTML  = p.symbol;
+  document.getElementById('calloutName').textContent  = p.name;
+  document.getElementById('calloutDef').innerHTML     = p.def;
+  document.getElementById('calloutBody').innerHTML    = p.body;
+  document.getElementById('calloutTypical').innerHTML = p.typical;
+  // Render KaTeX in the callout
+  if (window.renderMathInElement) {
+    renderMathInElement(box, { delimiters: [{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false},{left:'$',right:'$',display:false}], throwOnError:false });
+  }
+  // Position near click, clamped to viewport
   const vw = window.innerWidth, vh = window.innerHeight;
-  let left = event.clientX + 14, top = event.clientY + 14;
   box.style.display = 'block';
   const bw = box.offsetWidth || 280, bh = box.offsetHeight || 190;
+  let left = event.clientX + 14, top = event.clientY + 14;
   if (left + bw > vw - 10) left = Math.max(10, event.clientX - bw - 14);
   if (top  + bh > vh - 10) top  = Math.max(10, event.clientY - bh - 14);
   box.style.left = left + 'px';
@@ -1146,7 +1151,9 @@ function openCallout(event, key) {
 window.openCallout = openCallout;
 
 function closeCallout() {
-  document.getElementById('paramCallout').classList.remove('show');
+  const box = document.getElementById('paramCallout');
+  box.classList.remove('show');
+  box.style.display = 'none';   // clear the inline override set during measurement
 }
 window.closeCallout = closeCallout;
 
@@ -1157,10 +1164,10 @@ document.getElementById('calloutCloseBtn').addEventListener('click', function(e)
 
 document.addEventListener('click', e => {
   const box = document.getElementById('paramCallout');
-  if (box && box.classList.contains('show') &&
+  if (box && box.style.display === 'block' &&
       !box.contains(e.target) &&
       !e.target.classList.contains('param-token')) {
-    box.classList.remove('show');
+    closeCallout();
   }
 });
 </script>
