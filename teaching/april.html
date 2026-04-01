@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parametric Curve Visualization</title>
+    <style>
+        /* Academic, minimal light theme */
+        :root {
+            --bg-color: #fcfcfc;
+            --text-color: #1a1a1a;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Computer Modern Serif', 'Georgia', 'Times New Roman', serif;
+            overflow: hidden; /* Prevents scrollbars when canvas fills screen */
+        }
+
+        /* Fullscreen canvas */
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* LaTeX-style floating box */
+        .latex-box {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.95);
+            border: 1px solid #000;
+            padding: 1.2rem 1.5rem;
+            width: 90%;
+            max-width: 650px;
+            box-sizing: border-box;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(4px); /* Slight modern touch for readability */
+        }
+
+        .caption {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            text-align: justify;
+        }
+
+        .math {
+            font-family: 'Computer Modern Math', 'Georgia', 'Times New Roman', serif;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="cartesianPlane"></canvas>
+    
+    <div class="latex-box">
+        <div class="caption">
+            <strong>Figure 1.</strong> Closed parametric curve. The curve is defined by the equations <span class="math">x(t) = cos(t) - sin²(t)/√2</span> and <span class="math">y(t) = cos(t)sin(t)</span> on the interval <span class="math">t ∈ [0, 2π]</span>.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('cartesianPlane');
+        const ctx = canvas.getContext('2d');
+
+        let width, height, originX, originY, scale;
+        const dpr = window.devicePixelRatio || 1;
+
+        // Handles initial sizing and dynamic resizing (e.g., mobile orientation changes)
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = `${width}px`;
+            canvas.style.height = `${height}px`;
+            
+            ctx.scale(dpr, dpr);
+
+            originX = width / 2;
+            originY = height / 2;
+            
+            // Dynamically calculate scale so the function fits nicely on mobile and desktop
+            scale = Math.min(width, height) / 3.5; 
+            
+            drawPlane();
+            drawCurveUpTo(currentT);
+        }
+
+        function drawPlane() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw Sub-grid
+            ctx.beginPath();
+            ctx.strokeStyle = '#ececec';
+            ctx.lineWidth = 1;
+            const step = Math.max(30, scale / 4); // Responsive grid stepping
+
+            for (let x = originX % step; x < width; x += step) {
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+            }
+            for (let y = originY % step; y < height; y += step) {
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+            }
+            ctx.stroke();
+
+            // Draw Axes
+            ctx.beginPath();
+            ctx.strokeStyle = '#333333';
+            ctx.lineWidth = 1.2;
+            
+            // X-axis
+            ctx.moveTo(0, originY);
+            ctx.lineTo(width, originY);
+            // Y-axis
+            ctx.moveTo(originX, 0);
+            ctx.lineTo(originX, height);
+            ctx.stroke();
+
+            // Axis Labels
+            ctx.fillStyle = '#1a1a1a';
+            ctx.font = 'italic 16px "Times New Roman", serif';
+            ctx.fillText('x', width - 25, originY - 10);
+            ctx.fillText('y', originX + 10, 25);
+        }
+
+        // Parametric equations for the curve
+        function getCoordinates(t) {
+            const x = Math.cos(t) - (Math.pow(Math.sin(t), 2) / Math.SQRT2);
+            const y = Math.cos(t) * Math.sin(t);
+            
+            return {
+                x: originX + (x * scale),
+                y: originY - (y * scale) // Y-axis inverted for canvas rendering
+            };
+        }
+
+        // Draws the curve from t=0 up to the current progress time
+        function drawCurveUpTo(maxT) {
+            if (maxT <= 0) return;
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 2.5;
+            ctx.lineJoin = 'round';
+            
+            const startPt = getCoordinates(0);
+            ctx.moveTo(startPt.x, startPt.y);
+            
+            for (let tempT = stepT; tempT <= maxT; tempT += stepT) {
+                const pt = getCoordinates(tempT);
+                ctx.lineTo(pt.x, pt.y);
+            }
+            ctx.stroke();
+        }
+
+        // Animation state
+        let currentT = 0;
+        const maxTime = 2 * Math.PI;
+        const stepT = 0.012; 
+
+        function animate() {
+            if (currentT <= maxTime) {
+                currentT += stepT;
+                drawPlane();
+                drawCurveUpTo(currentT);
+                requestAnimationFrame(animate);
+            }
+        }
+
+        // Initialize scene
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Start animation after a brief delay
+        setTimeout(() => {
+            requestAnimationFrame(animate);
+        }, 800);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="RNN Explorer: interactive step-by-step animations of RNN forward pass, architecture variants, and backpropagation gradient flow. ML course by Moreno La Quatra.">
+  <meta property="og:title" content="RNN Explorer - ML - Moreno La Quatra">
+  <meta property="og:url" content="https://mlaquatra.me/teaching/ML/rnn-explorer.html">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+  <link rel="canonical" href="https://mlaquatra.me/teaching/ML/rnn-explorer.html">
+  <title>RNN Explorer - ML - Moreno La Quatra</title>
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="icon" href="../../mlq-logo.png" type="image/png">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+
+  <style>
+    main.wide-content { max-width: 1100px; }
+
+    .section-h2 {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-top: 2.6rem;
+      margin-bottom: 0.8rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: baseline;
+      gap: 0.55rem;
+    }
+    .sec-num {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--accent);
+      background: #fff0e0;
+      border: 1px solid #d4a890;
+      padding: 0.08rem 0.42rem;
+      letter-spacing: 0.06em;
+    }
+
+    .info-box {
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.4rem;
+      margin-bottom: var(--margin-unit);
+    }
+    .info-box-title {
+      font-family: var(--font-display);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 0.45rem;
+    }
+    .info-box-desc {
+      font-family: var(--font-serif);
+      font-size: 0.88rem;
+      color: var(--ink-light);
+      line-height: 1.65;
+      margin: 0;
+      hyphens: none;
+    }
+    .info-box-desc strong { color: var(--ink); }
+    .info-box-desc ul { margin: 0.4rem 0 0 1.2rem; padding: 0; }
+    .info-box-desc li { margin-bottom: 0.2rem; }
+
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 0.6rem 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .btn-ctrl {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      padding: 0.35rem 1rem;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      color: var(--ink);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn-ctrl:hover { border-color: var(--ink); }
+    .btn-ctrl.primary { border-color: var(--accent); background: var(--accent); color: var(--paper); }
+    .btn-ctrl.primary:hover { background: var(--accent-light); border-color: var(--accent-light); }
+    .btn-ctrl.active { border-color: var(--accent); color: var(--accent); background: #fff0e0; }
+    .ctrl-sep { width: 1px; height: 22px; background: var(--border); flex-shrink: 0; }
+
+    .slider-group { display: flex; align-items: center; gap: 0.4rem; }
+    .slider-label {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      color: var(--ink-lighter);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    input[type=range] { width: 72px; height: 4px; accent-color: var(--accent); cursor: pointer; }
+
+    .step-readout {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--ink-lighter);
+      margin-left: auto;
+    }
+    .step-readout .val { color: var(--ink); font-weight: 600; }
+
+    .canvas-container {
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+      overflow-x: auto;
+    }
+    canvas { display: block; margin: 0 auto; image-rendering: auto; }
+
+    .narration {
+      font-family: var(--font-serif);
+      font-size: 0.92rem;
+      color: var(--ink-light);
+      background: #fffbf0;
+      border: 1px solid #e8dcc8;
+      border-left: 3px solid var(--accent);
+      padding: 0.7rem 1.1rem;
+      margin-bottom: 0.6rem;
+      min-height: 2.6rem;
+      line-height: 1.55;
+    }
+    .narration strong { color: var(--ink); }
+
+    .legend-row {
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--ink-lighter);
+      margin-bottom: 0.5rem;
+    }
+    .legend-item { display: flex; align-items: center; gap: 0.35rem; }
+    .legend-swatch { width: 14px; height: 14px; border: 1px solid var(--border); flex-shrink: 0; }
+
+    .insight-box {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--ink-light);
+      background: var(--paper-dark);
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.9rem;
+      margin-bottom: 0.6rem;
+      min-height: 1.6rem;
+    }
+    .insight-box .tag { font-weight: 600; color: var(--accent); margin-right: 0.4rem; }
+  </style>
+</head>
+<body>
+  <div data-include="../../components/header-nested-2.html"></div>
+  <main class="wide-content">
+    <h1 class="page-title">RNN Explorer</h1>
+    <p class="page-subtitle">Step-by-step animations of how Recurrent Neural Networks process sequences</p>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 1: Forward Pass -->
+    <!-- ============================================================ -->
+    <div class="section-h2"><span class="sec-num">01</span> Forward Pass - Step by Step</div>
+
+    <div class="info-box">
+      <div class="info-box-title">What happens here</div>
+      <p class="info-box-desc">
+        An RNN processes a sequence <strong>one element at a time</strong>. At each time step the cell receives
+        two things: the <strong>current input vector</strong> $x_t$ (e.g. a word embedding) and the
+        <strong>hidden state</strong> $h_{t-1}$ from the previous step. It produces a new hidden state $h_t$
+        and optionally an output $y_t$. The same cell (same weights) is reused at every step -
+        we just "unroll" it to visualize the full sequence. Watch the animation: each sub-phase is
+        highlighted so you can follow exactly what moves where.
+      </p>
+    </div>
+
+    <div class="legend-row">
+      <div class="legend-item"><div class="legend-swatch" style="background:#5b8abf"></div>Input vector $x_t$</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#d4885c"></div>Hidden state $h_t$</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#6aaa6a"></div>Output $y_t$</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#e8e2d6; border-color:#c0b8a8"></div>Inactive cell</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#fff3e0; border-color:#d4885c"></div>Active cell</div>
+    </div>
+
+    <div class="controls-bar">
+      <button class="btn-ctrl primary" id="fwd-play">&#9654; Play</button>
+      <button class="btn-ctrl" id="fwd-step">Step</button>
+      <button class="btn-ctrl" id="fwd-reset">Reset</button>
+      <div class="ctrl-sep"></div>
+      <div class="slider-group">
+        <span class="slider-label">Speed</span>
+        <input type="range" id="fwd-speed" min="1" max="5" value="3">
+      </div>
+      <span class="step-readout" id="fwd-readout">Step: <span class="val">0 / 5</span></span>
+    </div>
+
+    <div class="narration" id="fwd-narration">Press <strong>Play</strong> or <strong>Step</strong> to begin the forward pass.</div>
+
+    <div class="canvas-container">
+      <canvas id="fwd-canvas" width="1040" height="340"></canvas>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 2: Architecture Variants -->
+    <!-- ============================================================ -->
+    <div class="section-h2"><span class="sec-num">02</span> Architecture Variants</div>
+
+    <div class="info-box">
+      <div class="info-box-title">How the outputs are used</div>
+      <p class="info-box-desc">
+        The same RNN cell can be wired differently depending on the task. Select a variant below to see
+        how inputs and outputs are connected:
+      </p>
+      <ul class="info-box-desc" style="margin-top:0.5rem;">
+        <li><strong>Many-to-One</strong>: full sequence in, single output. The final hidden state feeds a
+            <strong>fully-connected network with non-linear activations</strong> (e.g. ReLU) that acts as the
+            classifier (e.g. sentiment classification).</li>
+        <li><strong>Many-to-Many (same length)</strong>: one output per time step (e.g. POS tagging).</li>
+        <li><strong>Many-to-Many (Encoder-Decoder)</strong>: encode the input sequence, then decode into a new sequence (e.g. translation).</li>
+        <li><strong>One-to-Many</strong>: single input, generate a sequence (e.g. image captioning).</li>
+      </ul>
+    </div>
+
+    <div class="controls-bar">
+      <button class="btn-ctrl active" id="arch-m2o" data-arch="m2o">Many-to-One</button>
+      <button class="btn-ctrl" id="arch-m2m" data-arch="m2m">Many-to-Many</button>
+      <button class="btn-ctrl" id="arch-enc-dec" data-arch="enc-dec">Encoder-Decoder</button>
+      <button class="btn-ctrl" id="arch-o2m" data-arch="o2m">One-to-Many</button>
+      <div class="ctrl-sep"></div>
+      <button class="btn-ctrl primary" id="arch-play">&#9654; Play</button>
+      <button class="btn-ctrl" id="arch-reset">Reset</button>
+    </div>
+
+    <div class="narration" id="arch-narration">Select an architecture and press <strong>Play</strong> to see it in action.</div>
+
+    <div class="canvas-container">
+      <canvas id="arch-canvas" width="1040" height="400"></canvas>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 3: Backpropagation Through Time -->
+    <!-- ============================================================ -->
+    <div class="section-h2"><span class="sec-num">03</span> Backpropagation Through Time - Gradient Flow</div>
+
+    <div class="info-box">
+      <div class="info-box-title">What to look for</div>
+      <p class="info-box-desc">
+        During training, the gradient flows <strong>backwards</strong> through the unrolled cells.
+        At each step the gradient is multiplied by $W_{hh}$ (the recurrent weight matrix).
+        If $|W_{hh}| &lt; 1$, the gradient <strong>shrinks</strong> at every step and eventually vanishes.
+        If $|W_{hh}| &gt; 1$, it <strong>grows</strong> and can explode. Watch the red bar at each cell:
+        it shows the <strong>relative gradient magnitude</strong> arriving at that step.
+      </p>
+    </div>
+
+    <div class="legend-row">
+      <div class="legend-item"><div class="legend-swatch" style="background:#d45050"></div>Large gradient</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#f0c0c0"></div>Small gradient</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#f5f5f5; border-color:#ccc"></div>Near-zero gradient</div>
+    </div>
+
+    <div class="controls-bar">
+      <button class="btn-ctrl primary" id="bp-play">&#9654; Play</button>
+      <button class="btn-ctrl" id="bp-step">Step</button>
+      <button class="btn-ctrl" id="bp-reset">Reset</button>
+      <div class="ctrl-sep"></div>
+      <div class="slider-group">
+        <span class="slider-label">|W<sub>hh</sub>|</span>
+        <input type="range" id="bp-whh" min="0.1" max="2.0" step="0.05" value="0.7">
+        <span class="slider-label" id="bp-whh-val" style="min-width:28px; text-align:right;">0.70</span>
+      </div>
+      <div class="ctrl-sep"></div>
+      <div class="slider-group">
+        <span class="slider-label">Steps</span>
+        <input type="range" id="bp-steps" min="4" max="12" step="1" value="8">
+        <span class="slider-label" id="bp-steps-val" style="min-width:18px; text-align:right;">8</span>
+      </div>
+      <span class="step-readout" id="bp-readout">Backprop step: <span class="val">0 / 8</span></span>
+    </div>
+
+    <div class="narration" id="bp-narration">Press <strong>Play</strong> to watch the gradient propagate backwards from the loss.</div>
+
+    <div class="canvas-container">
+      <canvas id="bp-canvas" width="1040" height="320"></canvas>
+    </div>
+
+    <div class="insight-box" id="bp-insight"><span class="tag">INSIGHT</span> Adjust |W<sub>hh</sub>| and press Play to observe vanishing vs. exploding gradients.</div>
+
+  </main>
+  <div data-include="../../components/footer-nested-2.html"></div>
+  <script src="../../script.js"></script>
+
+<script>
+/* ================================================================
+   RNN Explorer - Interactive Animations (smooth sub-step version)
+   ================================================================ */
+(function() {
+  'use strict';
+
+  /* ── Shared palette ── */
+  const C = {
+    input: '#5b8abf', inputDim: '#c4d6e8',
+    hidden: '#d4885c', hiddenDim: '#e8cbb5',
+    output: '#6aaa6a', outputDim: '#c4ddc4',
+    cell: '#e8e2d6', cellBdr: '#c0b8a8',
+    cellAct: '#fff3e0', cellActBdr: '#d4885c',
+    ink: '#1a1a1a', inkL: '#777', inkLL: '#aaa',
+    accent: '#8b0000',
+    gradH: '#d45050', gradM: '#e89090', gradL: '#f0c0c0', gradZ: '#f5f5f5',
+    paper: '#fefdfb', border: '#d4d0c8',
+    enc: '#5b8abf', encBg: '#e0ecf8',
+    dec: '#9b6abf', decBg: '#efe4f8'
+  };
+
+  function dpr() { return window.devicePixelRatio || 1; }
+
+  function initCanvas(cv, lw, lh) {
+    var r = dpr();
+    cv.width = lw * r; cv.height = lh * r;
+    cv.style.width = lw + 'px'; cv.style.height = lh + 'px';
+    var ctx = cv.getContext('2d');
+    ctx.setTransform(r, 0, 0, r, 0, 0);
+    return ctx;
+  }
+
+  /* ── Drawing primitives ── */
+  function rr(ctx, x, y, w, h, rad) {
+    ctx.beginPath();
+    ctx.moveTo(x+rad,y); ctx.lineTo(x+w-rad,y);
+    ctx.quadraticCurveTo(x+w,y,x+w,y+rad); ctx.lineTo(x+w,y+h-rad);
+    ctx.quadraticCurveTo(x+w,y+h,x+w-rad,y+h); ctx.lineTo(x+rad,y+h);
+    ctx.quadraticCurveTo(x,y+h,x,y+h-rad); ctx.lineTo(x,y+rad);
+    ctx.quadraticCurveTo(x,y,x+rad,y); ctx.closePath();
+  }
+
+  function arrow(ctx, x1, y1, x2, y2, col, lw, hs) {
+    lw = lw||2; hs = hs||7;
+    var a = Math.atan2(y2-y1, x2-x1);
+    ctx.save(); ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=lw;
+    ctx.beginPath(); ctx.moveTo(x1,y1);
+    ctx.lineTo(x2-Math.cos(a)*hs, y2-Math.sin(a)*hs); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-hs*Math.cos(a-0.4), y2-hs*Math.sin(a-0.4));
+    ctx.lineTo(x2-hs*Math.cos(a+0.4), y2-hs*Math.sin(a+0.4));
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+
+  function dashedArrow(ctx, x1, y1, x2, y2, col, lw, hs) {
+    lw=lw||1.5; hs=hs||6;
+    var a = Math.atan2(y2-y1,x2-x1);
+    ctx.save(); ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=lw;
+    ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(x1,y1);
+    ctx.lineTo(x2-Math.cos(a)*hs, y2-Math.sin(a)*hs); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-hs*Math.cos(a-0.4), y2-hs*Math.sin(a-0.4));
+    ctx.lineTo(x2-hs*Math.cos(a+0.4), y2-hs*Math.sin(a+0.4));
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+
+  function vecBlock(ctx, x, y, w, h, col, lbl) {
+    ctx.fillStyle=col; rr(ctx,x,y,w,h,3); ctx.fill();
+    ctx.strokeStyle=col; ctx.lineWidth=1; ctx.stroke();
+    if(lbl){ctx.fillStyle='#fff'; ctx.font='600 11px "JetBrains Mono",monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(lbl,x+w/2,y+h/2);}
+  }
+
+  function cellBox(ctx, x, y, w, h, active, lbl, customBg, customBdr) {
+    ctx.fillStyle = active ? (customBg||C.cellAct) : C.cell;
+    rr(ctx,x,y,w,h,5); ctx.fill();
+    ctx.strokeStyle = active ? (customBdr||C.cellActBdr) : C.cellBdr;
+    ctx.lineWidth = active ? 2 : 1; ctx.stroke();
+    if(lbl){ctx.fillStyle=active?C.ink:C.inkL;
+    ctx.font='600 12px "JetBrains Mono",monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(lbl,x+w/2,y+h/2);}
+  }
+
+  function label(ctx, txt, x, y, col, sz) {
+    ctx.fillStyle=col||C.inkL; ctx.font=(sz||11)+'px "JetBrains Mono",monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(txt,x,y);
+  }
+
+  /* Easing */
+  function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+  function lerp(a, b, t) { return a + (b - a) * ease(t); }
+  function clamp01(t) { return Math.max(0, Math.min(1, t)); }
+
+  /* ================================================================
+     SECTION 1: FORWARD PASS  (smooth sub-phase animation)
+     ================================================================
+     Sub-phases per word step:
+       phase 0: input vector highlights & arrow animates down to cell
+       phase 1: cell lights up (computing)
+       phase 2: output arrow animates up, output block appears
+       phase 3: h arrow animates right to next cell
+     Then move to next word.
+  */
+  var fwdCV = document.getElementById('fwd-canvas');
+  var fwdCtx = initCanvas(fwdCV, 1040, 340);
+  var STEPS = 5, CW = 72, CH = 56, FLEFT = 60, FTOP = 100, FGAP = 140;
+  var words = ['The', 'cat', 'sat', 'on', 'mat'];
+
+  /* Animation state */
+  var fwd = {
+    word: 0,          /* current word index (0..4) */
+    phase: -1,        /* -1=idle, 0..3 sub-phases, 4=done-with-step */
+    t: 0,             /* 0..1 progress within phase */
+    playing: false,
+    raf: null,
+    lastTs: 0,
+    completed: []     /* array of completed word indices */
+  };
+
+  function fwdSpeed() {
+    var v = parseInt(document.getElementById('fwd-speed').value);
+    return [0.5, 0.8, 1.3, 2.0, 3.5][v-1]; /* multiplier: higher = faster */
+  }
+
+  function fCX(i) { return FLEFT + i * FGAP + CW/2; }
+  function fCY() { return FTOP + CH/2; }
+
+  function fwdReadout() {
+    var done = fwd.completed.length;
+    document.getElementById('fwd-readout').innerHTML =
+      'Step: <span class="val">' + done + ' / ' + STEPS + '</span>';
+  }
+
+  var FWD_NAR = [
+    'The word "<b>The</b>" is embedded into vector <b>x0</b> and enters the first cell...',
+    '"<b>cat</b>" becomes <b>x1</b>. Together with <b>h0</b> from the previous cell, the RNN computes <b>h1</b> and <b>y1</b>.',
+    '"<b>sat</b>" becomes <b>x2</b>. Same cell, new input, receives <b>h1</b>. Produces <b>h2</b> and <b>y2</b>.',
+    '"<b>on</b>" becomes <b>x3</b>. Receives <b>h2</b>. Produces <b>h3</b> and <b>y3</b>.',
+    '"<b>mat</b>" becomes <b>x4</b>. The last step. <b>h4</b> carries the information of the entire sentence.'
+  ];
+
+  function fwdNarrate() {
+    var n = document.getElementById('fwd-narration');
+    if (fwd.phase < 0) {
+      n.innerHTML = 'Press <strong>Play</strong> or <strong>Step</strong> to begin the forward pass.';
+    } else if (fwd.completed.length >= STEPS) {
+      n.innerHTML = '<strong>Forward pass complete.</strong> All 5 words have been processed. The final hidden state h4 encodes the entire sequence.';
+    } else {
+      var i = fwd.word;
+      var base = FWD_NAR[i];
+      var phases = [
+        ' <b>[input vector enters]</b>',
+        ' <b>[cell computes]</b>',
+        ' <b>[output produced]</b>',
+        ' <b>[hidden state passed]</b>'
+      ];
+      n.innerHTML = base + (fwd.phase >= 0 && fwd.phase < 4 ? phases[fwd.phase] : '');
+    }
+  }
+
+  function fwdDraw() {
+    var ctx = fwdCtx;
+    ctx.clearRect(0, 0, 1040, 340);
+    var wi = fwd.word;
+    var ph = fwd.phase;
+    var t = fwd.t;
+
+    for (var i = 0; i < STEPS; i++) {
+      var cx = FLEFT + i * FGAP;
+      var done = fwd.completed.indexOf(i) >= 0;
+      var isActive = (i === wi && ph >= 0);
+      var cellLit = done || (isActive && ph >= 1);
+
+      /* Cell */
+      cellBox(ctx, cx, FTOP, CW, CH, cellLit, 'RNN');
+
+      /* "same weights" label */
+      if (i === 2) label(ctx, 'same weights W', fCX(i), FTOP + CH + 48, C.inkL, 10);
+
+      /* Word label */
+      var wordY = FTOP + CH + 70;
+      label(ctx, words[i], fCX(i), wordY + 18, C.ink, 12);
+
+      /* Input vector block + arrow */
+      var vecH = 24, vecW = 42;
+      var vecTopY = FTOP + CH + 18;
+
+      if (done || (isActive && ph >= 0)) {
+        /* Animate input: phase 0 fades it in and arrow grows */
+        var inputAlpha = 1;
+        var arrowEndY = FTOP + CH;
+        if (isActive && ph === 0) {
+          inputAlpha = clamp01(t * 2);            /* fade in first half */
+          arrowEndY = lerp(vecTopY, FTOP + CH, t);  /* arrow grows */
+        }
+        ctx.globalAlpha = isActive && ph === 0 ? inputAlpha : 1;
+        vecBlock(ctx, fCX(i) - vecW/2, vecTopY, vecW, vecH, C.input, 'x'+i);
+        ctx.globalAlpha = 1;
+        if (arrowEndY < vecTopY - 2)
+          arrow(ctx, fCX(i), vecTopY, fCX(i), arrowEndY, C.input, 1.5, 5);
+      } else {
+        vecBlock(ctx, fCX(i) - vecW/2, vecTopY, vecW, vecH, '#e0ddd5', 'x'+i);
+        dashedArrow(ctx, fCX(i), vecTopY, fCX(i), FTOP + CH, '#ccc', 1, 4);
+      }
+
+      /* Output above */
+      var outY = FTOP - 40;
+      if (done || (isActive && ph >= 2)) {
+        var outAlpha = 1;
+        var outArrowStartY = FTOP;
+        var outArrowEndY = outY + 20;
+        if (isActive && ph === 2) {
+          outAlpha = clamp01(t * 2);
+          outArrowEndY = lerp(FTOP, outY + 20, t);
+        }
+        ctx.globalAlpha = isActive && ph === 2 ? outAlpha : 1;
+        if (outArrowEndY < FTOP - 2)
+          arrow(ctx, fCX(i), FTOP, fCX(i), outArrowEndY, C.output, 1.5, 5);
+        if (!(isActive && ph === 2 && t < 0.5))
+          vecBlock(ctx, fCX(i) - 21, outY - 4, 42, 22, C.output, 'y'+i);
+        ctx.globalAlpha = 1;
+      }
+
+      /* Hidden state arrow to next cell */
+      if (i < STEPS - 1) {
+        var hDone = done && (fwd.completed.indexOf(i) >= 0);
+        var hAnimating = (isActive && ph === 3);
+        if (hDone) {
+          arrow(ctx, cx + CW, fCY(), FLEFT + (i+1)*FGAP, fCY(), C.hidden, 2, 6);
+          label(ctx, 'h'+i, fCX(i) + FGAP/2, fCY() - 12, C.hidden, 10);
+        } else if (hAnimating) {
+          var endX = lerp(cx + CW + 4, FLEFT + (i+1)*FGAP, t);
+          arrow(ctx, cx + CW, fCY(), endX, fCY(), C.hidden, 2, 6);
+          if (t > 0.4) label(ctx, 'h'+i, fCX(i) + FGAP/2, fCY() - 12, C.hidden, 10);
+        } else {
+          dashedArrow(ctx, cx + CW, fCY(), FLEFT + (i+1)*FGAP, fCY(), '#ddd', 1, 4);
+        }
+      }
+    }
+
+    /* h_init */
+    if (fwd.completed.length > 0 || fwd.phase >= 0) {
+      var hx = FLEFT - 38;
+      ctx.fillStyle = C.hidden;
+      ctx.font = '600 10px "JetBrains Mono",monospace'; ctx.textAlign = 'center';
+      ctx.fillText('h_init', hx, fCY() - 10);
+      ctx.fillText('= 0', hx, fCY() + 4);
+      arrow(ctx, hx + 18, fCY(), FLEFT, fCY(), C.hidden, 1.5, 5);
+    }
+  }
+
+  /* Animation loop */
+  function fwdTick(ts) {
+    if (!fwd.playing) return;
+    if (!fwd.lastTs) fwd.lastTs = ts;
+    var dt = (ts - fwd.lastTs) / 1000 * fwdSpeed();
+    fwd.lastTs = ts;
+
+    fwd.t += dt * 1.8; /* phase speed */
+    if (fwd.t >= 1) {
+      fwd.t = 1;
+      fwdDraw();
+      /* Advance phase */
+      fwd.phase++;
+      if (fwd.phase > 3) {
+        /* Word step done */
+        fwd.completed.push(fwd.word);
+        fwd.word++;
+        fwdReadout();
+        if (fwd.word >= STEPS) {
+          fwd.phase = -1;
+          fwd.playing = false;
+          document.getElementById('fwd-play').innerHTML = '&#9654; Play';
+          fwdNarrate();
+          fwdDraw();
+          return;
+        }
+        fwd.phase = 0;
+      }
+      fwd.t = 0;
+      fwd.lastTs = 0;
+      fwdNarrate();
+    }
+    fwdDraw();
+    fwd.raf = requestAnimationFrame(fwdTick);
+  }
+
+  function fwdPlay() {
+    if (fwd.playing) {
+      fwd.playing = false; cancelAnimationFrame(fwd.raf);
+      document.getElementById('fwd-play').innerHTML = '&#9654; Play'; return;
+    }
+    if (fwd.completed.length >= STEPS) fwdReset();
+    if (fwd.phase < 0) { fwd.phase = 0; fwd.t = 0; }
+    fwd.playing = true; fwd.lastTs = 0;
+    document.getElementById('fwd-play').innerHTML = '&#10074;&#10074; Pause';
+    fwdNarrate();
+    fwd.raf = requestAnimationFrame(fwdTick);
+  }
+
+  function fwdStepOnce() {
+    if (fwd.playing) { fwd.playing = false; cancelAnimationFrame(fwd.raf); document.getElementById('fwd-play').innerHTML = '&#9654; Play'; }
+    if (fwd.completed.length >= STEPS) return;
+    if (fwd.phase < 0) fwd.phase = 0;
+    else fwd.phase++;
+    if (fwd.phase > 3) {
+      fwd.completed.push(fwd.word);
+      fwd.word++;
+      fwdReadout();
+      if (fwd.word >= STEPS) { fwd.phase = -1; fwdNarrate(); fwdDraw(); return; }
+      fwd.phase = 0;
+    }
+    fwd.t = 1; /* show full phase */
+    fwdNarrate(); fwdDraw();
+  }
+
+  function fwdReset() {
+    fwd.playing = false; cancelAnimationFrame(fwd.raf);
+    fwd.word = 0; fwd.phase = -1; fwd.t = 0; fwd.completed = [];
+    document.getElementById('fwd-play').innerHTML = '&#9654; Play';
+    fwdNarrate(); fwdDraw(); fwdReadout();
+  }
+
+  document.getElementById('fwd-play').addEventListener('click', fwdPlay);
+  document.getElementById('fwd-step').addEventListener('click', fwdStepOnce);
+  document.getElementById('fwd-reset').addEventListener('click', fwdReset);
+  fwdDraw(); fwdReadout();
+
+
+  /* ================================================================
+     SECTION 2: ARCHITECTURE VARIANTS (smooth sub-phase)
+     ================================================================ */
+  var archCV = document.getElementById('arch-canvas');
+  var archCtx = initCanvas(archCV, 1040, 400);
+  var AW = 1040, AH = 400, ACW = 64, ACH = 50, ATOP = 150, AGAP = 110;
+
+  /* Preload tux image for o2m */
+  var tuxImg = new Image();
+  tuxImg.src = 'images/tux.png';
+  var tuxLoaded = false;
+  tuxImg.onload = function() { tuxLoaded = true; if (arch.mode === 'o2m') archDraw(); };
+
+  var ARCH_CFG = {
+    m2o: {
+      enc: 5, dec: 0,
+      inLbl: ['x0','x1','x2','x3','x4'],
+      words: ['This','movie','is','really','great'],
+      outEnd: true,
+      title: 'Many-to-One',
+      desc: 'All words go in. The final hidden state feeds a fully-connected network (FC + non-linear activations) to produce one label.'
+    },
+    m2m: {
+      enc: 5, dec: 0,
+      inLbl: ['x0','x1','x2','x3','x4'],
+      words: ['The','cat','sat','on','mat'],
+      outPerStep: true,
+      title: 'Many-to-Many (same length)',
+      desc: 'Each time step produces an output. E.g. POS tagging: one tag per word.'
+    },
+    'enc-dec': {
+      enc: 4, dec: 4,
+      inLbl: ['x0','x1','x2','x3'],
+      words: ['il','gatto','e\'','seduto'],
+      decLbl: ['<sos>','the','cat','sat'],
+      outLbl: ['the','cat','sat','<eos>'],
+      title: 'Encoder-Decoder (IT -> EN)',
+      desc: 'The encoder reads the Italian sentence. Its final hidden state initializes the decoder, which generates the English translation word by word.'
+    },
+    o2m: {
+      enc: 1, dec: 6,
+      inLbl: ['img'],
+      words: ['[tux.png]'],
+      decLbl: ['<sos>','Tux','official','mascot','of','Linux'],
+      outLbl: ['Tux','official','mascot','of','Linux','<eos>'],
+      title: 'One-to-Many (Image Captioning)',
+      desc: 'A single input (the Tux image features) seeds the hidden state, then the decoder generates a caption word by word.'
+    }
+  };
+
+  var arch = {
+    mode: 'm2o',
+    step: 0,       /* overall step (enc steps then dec steps) */
+    phase: -1,     /* -1=idle, 0=input, 1=cell, 2=output, 3=h-pass */
+    t: 0,
+    playing: false,
+    raf: null,
+    lastTs: 0,
+    completed: []
+  };
+
+  function aCfg() { return ARCH_CFG[arch.mode]; }
+  function aTotal() { var c = aCfg(); return c.enc + c.dec; }
+
+  function aCellX(i, isDec) {
+    var cfg = aCfg();
+    if (!isDec) {
+      var sx = (cfg.dec > 0) ? 30 : 80;
+      return sx + i * AGAP;
+    } else {
+      var encEnd = ((cfg.dec > 0) ? 30 : 80) + cfg.enc * AGAP;
+      var gap2 = cfg.dec > 0 ? 50 : 0;
+      return encEnd + gap2 + i * AGAP;
+    }
+  }
+
+  function aCellCX(i, isDec) { return aCellX(i, isDec) + ACW/2; }
+
+  function archDraw() {
+    var ctx = archCtx;
+    ctx.clearRect(0, 0, AW, AH);
+    var cfg = aCfg();
+    var si = arch.step;       /* current step index (overall) */
+    var ph = arch.phase;
+    var t = arch.t;
+    var isEncPhase = si < cfg.enc;
+
+    /* Title + desc */
+    ctx.fillStyle = C.accent;
+    ctx.font = '600 13px "Playfair Display",serif'; ctx.textAlign = 'left';
+    ctx.fillText(cfg.title, 20, 28);
+    ctx.fillStyle = C.inkL;
+    ctx.font = '12px "EB Garamond",serif'; ctx.textAlign = 'left';
+    /* wrap long desc */
+    ctx.fillText(cfg.desc, 20, 50);
+
+    /* ---- ENCODER CELLS ---- */
+    for (var i = 0; i < cfg.enc; i++) {
+      var cx = aCellX(i, false);
+      var done = arch.completed.indexOf(i) >= 0;
+      var isCur = (isEncPhase && si === i && ph >= 0);
+      var lit = done || (isCur && ph >= 1);
+      var isEnc = cfg.dec > 0;
+
+      cellBox(ctx, cx, ATOP, ACW, ACH, lit, isEnc ? 'ENC' : 'RNN',
+              lit ? (isEnc ? C.encBg : undefined) : undefined,
+              lit ? (isEnc ? C.enc : undefined) : undefined);
+
+      /* Input */
+      var inY = ATOP + ACH + 20;
+      var showIn = done || (isCur && ph >= 0);
+
+      /* For o2m encoder, draw tux image */
+      if (arch.mode === 'o2m' && i === 0 && tuxLoaded) {
+        var imgW = 40, imgH = 40;
+        var imgX = aCellCX(i, false) - imgW/2;
+        var imgY = inY + 2;
+        if (showIn) {
+          ctx.drawImage(tuxImg, imgX, imgY, imgW, imgH);
+          if (isCur && ph === 0) {
+            var ay = lerp(imgY, ATOP + ACH, t);
+            if (ay < imgY - 2) arrow(ctx, aCellCX(i,false), imgY, aCellCX(i,false), ay, C.input, 1.5, 5);
+          } else {
+            arrow(ctx, aCellCX(i,false), imgY, aCellCX(i,false), ATOP+ACH, C.input, 1.5, 5);
+          }
+        } else {
+          ctx.globalAlpha = 0.3;
+          ctx.drawImage(tuxImg, imgX, imgY, imgW, imgH);
+          ctx.globalAlpha = 1;
+          dashedArrow(ctx, aCellCX(i,false), imgY, aCellCX(i,false), ATOP+ACH, '#ccc', 1, 4);
+        }
+        label(ctx, 'tux.png', aCellCX(i,false), imgY + imgH + 14, C.ink, 10);
+      } else {
+        /* Normal text input */
+        if (showIn) {
+          var ia = 1;
+          if (isCur && ph === 0) { ia = clamp01(t*2); }
+          ctx.globalAlpha = (isCur && ph === 0) ? ia : 1;
+          vecBlock(ctx, aCellCX(i,false)-20, inY, 40, 20, C.input, cfg.inLbl[i]);
+          ctx.globalAlpha = 1;
+          if (isCur && ph === 0) {
+            var ay2 = lerp(inY, ATOP+ACH, t);
+            if (ay2 < inY - 2) arrow(ctx, aCellCX(i,false), inY, aCellCX(i,false), ay2, C.input, 1.5, 5);
+          } else {
+            arrow(ctx, aCellCX(i,false), inY, aCellCX(i,false), ATOP+ACH, C.input, 1.5, 5);
+          }
+        } else {
+          vecBlock(ctx, aCellCX(i,false)-20, inY, 40, 20, '#ddd', cfg.inLbl[i]);
+          dashedArrow(ctx, aCellCX(i,false), inY, aCellCX(i,false), ATOP+ACH, '#ddd', 1, 4);
+        }
+        /* word label */
+        if (cfg.words && cfg.words[i])
+          label(ctx, cfg.words[i], aCellCX(i,false), inY + 34, C.ink, 10);
+      }
+
+      /* h to next enc */
+      if (i < cfg.enc - 1) {
+        var hDone2 = done;
+        var hAnim2 = (isCur && ph === 3);
+        if (hDone2) {
+          arrow(ctx, cx+ACW, ATOP+ACH/2, aCellX(i+1,false), ATOP+ACH/2, C.hidden, 2, 5);
+          label(ctx, 'h'+i, aCellCX(i,false)+AGAP/2, ATOP+ACH/2-12, C.hidden, 9);
+        } else if (hAnim2) {
+          var ex2 = lerp(cx+ACW+4, aCellX(i+1,false), t);
+          arrow(ctx, cx+ACW, ATOP+ACH/2, ex2, ATOP+ACH/2, C.hidden, 2, 5);
+          if (t > 0.4) label(ctx, 'h'+i, aCellCX(i,false)+AGAP/2, ATOP+ACH/2-12, C.hidden, 9);
+        } else {
+          dashedArrow(ctx, cx+ACW, ATOP+ACH/2, aCellX(i+1,false), ATOP+ACH/2, '#ddd', 1, 4);
+        }
+      }
+
+      /* Per-step output (m2m) */
+      if (cfg.outPerStep) {
+        if (done || (isCur && ph >= 2)) {
+          var oy = ATOP - 38;
+          var oa = 1;
+          if (isCur && ph === 2) {
+            oa = clamp01(t*2);
+            var oay = lerp(ATOP, oy+18, t);
+            if (oay < ATOP - 2) { ctx.globalAlpha = oa; arrow(ctx, aCellCX(i,false), ATOP, aCellCX(i,false), oay, C.output, 1.5, 5); ctx.globalAlpha=1; }
+          } else {
+            arrow(ctx, aCellCX(i,false), ATOP, aCellCX(i,false), oy+18, C.output, 1.5, 5);
+          }
+          if (!(isCur && ph === 2 && t < 0.5))
+            vecBlock(ctx, aCellCX(i,false)-18, oy-2, 36, 18, C.output, 'y'+i);
+        }
+      }
+    }
+
+    /* ---- M2O classifier ---- */
+    if (cfg.outEnd && arch.completed.length >= cfg.enc) {
+      var lx = aCellX(cfg.enc-1, false);
+      var oy2 = ATOP - 60;
+      arrow(ctx, aCellCX(cfg.enc-1,false), ATOP, aCellCX(cfg.enc-1,false), oy2+38, C.output, 2, 6);
+
+      /* FC + non-linear box (wider to fit text) */
+      var boxW = 120, boxH = 42;
+      var boxX = aCellCX(cfg.enc-1,false) - boxW/2;
+      ctx.fillStyle = '#e8f5e8';
+      rr(ctx, boxX, oy2-8, boxW, boxH, 5); ctx.fill();
+      ctx.strokeStyle = C.output; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = C.ink; ctx.font = '600 10px "JetBrains Mono",monospace';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('FC + ReLU', aCellCX(cfg.enc-1,false), oy2 + 5);
+      ctx.fillText('Classifier', aCellCX(cfg.enc-1,false), oy2 + 18);
+    }
+
+    /* ---- Bridge from last enc to first dec ---- */
+    if (cfg.dec > 0 && arch.completed.length >= cfg.enc) {
+      var lastEncX = aCellX(cfg.enc-1, false);
+      var firstDecX = aCellX(0, true);
+      ctx.save(); ctx.strokeStyle = C.hidden; ctx.lineWidth = 2; ctx.setLineDash([6,3]);
+      ctx.beginPath();
+      var bY = ATOP - 20;
+      ctx.moveTo(lastEncX+ACW, ATOP+ACH/2);
+      ctx.quadraticCurveTo((lastEncX+ACW+firstDecX)/2, bY, firstDecX, ATOP+ACH/2);
+      ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+      arrow(ctx, firstDecX-1, ATOP+ACH/2, firstDecX, ATOP+ACH/2, C.hidden, 2, 6);
+      label(ctx, 'h (context)', (lastEncX+ACW+firstDecX)/2, bY-8, C.hidden, 10);
+    }
+
+    /* ---- DECODER CELLS ---- */
+    if (cfg.dec > 0) {
+      for (var j = 0; j < cfg.dec; j++) {
+        var dGlobal = cfg.enc + j;
+        var cx2 = aCellX(j, true);
+        var dDone = arch.completed.indexOf(dGlobal) >= 0;
+        var dCur = (!isEncPhase && si === dGlobal && ph >= 0);
+        var dLit = dDone || (dCur && ph >= 1);
+
+        cellBox(ctx, cx2, ATOP, ACW, ACH, dLit, 'DEC', dLit?C.decBg:undefined, dLit?C.dec:undefined);
+
+        /* Decoder input */
+        if (cfg.decLbl && cfg.decLbl[j]) {
+          var dInY = ATOP + ACH + 20;
+          var dShow = dDone || (dCur && ph >= 0);
+          if (dShow) {
+            var dia = 1;
+            if (dCur && ph === 0) dia = clamp01(t*2);
+            ctx.globalAlpha = (dCur && ph === 0) ? dia : 1;
+            vecBlock(ctx, aCellCX(j,true)-20, dInY, 40, 20, C.dec, '');
+            ctx.globalAlpha = 1;
+            if (dCur && ph === 0) {
+              var day = lerp(dInY, ATOP+ACH, t);
+              if (day < dInY-2) arrow(ctx, aCellCX(j,true), dInY, aCellCX(j,true), day, C.dec, 1.5, 5);
+            } else {
+              arrow(ctx, aCellCX(j,true), dInY, aCellCX(j,true), ATOP+ACH, C.dec, 1.5, 5);
+            }
+          } else {
+            vecBlock(ctx, aCellCX(j,true)-20, dInY, 40, 20, '#ddd', '');
+            dashedArrow(ctx, aCellCX(j,true), dInY, aCellCX(j,true), ATOP+ACH, '#ddd', 1, 4);
+          }
+          label(ctx, cfg.decLbl[j], aCellCX(j,true), dInY+32, C.ink, 10);
+        }
+
+        /* Decoder output */
+        if (cfg.outLbl && cfg.outLbl[j]) {
+          if (dDone || (dCur && ph >= 2)) {
+            var doy = ATOP - 40;
+            if (dCur && ph === 2) {
+              var doay = lerp(ATOP, doy+18, t);
+              if (doay < ATOP-2) arrow(ctx, aCellCX(j,true), ATOP, aCellCX(j,true), doay, C.output, 1.5, 5);
+              if (t > 0.5) { vecBlock(ctx, aCellCX(j,true)-24, doy-2, 48, 18, C.output, ''); label(ctx, cfg.outLbl[j], aCellCX(j,true), doy-14, C.ink, 10); }
+            } else {
+              arrow(ctx, aCellCX(j,true), ATOP, aCellCX(j,true), doy+18, C.output, 1.5, 5);
+              vecBlock(ctx, aCellCX(j,true)-24, doy-2, 48, 18, C.output, '');
+              label(ctx, cfg.outLbl[j], aCellCX(j,true), doy-14, C.ink, 10);
+            }
+          }
+        }
+
+        /* h to next dec */
+        if (j < cfg.dec - 1) {
+          var dhDone = dDone;
+          var dhAnim = (dCur && ph === 3);
+          if (dhDone) {
+            arrow(ctx, cx2+ACW, ATOP+ACH/2, aCellX(j+1,true), ATOP+ACH/2, C.hidden, 2, 5);
+          } else if (dhAnim) {
+            var dex = lerp(cx2+ACW+4, aCellX(j+1,true), t);
+            arrow(ctx, cx2+ACW, ATOP+ACH/2, dex, ATOP+ACH/2, C.hidden, 2, 5);
+          } else {
+            dashedArrow(ctx, cx2+ACW, ATOP+ACH/2, aCellX(j+1,true), ATOP+ACH/2, '#ddd', 1, 4);
+          }
+        }
+      }
+
+      /* Region labels */
+      if (cfg.enc > 0) {
+        var encMid = (aCellX(0,false) + aCellX(cfg.enc-1,false)+ACW)/2;
+        label(ctx, 'ENCODER', encMid, ATOP+ACH+85, C.enc, 11);
+      }
+      var decMid = (aCellX(0,true) + aCellX(cfg.dec-1,true)+ACW)/2;
+      label(ctx, 'DECODER', decMid, ATOP+ACH+85, C.dec, 11);
+    }
+  }
+
+  function archNarrate() {
+    var cfg = aCfg();
+    var n = document.getElementById('arch-narration');
+    if (arch.phase < 0) {
+      n.innerHTML = 'Select an architecture and press <strong>Play</strong> to see it in action.';
+      return;
+    }
+    var si = arch.step;
+    var phases = ['[input enters]','[cell computes]','[output produced]','[hidden state passed]'];
+    var phTxt = (arch.phase >= 0 && arch.phase < 4) ? ' <b>' + phases[arch.phase] + '</b>' : '';
+
+    if (si < cfg.enc) {
+      var w = cfg.words ? cfg.words[si] : cfg.inLbl[si];
+      if (cfg.dec > 0) {
+        n.innerHTML = '<strong>Encoder step ' + (si+1) + '/' + cfg.enc + ':</strong> processing "<b>' + w + '</b>".' + phTxt;
+      } else if (cfg.outEnd) {
+        n.innerHTML = '<strong>Step ' + (si+1) + '/' + cfg.enc + ':</strong> "<b>' + w + '</b>" goes in.' + phTxt;
+        if (arch.completed.length >= cfg.enc) n.innerHTML += ' Final h feeds the <b>FC + ReLU classifier</b>.';
+      } else {
+        n.innerHTML = '<strong>Step ' + (si+1) + '/' + cfg.enc + ':</strong> "<b>' + w + '</b>" in.' + phTxt;
+      }
+    } else {
+      var j = si - cfg.enc;
+      var inp = cfg.decLbl ? cfg.decLbl[j] : '';
+      var out = cfg.outLbl ? cfg.outLbl[j] : '';
+      n.innerHTML = '<strong>Decoder step ' + (j+1) + '/' + cfg.dec + ':</strong> input "<b>' + inp + '</b>", generates "<b>' + out + '</b>".' + phTxt;
+    }
+    if (arch.completed.length >= aTotal()) n.innerHTML += ' <strong>Sequence complete.</strong>';
+  }
+
+  function archTick(ts) {
+    if (!arch.playing) return;
+    if (!arch.lastTs) arch.lastTs = ts;
+    var dt = (ts - arch.lastTs) / 1000;
+    arch.lastTs = ts;
+
+    arch.t += dt * 2.2;
+    if (arch.t >= 1) {
+      arch.t = 1;
+      archDraw();
+      arch.phase++;
+      /* Skip h-pass on last step of a section if no next cell */
+      var cfg = aCfg();
+      var isLastEnc = (arch.step === cfg.enc - 1) && cfg.dec === 0;
+      var isLastDec = (arch.step === cfg.enc + cfg.dec - 1);
+      var isLastEncWithDec = (arch.step === cfg.enc - 1) && cfg.dec > 0;
+      if (arch.phase === 3 && (isLastEnc || isLastDec)) arch.phase = 4;
+      if (arch.phase === 3 && isLastEncWithDec) arch.phase = 4; /* bridge handles this */
+
+      if (arch.phase > 3) {
+        arch.completed.push(arch.step);
+        arch.step++;
+        if (arch.step >= aTotal()) {
+          arch.phase = -1; arch.playing = false;
+          document.getElementById('arch-play').innerHTML = '&#9654; Play';
+          archNarrate(); archDraw(); return;
+        }
+        arch.phase = 0;
+      }
+      arch.t = 0; arch.lastTs = 0;
+      archNarrate();
+    }
+    archDraw();
+    arch.raf = requestAnimationFrame(archTick);
+  }
+
+  function archPlay() {
+    if (arch.playing) {
+      arch.playing = false; cancelAnimationFrame(arch.raf);
+      document.getElementById('arch-play').innerHTML = '&#9654; Play'; return;
+    }
+    if (arch.completed.length >= aTotal()) archReset();
+    if (arch.phase < 0) { arch.phase = 0; arch.t = 0; }
+    arch.playing = true; arch.lastTs = 0;
+    document.getElementById('arch-play').innerHTML = '&#10074;&#10074; Pause';
+    archNarrate();
+    arch.raf = requestAnimationFrame(archTick);
+  }
+
+  function archReset() {
+    arch.playing = false; cancelAnimationFrame(arch.raf);
+    arch.step = 0; arch.phase = -1; arch.t = 0; arch.completed = [];
+    document.getElementById('arch-play').innerHTML = '&#9654; Play';
+    archNarrate(); archDraw();
+  }
+
+  document.querySelectorAll('[data-arch]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      arch.mode = this.dataset.arch;
+      document.querySelectorAll('[data-arch]').forEach(function(b){b.classList.remove('active');});
+      this.classList.add('active');
+      archReset();
+    });
+  });
+  document.getElementById('arch-play').addEventListener('click', archPlay);
+  document.getElementById('arch-reset').addEventListener('click', archReset);
+  archDraw();
+
+
+  /* ================================================================
+     SECTION 3: BACKPROPAGATION THROUGH TIME (smooth animation)
+     ================================================================ */
+  var bpCV = document.getElementById('bp-canvas');
+  var bpCtx = initCanvas(bpCV, 1040, 320);
+  var BPW = 1040, BPH = 320, BPCW = 60, BPCH = 46, BPTOP = 80;
+
+  var bp = {
+    steps: 8, whh: 0.7,
+    current: 0,    /* how many cells reached so far */
+    t: 0,          /* 0..1 animation progress to next cell */
+    playing: false, raf: null, lastTs: 0
+  };
+
+  function bpGap() { return Math.min(110, (BPW-120)/bp.steps); }
+  function bpLeft() { return Math.max(30, (BPW - bp.steps * bpGap())/2); }
+  function bpCellX(i) { return bpLeft() + i * bpGap(); }
+
+  function bpReadSliders() {
+    bp.whh = parseFloat(document.getElementById('bp-whh').value);
+    bp.steps = parseInt(document.getElementById('bp-steps').value);
+    document.getElementById('bp-whh-val').textContent = bp.whh.toFixed(2);
+    document.getElementById('bp-steps-val').textContent = bp.steps;
+    document.getElementById('bp-readout').innerHTML =
+      'Backprop step: <span class="val">' + bp.current + ' / ' + bp.steps + '</span>';
+  }
+
+  function gCol(m) {
+    if (m > 0.7) return C.gradH;
+    if (m > 0.3) return C.gradM;
+    if (m > 0.05) return C.gradL;
+    return C.gradZ;
+  }
+
+  function bpDraw() {
+    var ctx = bpCtx;
+    ctx.clearRect(0, 0, BPW, BPH);
+    var gap = bpGap();
+    var last = bp.steps - 1;
+
+    /* Compute gradient magnitudes */
+    var grads = [];
+    for (var i = 0; i < bp.steps; i++) grads[i] = 0;
+    for (var k = 0; k < bp.current; k++) {
+      var ci = last - k;
+      if (ci < 0) break;
+      grads[ci] = Math.pow(bp.whh, k);
+    }
+    /* Animating cell: partial arrival */
+    if (bp.current < bp.steps && bp.t > 0) {
+      var animIdx = last - bp.current;
+      if (animIdx >= 0) grads[animIdx] = Math.pow(bp.whh, bp.current) * bp.t;
+    }
+
+    /* Draw cells */
+    for (var i2 = 0; i2 < bp.steps; i2++) {
+      var cx = bpCellX(i2);
+      var reached = grads[i2] > 0;
+      ctx.fillStyle = reached ? '#fff3f0' : C.cell;
+      rr(ctx, cx, BPTOP, BPCW, BPCH, 4); ctx.fill();
+      ctx.strokeStyle = reached ? '#c08080' : C.cellBdr;
+      ctx.lineWidth = reached ? 1.5 : 1; ctx.stroke();
+      label(ctx, 't'+i2, cx+BPCW/2, BPTOP+BPCH/2, reached?C.ink:C.inkL, 10);
+
+      /* Gradient bar below */
+      var barMaxH = 60, barW = 30;
+      var barX = cx + BPCW/2 - barW/2;
+      var barTopY = BPTOP + BPCH + 15;
+      ctx.fillStyle = '#f0eded';
+      ctx.fillRect(barX, barTopY, barW, barMaxH);
+      ctx.strokeStyle = '#ddd'; ctx.lineWidth = 0.5;
+      ctx.strokeRect(barX, barTopY, barW, barMaxH);
+
+      if (reached) {
+        var norm = Math.min(grads[i2], 3.0);
+        var barH = Math.min(norm * barMaxH, barMaxH);
+        ctx.fillStyle = gCol(grads[i2]);
+        ctx.fillRect(barX, barTopY + barMaxH - barH, barW, barH);
+        var dv = grads[i2] > 100 ? '>100' : grads[i2].toFixed(3);
+        label(ctx, dv, cx+BPCW/2, barTopY+barMaxH+14, C.ink, 9);
+      }
+
+      /* Backward arrows */
+      if (i2 < bp.steps - 1) {
+        var nx = bpCellX(i2+1);
+        var ay = BPTOP + BPCH/2;
+        var flowDone = grads[i2] > 0 && grads[i2+1] > 0 && (i2 > last - bp.current);
+        var flowAnim = (i2 === last - bp.current && bp.t > 0 && grads[i2+1] > 0);
+        if (flowDone) {
+          arrow(ctx, nx, ay, cx+BPCW, ay, C.gradH, 2, 6);
+          label(ctx, 'x W_hh', cx+BPCW/2+gap/2, ay-14, C.accent, 9);
+        } else if (flowAnim) {
+          var aex = lerp(nx, cx+BPCW, bp.t);
+          arrow(ctx, nx, ay, aex, ay, C.gradH, 2, 6);
+          if (bp.t > 0.3) label(ctx, 'x W_hh', cx+BPCW/2+gap/2, ay-14, C.accent, 9);
+        } else {
+          dashedArrow(ctx, nx, ay, cx+BPCW, ay, '#ddd', 1, 4);
+        }
+      }
+    }
+
+    /* Loss label */
+    var lcx = bpCellX(last);
+    ctx.fillStyle = C.accent;
+    ctx.font = '700 12px "JetBrains Mono",monospace'; ctx.textAlign = 'center';
+    ctx.fillText('Loss', lcx+BPCW/2, BPTOP-18);
+    arrow(ctx, lcx+BPCW/2, BPTOP-8, lcx+BPCW/2, BPTOP, C.accent, 2, 6);
+
+    if (bp.current > 0 || bp.t > 0) {
+      ctx.fillStyle = C.accent;
+      ctx.font = '10px "JetBrains Mono",monospace'; ctx.textAlign = 'center';
+      ctx.fillText('gradient flows backward', BPW/2, BPTOP-30);
+      arrow(ctx, BPW/2+80, BPTOP-24, BPW/2-80, BPTOP-24, C.accent, 1.5, 6);
+    }
+  }
+
+  function bpNarrate() {
+    var n = document.getElementById('bp-narration');
+    var insight = document.getElementById('bp-insight');
+    if (bp.current === 0 && bp.t === 0) {
+      n.innerHTML = 'Press <strong>Play</strong> to watch the gradient propagate backwards from the loss.';
+      insight.innerHTML = '<span class="tag">INSIGHT</span> Adjust |W<sub>hh</sub>| and press Play to observe vanishing vs. exploding gradients.';
+      return;
+    }
+    var ci = bp.steps - bp.current;
+    var grad = Math.pow(bp.whh, bp.current > 0 ? bp.current - 1 : 0);
+    var gs = grad > 100 ? '>100' : grad.toFixed(4);
+    n.innerHTML = '<strong>Backprop step ' + bp.current + '/' + bp.steps + ':</strong> gradient reaches cell t' + ci + '. Magnitude: <b>' + gs + '</b>.';
+
+    if (bp.current >= bp.steps) {
+      var fg = Math.pow(bp.whh, bp.steps-1);
+      if (fg < 0.01) {
+        insight.innerHTML = '<span class="tag">VANISHING</span> The gradient at the first cell is ' + fg.toFixed(6) + '. It has practically vanished. The early cells learn almost nothing.';
+      } else if (fg > 10) {
+        insight.innerHTML = '<span class="tag">EXPLODING</span> The gradient at the first cell is ' + (fg>1000?'>1000':fg.toFixed(1)) + '. It has exploded. Training may become unstable.';
+      } else {
+        insight.innerHTML = '<span class="tag">HEALTHY</span> The gradient at the first cell is ' + fg.toFixed(4) + '. It flows reasonably well through the sequence.';
+      }
+    }
+  }
+
+  function bpTick(ts) {
+    if (!bp.playing) return;
+    if (!bp.lastTs) bp.lastTs = ts;
+    var dt = (ts - bp.lastTs) / 1000;
+    bp.lastTs = ts;
+    bp.t += dt * 1.8;
+    if (bp.t >= 1) {
+      bp.t = 0;
+      bp.current++;
+      bpReadSliders();
+      bpNarrate();
+      if (bp.current >= bp.steps) {
+        bp.playing = false;
+        document.getElementById('bp-play').innerHTML = '&#9654; Play';
+        bpDraw(); return;
+      }
+      bp.lastTs = 0;
+    }
+    bpDraw();
+    bp.raf = requestAnimationFrame(bpTick);
+  }
+
+  document.getElementById('bp-play').addEventListener('click', function() {
+    if (bp.playing) {
+      bp.playing = false; cancelAnimationFrame(bp.raf);
+      this.innerHTML = '&#9654; Play'; return;
+    }
+    bpReadSliders();
+    if (bp.current >= bp.steps) bpReset();
+    bp.playing = true; bp.lastTs = 0;
+    this.innerHTML = '&#10074;&#10074; Pause';
+    bp.raf = requestAnimationFrame(bpTick);
+  });
+
+  document.getElementById('bp-step').addEventListener('click', function() {
+    if (bp.playing) { bp.playing = false; cancelAnimationFrame(bp.raf); document.getElementById('bp-play').innerHTML = '&#9654; Play'; }
+    bpReadSliders();
+    if (bp.current >= bp.steps) return;
+    bp.current++; bp.t = 0;
+    bpDraw(); bpNarrate(); bpReadSliders();
+  });
+
+  function bpReset() {
+    bp.playing = false; cancelAnimationFrame(bp.raf);
+    bp.current = 0; bp.t = 0;
+    document.getElementById('bp-play').innerHTML = '&#9654; Play';
+    bpReadSliders(); bpDraw(); bpNarrate();
+  }
+
+  document.getElementById('bp-reset').addEventListener('click', bpReset);
+  document.getElementById('bp-whh').addEventListener('input', function() { bpReadSliders(); bpReset(); });
+  document.getElementById('bp-steps').addEventListener('input', function() { bpReadSliders(); bpReset(); });
+
+  bpReadSliders(); bpDraw(); bpNarrate();
+
+})();
+</script>
+</body>
+</html>
