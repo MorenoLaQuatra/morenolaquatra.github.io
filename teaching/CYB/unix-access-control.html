@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="UNIX File Access Control — interactive explainer for the Cybersecurity course by Moreno La Quatra, Kore University of Enna.">
-  <meta property="og:title" content="UNIX File Access Control — CYB — Moreno La Quatra">
+  <meta name="description" content="UNIX File Access Control - interactive explainer for the Cybersecurity course by Moreno La Quatra, Kore University of Enna.">
+  <meta property="og:title" content="UNIX File Access Control - CYB - Moreno La Quatra">
   <meta property="og:url" content="https://mlaquatra.me/teaching/CYB/unix-access-control.html">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
   <link rel="canonical" href="https://mlaquatra.me/teaching/CYB/unix-access-control.html">
-  <title>UNIX File Access Control &mdash; CYB &mdash; Moreno La Quatra</title>
+  <title>UNIX File Access Control - CYB - Moreno La Quatra</title>
   <link rel="stylesheet" href="../../style.css">
   <link rel="icon" href="../../mlq-logo.png" type="image/png">
 
@@ -970,7 +970,7 @@
         title: 'Shared Upload Folder',
         desc: 'A directory shared among all students. Anyone can upload files, but no student should be able to delete another student\'s work.',
         answer: { suid:false, sgid:false, sticky:true, ur:true, uw:true, ux:true, gr:true, gw:true, gx:true, or:true, ow:true, ox:true },
-        hint: 'Full rwx for everyone — but activate the Sticky bit so only owners can delete their own files.',
+        hint: 'Full rwx for everyone - but activate the Sticky bit so only owners can delete their own files.',
         showSpecial: true
       }
     ];
@@ -1064,7 +1064,7 @@
         const correct = Object.keys(ans).every(k => state[k] === ans[k]);
         if (correct) {
           fb.className = 'scenario-feedback correct';
-          fb.textContent = '✓ Correct! chmod ' + octalValue(state) + ' — ' + permString(state);
+          fb.textContent = '✓ Correct! chmod ' + octalValue(state) + ' - ' + permString(state);
         } else {
           fb.className = 'scenario-feedback wrong';
           fb.textContent = '✗ Not quite. ' + sc.hint;

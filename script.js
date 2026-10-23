@@ -353,15 +353,38 @@ function showEasterEggList() {
    ============================================ */
 
 function initSidenotes() {
+  let sidenoteHideTimer = null;
+
+  function cancelSidenoteHide() {
+    clearTimeout(sidenoteHideTimer);
+  }
+
+  function scheduleSidenoteHide() {
+    sidenoteHideTimer = setTimeout(hideSidenoteTooltip, 180);
+  }
+
   const labels = document.querySelectorAll('label.sidenote-number');
   labels.forEach(label => {
     const sidenote = label.nextElementSibling;
     if (!sidenote || !sidenote.classList.contains('sidenote')) return;
 
     label.addEventListener('mouseenter', () => {
+      cancelSidenoteHide();
       showSidenoteTooltip(label, sidenote.innerHTML);
     });
-    label.addEventListener('mouseleave', hideSidenoteTooltip);
+    label.addEventListener('mouseleave', scheduleSidenoteHide);
+  });
+
+  // Keep the tooltip alive when the mouse moves onto it
+  document.addEventListener('mouseover', (e) => {
+    if (e.target.closest && e.target.closest('.sidenote-tooltip')) {
+      cancelSidenoteHide();
+    }
+  });
+  document.addEventListener('mouseout', (e) => {
+    if (e.target.closest && e.target.closest('.sidenote-tooltip')) {
+      scheduleSidenoteHide();
+    }
   });
 }
 

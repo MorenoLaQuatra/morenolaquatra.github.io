@@ -156,7 +156,7 @@ nav {
   opacity: 0.85;
 }
 
-/* Hamburger menu button — hidden on desktop */
+/* Hamburger menu button - hidden on desktop */
 .menu-toggle {
   display: none;
   background: none;
@@ -783,7 +783,7 @@ li {
 }
 
 /* ============================================
-   COURSE PAGE — BREADCRUMB & RESOURCES
+   COURSE PAGE - BREADCRUMB & RESOURCES
    ============================================ */
 
 .breadcrumb {
@@ -1392,6 +1392,7 @@ html {
 
 .sidenote-tooltip.visible {
   opacity: 1;
+  pointer-events: auto;
 }
 
 @media print {

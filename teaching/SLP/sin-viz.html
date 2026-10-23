@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Sinusoid Visualizer — interactive tool for the Speech and Language Processing course by Moreno La Quatra, Kore University of Enna.">
-  <meta property="og:title" content="Sinusoid Visualizer — SLP — Moreno La Quatra">
+  <meta name="description" content="Sinusoid Visualizer - interactive tool for the Speech and Language Processing course by Moreno La Quatra, Kore University of Enna.">
+  <meta property="og:title" content="Sinusoid Visualizer - SLP - Moreno La Quatra">
   <meta property="og:url" content="https://mlaquatra.me/teaching/SLP/sin-viz-2.html">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
   <link rel="canonical" href="https://mlaquatra.me/teaching/SLP/sin-viz-2.html">
-  <title>Sinusoid Visualizer &mdash; SLP &mdash; Moreno La Quatra</title>
+  <title>Sinusoid Visualizer - SLP - Moreno La Quatra</title>
   <link rel="stylesheet" href="../../style.css">
   <link rel="icon" href="../../mlq-logo.png" type="image/png">
 
@@ -338,7 +338,7 @@
         The human auditory system perceives frequencies between roughly
         <strong>20&thinsp;Hz</strong> and <strong>20&thinsp;000&thinsp;Hz (20&thinsp;kHz)</strong>.
         Use the frequency slider to go all the way up to 28&thinsp;kHz and observe that
-        above 20&thinsp;kHz the tone enters the <em>ultrasonic</em> range &mdash;
+        above 20&thinsp;kHz the tone enters the <em>ultrasonic</em> range -
         the oscillator still runs, yet no sound is heard.
       </p>
     </div>
@@ -347,16 +347,16 @@
     <div class="viz-grid">
 
       <div class="control-card">
-        <label for="frequency">Frequency &mdash; Pitch</label>
+        <label for="frequency">Frequency - Pitch</label>
         <input type="range" id="frequency" min="20" max="28000" value="880" step="10">
         <div class="value-display"><span id="freqValue">880</span> Hz</div>
         <div style="text-align:center;">
-          <span id="audibilityBadge" class="audibility-badge audible">&#10003;&ensp;Audible &mdash; 20 Hz &ndash; 20 kHz</span>
+          <span id="audibilityBadge" class="audibility-badge audible">&#10003;&ensp;Audible - 20 Hz - 20 kHz</span>
         </div>
       </div>
 
       <div class="control-card">
-        <label for="amplitude">Amplitude &mdash; Loudness</label>
+        <label for="amplitude">Amplitude - Loudness</label>
         <input type="range" id="amplitude" min="0" max="100" value="50" step="1">
         <div class="value-display"><span id="ampValue">50</span> %</div>
       </div>
@@ -371,13 +371,13 @@
 
     <!-- ── Piano keyboard (untouched logic) ── -->
     <div class="piano-section">
-      <div class="piano-section-title">Piano Keyboard &mdash; click a key to set the frequency</div>
+      <div class="piano-section-title">Piano Keyboard - click a key to set the frequency</div>
       <div class="piano" id="piano"></div>
     </div>
 
     <!-- ── Waveform ── -->
     <div class="viz-section">
-      <div class="viz-section-title">Waveform &mdash; Time Domain</div>
+      <div class="viz-section-title">Waveform - Time Domain</div>
       <div class="canvas-wrapper">
         <canvas id="waveformCanvas"></canvas>
       </div>
@@ -386,14 +386,14 @@
 
     <!-- ── Spectrogram ── -->
     <div class="viz-section">
-      <div class="viz-section-title">Spectrogram &mdash; Frequency over Time</div>
+      <div class="viz-section-title">Spectrogram - Frequency over Time</div>
       <div class="canvas-wrapper">
         <div class="freq-labels" id="freqLabels"></div>
         <canvas id="spectrogramCanvas"></canvas>
       </div>
       <p style="margin-top:0.6rem;margin-bottom:0;font-family:var(--font-mono);font-size:0.72rem;color:var(--ink-lighter);">
         The dashed yellow line marks the 20&thinsp;kHz boundary. Energy above it is ultrasonic and inaudible to humans.
-        The spectrogram is limited to the Nyquist frequency of your audio device (typically 22&ndash;24&thinsp;kHz).
+        The spectrogram is limited to the Nyquist frequency of your audio device (typically 22-24&thinsp;kHz).
       </p>
     </div>
 
@@ -416,7 +416,7 @@
     const waveCtx  = waveformCanvas.getContext('2d');
     const specCtx  = spectrogramCanvas.getContext('2d');
 
-    const MAX_FREQ_DISPLAY = 28000; // Hz — capped to Nyquist when AudioContext exists
+    const MAX_FREQ_DISPLAY = 28000; // Hz - capped to Nyquist when AudioContext exists
 
     // ── All declarations up-front (must precede resizeCanvases call) ─────────
     let frequency = 880;
@@ -464,17 +464,17 @@
     function updateAudibilityBadge(freq) {
       if (freq < 20) {
         audibilityBadge.className = 'audibility-badge inaudible-low';
-        audibilityBadge.innerHTML = '&#9888;&ensp;Infrasound &mdash; below human hearing (&lt;&nbsp;20&thinsp;Hz)';
+        audibilityBadge.innerHTML = '&#9888;&ensp;Infrasound - below human hearing (&lt;&nbsp;20&thinsp;Hz)';
       } else if (freq <= 20000) {
         audibilityBadge.className = 'audibility-badge audible';
-        audibilityBadge.innerHTML = '&#10003;&ensp;Audible &mdash; 20&thinsp;Hz &ndash; 20&thinsp;kHz';
+        audibilityBadge.innerHTML = '&#10003;&ensp;Audible - 20&thinsp;Hz - 20&thinsp;kHz';
       } else {
         audibilityBadge.className = 'audibility-badge inaudible-high';
-        audibilityBadge.innerHTML = '&#10007;&ensp;Ultrasound &mdash; above human hearing (&gt;&nbsp;20&thinsp;kHz)';
+        audibilityBadge.innerHTML = '&#10007;&ensp;Ultrasound - above human hearing (&gt;&nbsp;20&thinsp;kHz)';
       }
     }
 
-    // ── Piano notes C5–C6 (data untouched) ───────────────────────────────────
+    // ── Piano notes C5-C6 (data untouched) ───────────────────────────────────
     const pianoNotes = [
       { note: 'C5',  freq: 524,  type: 'white', label: 'C' },
       { note: 'C#5', freq: 554,  type: 'black', label: 'C#', offset: 42 },
@@ -647,7 +647,7 @@
       waveCtx.setLineDash([]);
 
       waveformNote.textContent = cramped
-        ? `Showing ${MAX_VISUAL_CYCLES} cycles for readability — actual frequency: ${frequency} Hz (${rawCycles.toFixed(0)} cycles at full scale).`
+        ? `Showing ${MAX_VISUAL_CYCLES} cycles for readability - actual frequency: ${frequency} Hz (${rawCycles.toFixed(0)} cycles at full scale).`
         : '';
     }
 

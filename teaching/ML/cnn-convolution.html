@@ -450,7 +450,7 @@
       </div>
       <div class="stat-card">
         <div class="stat-card-label">Position</div>
-        <div class="stat-card-val" id="statPosition">—</div>
+        <div class="stat-card-val" id="statPosition">-</div>
         <div class="stat-card-sub">row, col (0-indexed)</div>
       </div>
     </div>
@@ -506,8 +506,8 @@
         <span class="slider-val" id="valSpeed">4</span>
       </div>
       <div class="step-readout">
-        step <span class="val" id="readStep">—</span>
-        / <span class="val" id="readTotal">—</span>
+        step <span class="val" id="readStep">-</span>
+        / <span class="val" id="readTotal">-</span>
       </div>
     </div>
 
@@ -575,7 +575,7 @@
     <!-- Insight -->
     <div class="insight-info" id="insightBox">
       <strong>Tip:</strong> Start with Padding = 0, Stride = 1, Filter = 3.
-      Then increase padding to see how the "virtual border" expands the input —
+      Then increase padding to see how the "virtual border" expands the input -
       with <em>zero padding</em> (black) the border is 0, with <em>one padding</em> (white) it is 1.
       Increase the stride to watch the kernel jump further, producing a smaller feature map.
     </div>
@@ -590,7 +590,7 @@
 <script>
 /* ═══════════════════════════════════════════════════════════════
    CNN CONVOLUTION VISUALIZATION ENGINE
-   Moreno La Quatra — Machine Learning course
+   Moreno La Quatra - Machine Learning course
    ═══════════════════════════════════════════════════════════════ */
 (() => {
 'use strict';
@@ -619,7 +619,7 @@ const C = {
   padStroke:   '#c8b4b4',
 };
 
-/* ── Pixel-art images (8×8, values 0–255) ── */
+/* ── Pixel-art images (8×8, values 0-255) ── */
 const W = 255, B = 0; // pixel-art shorthand: White / Black
 const PIXEL_ARTS = {
   smiley: [
@@ -830,7 +830,7 @@ function canvasSize(sz) {
 function cellX(c) { return PAD_OFFSET + c * (CELL + GAP); }
 function cellY(r) { return PAD_OFFSET + r * (CELL + GAP); }
 
-/* ── Greyscale for input (values 0–255) ── */
+/* ── Greyscale for input (values 0-255) ── */
 function valToGrey(v) {
   const L = clamp(Math.round(v), 0, 255);
   return `rgb(${L},${L},${L})`;
@@ -1083,11 +1083,11 @@ function updateStats(curRow, curCol) {
   document.getElementById('badgeInput').textContent     = `${N+2*P}×${N+2*P}`;
   document.getElementById('badgeOutput').textContent    = `${outH}×${outW}`;
   document.getElementById('statPosition').textContent   =
-    (curRow !== undefined) ? `${curRow}, ${curCol}` : '—';
+    (curRow !== undefined) ? `${curRow}, ${curCol}` : '-';
 }
 
 function updateProgress(step, total) {
-  readStep.textContent  = step >= 0 ? step + 1 : '—';
+  readStep.textContent  = step >= 0 ? step + 1 : '-';
   readTotal.textContent = total;
   const pct = total > 0 && step >= 0 ? ((step+1) / total * 100).toFixed(1) : 0;
   progressFill.style.width = pct + '%';
@@ -1133,7 +1133,7 @@ function updateInsight() {
   } else if (P > 0) {
     msg = `<strong>Padded convolution</strong>: the input is virtually extended to ${N+2*P}×${N+2*P} by adding ${P} pixel(s) of ${PAD_VAL === 0 ? 'zeros (black)' : 'ones (white)'} on each side. Output size: ${out}×${out}.`;
   } else {
-    msg = `No padding, stride 1 — output shrinks by $K-1$ pixels on each side: ${N}×${N} → <strong>${out}×${out}</strong>. Increase padding to control how much the spatial size changes.`;
+    msg = `No padding, stride 1 - output shrinks by $K-1$ pixels on each side: ${N}×${N} → <strong>${out}×${out}</strong>. Increase padding to control how much the spatial size changes.`;
   }
   insightBox.innerHTML = msg;
 }
