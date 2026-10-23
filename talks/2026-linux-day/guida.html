@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI locale con Hermes e Ollama: guida Linux e macOS - Moreno La Quatra</title>
+  <meta name="description" content="Guida passo passo per installare Ollama e Hermes Agent, scegliere un modello locale, configurare il contesto e provare i file della demo Linux Day su Linux e macOS.">
+  <meta property="og:title" content="AI locale con Hermes e Ollama: guida Linux e macOS">
+  <meta property="og:description" content="Installazione, modelli, configurazione e due esercizi per iniziare sul proprio computer.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mlaquatra.me/talks/2026-linux-day/guida.html">
+  <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+  <link rel="canonical" href="https://mlaquatra.me/talks/2026-linux-day/guida.html">
+  <link rel="icon" href="../../mlq-logo.png" type="image/png">
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="risorse.css">
+</head>
+<body>
+  <div data-include="header-nested-2"></div>
+  <main class="linuxday" id="inizio">
+    <div class="breadcrumb"><a href="../../talks.html">Talks</a><span aria-hidden="true">/</span><a href="risorse.html">Linux Day 2026</a><span aria-hidden="true">/</span><span>Guida</span></div>
+    <p class="page-meta">Guida pratica · Linux e macOS · 23 ottobre 2026</p>
+    <h1>Una prima prova locale</h1>
+    <div class="page-links"><a href="risorse.html">Risorse e riferimenti</a><a href="materiali-linuxday-2026.zip" download>Scarica i materiali ZIP</a><a href="materiali/GUIDA.md" download>Guida in Markdown</a><a href="./">Slide del talk</a></div>
+    <p>Hermes Agent + Ollama, principalmente su Linux, anche su macOS. Materiali del talk "Liberi di usare l'AI", Linux Day Enna, 24 ottobre 2026.</p>
+<p>Guida verificata sulle fonti ufficiali il <strong>23 ottobre 2026</strong>. I comandi di configurazione sono stati controllati anche con la CLI Hermes disponibile durante la preparazione. Non è una certificazione di compatibilità con qualsiasi computer: modello, memoria, driver e versioni contano.</p>
+<div class="toc" aria-label="Indice della guida"><h2>In questa guida</h2><ul><li><a href="#1-prima-di-installare">1. Prima di installare</a></li><li><a href="#2-installare-ollama">2. Installare Ollama</a></li><li><a href="#3-scegliere-e-scaricare-un-modello">3. Scegliere e scaricare un modello</a></li><li><a href="#4-preparare-il-contesto-per-hermes">4. Preparare il contesto per Hermes</a></li><li><a href="#5-installare-hermes-agent">5. Installare Hermes Agent</a></li><li><a href="#6-collegare-hermes-a-ollama">6. Collegare Hermes a Ollama</a></li><li><a href="#7-scaricare-il-materiale-e-preparare-il-lettore">7. Scaricare il materiale e preparare il lettore</a></li><li><a href="#8-prima-prova-tradurre-il-menu">8. Prima prova: tradurre il menu</a></li><li><a href="#9-seconda-prova-leggere-i-file-e-scrivere-la-lista">9. Seconda prova: leggere i file e scrivere la lista</a></li><li><a href="#10-locale-offline-e-problemi-comuni">10. Locale, offline e problemi comuni</a></li></ul></div><h2 id="1-prima-di-installare">1. Prima di installare</h2>
+<p>Servono un terminale, spazio libero e una connessione per scaricare software, dipendenze e pesi. Non devi rifare il training: Ollama esegue un modello già preparato, Hermes gestisce conversazione e strumenti.<a class="source-ref" href="#fonte-1" aria-label="Fonte 1">[1]</a><a class="source-ref" href="#fonte-10" aria-label="Fonte 10">[10]</a><a class="source-ref" href="#fonte-11" aria-label="Fonte 11">[11]</a></p>
+<ul>
+<li><strong>Linux:</strong> i comandi di sistema qui sotto sono per Ubuntu/Debian con systemd. Per altre distribuzioni segui la pagina ufficiale Linux di Ollama.<a class="source-ref" href="#fonte-3" aria-label="Fonte 3">[3]</a></li>
+<li><strong>macOS:</strong> Ollama richiede macOS Sonoma 14 o successivo. I Mac Apple Silicon possono usare la GPU; i Mac Intel usano la CPU.<a class="source-ref" href="#fonte-4" aria-label="Fonte 4">[4]</a></li>
+<li><strong>Hardware:</strong> controlla RAM, GPU e relativi driver. La dimensione del download NON è la memoria necessaria: contesto e altri programmi occupano ulteriore spazio in RAM/VRAM.<a class="source-ref" href="#fonte-5" aria-label="Fonte 5">[5]</a><a class="source-ref" href="#fonte-8" aria-label="Fonte 8">[8]</a></li>
+</ul>
+<p>Su Ubuntu/Debian prepara le utility di base:</p>
+<pre><code class="language-bash">sudo apt update
+sudo apt install -y curl git unzip ca-certificates build-essential
+</code></pre>
+<p>Su macOS usa Terminale e verifica <code>git --version</code>. Se macOS propone gli strumenti da riga di comando Apple, completa l'installazione prima di proseguire.</p>
+<p><strong>Prima di eseguire uno script scaricato, leggilo e verifica il dominio.</strong> Le pipeline di installazione sotto eseguono codice sul computer. Non anteporre <code>sudo</code> all'installazione di Hermes nel suo insieme.</p>
+<h2 id="2-installare-ollama">2. Installare Ollama</h2>
+<p>Apri <a href="https://ollama.com/download">la pagina Download</a> e scegli il tuo sistema.<a class="source-ref" href="#fonte-1" aria-label="Fonte 1">[1]</a></p>
+<h3 id="linux">Linux</h3>
+<p>La procedura ufficiale propone:</p>
+<pre><code class="language-bash">curl -fsSL https://ollama.com/install.sh | sh
+</code></pre>
+<p>Su un sistema con systemd controlla il servizio:</p>
+<pre><code class="language-bash">sudo systemctl start ollama
+systemctl is-active ollama
+ollama -v
+curl -fsS http://localhost:11434/api/tags
+</code></pre>
+<p>L'ultima richiesta deve restituire JSON, anche se non hai ancora modelli. Il servizio deve restare attivo mentre usi Hermes.<a class="source-ref" href="#fonte-3" aria-label="Fonte 3">[3]</a></p>
+<h3 id="macos">macOS</h3>
+<p>Dalla pagina Download scarica l'app per Mac, apri il DMG, trascina Ollama in <strong>Applicazioni</strong> e avviala. Completa l'eventuale richiesta per rendere disponibile il comando <code>ollama</code>, poi riapri il terminale.<a class="source-ref" href="#fonte-4" aria-label="Fonte 4">[4]</a></p>
+<pre><code class="language-bash">ollama -v
+curl -fsS http://localhost:11434/api/tags
+</code></pre>
+<p>Se l'app o il servizio sono già attivi, <strong>non avviare un secondo server</strong>. Solo se stai usando un'installazione manuale senza servizio/app, puoi tenere <code>ollama serve</code> aperto in un terminale separato.<a class="source-ref" href="#fonte-3" aria-label="Fonte 3">[3]</a><a class="source-ref" href="#fonte-4" aria-label="Fonte 4">[4]</a></p>
+<h2 id="3-scegliere-e-scaricare-un-modello">3. Scegliere e scaricare un modello</h2>
+<p>Apri <a href="https://ollama.com/search">il catalogo Ollama</a>. Cerca un modello <strong>locale</strong>, leggi la scheda e i tag, controlla licenza, hardware e supporto <strong>Tools</strong>. Un modello cloud non è un insieme di pesi eseguito sul tuo PC.<a class="source-ref" href="#fonte-2" aria-label="Fonte 2">[2]</a><a class="source-ref" href="#fonte-14" aria-label="Fonte 14">[14]</a></p>
+<p>Per questa guida usiamo <strong><code>qwen3.5:9b</code></strong>, un tag pubblico con supporto agli strumenti e contesto dichiarato di 256K. Non è una promessa di qualità o velocità, ne' il requisito per riprodurre esattamente la macchina del relatore.<a class="source-ref" href="#fonte-6" aria-label="Fonte 6">[6]</a></p>
+<table>
+<thead>
+<tr>
+<th>Esempio locale</th>
+<th>Download indicativo al controllo</th>
+<th>Per orientarsi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>qwen3.5:9b</code></td>
+<td>6.6-7.6 GB secondo il backend</td>
+<td>Esempio usato nei comandi di questa guida.</td>
+</tr>
+<tr>
+<td><code>qwen3:4b</code></td>
+<td>2.5 GB</td>
+<td>Alternativa più piccola; controlla comunque qualità e memoria con il contesto richiesto.</td>
+</tr>
+</tbody>
+</table>
+<p>Entrambe le schede consultate indicano Tools e contesto 256K. I tag e i backend possono cambiare: ricontrolla le pagine prima del download. <strong>Questi GB non sono un requisito di RAM.</strong><a class="source-ref" href="#fonte-6" aria-label="Fonte 6">[6]</a><a class="source-ref" href="#fonte-7" aria-label="Fonte 7">[7]</a><a class="source-ref" href="#fonte-8" aria-label="Fonte 8">[8]</a></p>
+<pre><code class="language-bash">ollama pull qwen3.5:9b
+ollama list
+ollama run qwen3.5:9b
+</code></pre>
+<p>Nella chat di Ollama prova: "Traduci in inglese: Benvenuti al Linux Day". Esci con <code>/bye</code>.</p>
+<p>Hai verificato solo l'inferenza testuale, non ancora la lettura dei file o il funzionamento di un agente. Il badge Tools non significa che <code>ollama run</code> esegua da solo comandi o legga documenti per te.</p>
+<h2 id="4-preparare-il-contesto-per-hermes">4. Preparare il contesto per Hermes</h2>
+<p><strong>Non saltare questo passaggio.</strong> Hermes attuale richiede almeno <strong>64.000 token</strong> per il contesto agentico. Impostare una finestra piccola solo per risparmiare memoria può impedire l'avvio. Anche Ollama deve allocare il contesto corrispondente; il massimo dichiarato nella scheda non è il contesto realmente attivo.<a class="source-ref" href="#fonte-8" aria-label="Fonte 8">[8]</a><a class="source-ref" href="#fonte-11" aria-label="Fonte 11">[11]</a></p>
+<p>Crea una cartella di lavoro nuova. Se <code>~/linuxday</code> esiste già, usa un altro nome per non sovrascrivere prove precedenti:</p>
+<pre><code class="language-bash">mkdir -p &quot;$HOME/linuxday&quot;
+cd &quot;$HOME/linuxday&quot;
+printf 'FROM qwen3.5:9b\nPARAMETER num_ctx 64000\n' &gt; Modelfile.linuxday
+ollama create linuxday-qwen64k -f Modelfile.linuxday
+ollama run linuxday-qwen64k
+</code></pre>
+<p><code>linuxday-qwen64k</code> è <strong>un nome locale creato da questi comandi</strong>, non un modello da cercare nel catalogo. Il Modelfile configura l'esecuzione, non fa training.<a class="source-ref" href="#fonte-9" aria-label="Fonte 9">[9]</a></p>
+<p>Prova una richiesta breve. Mentre il modello è caricato, in un altro terminale esegui:</p>
+<pre><code class="language-bash">ollama ps
+</code></pre>
+<p>Controlla la colonna <strong>CONTEXT</strong>: deve indicare almeno 64000. Poi chiudi la chat Ollama con <code>/bye</code>. Un contesto più ampio usa più memoria.<a class="source-ref" href="#fonte-8" aria-label="Fonte 8">[8]</a></p>
+<p><strong>Se non entra in memoria:</strong> puoi provare <code>qwen3:4b</code>, scaricandolo e sostituendo <code>qwen3.5:9b</code> nella riga <code>FROM</code>, poi ricreare il modello locale. Non abbassare il requisito di Hermes fingendo che sia equivalente: se anche la configurazione più piccola non funziona, resta alla prova testuale Ollama o usa una macchina più adatta.<a class="source-ref" href="#fonte-7" aria-label="Fonte 7">[7]</a><a class="source-ref" href="#fonte-11" aria-label="Fonte 11">[11]</a></p>
+<h2 id="5-installare-hermes-agent">5. Installare Hermes Agent</h2>
+<p>Linux e macOS usano lo stesso installer ufficiale:<a class="source-ref" href="#fonte-10" aria-label="Fonte 10">[10]</a></p>
+<pre><code class="language-bash">curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+</code></pre>
+<p>Segui le istruzioni, poi <strong>chiudi e riapri il terminale</strong>. In alternativa ricarica il file della tua shell: <code>source ~/.bashrc</code> per Bash, oppure <code>source ~/.zshrc</code> per Zsh. Verifica:</p>
+<pre><code class="language-bash">hermes --version
+</code></pre>
+<p>Se il comando non viene trovato, per la shell corrente prova il percorso del launcher ufficiale:</p>
+<pre><code class="language-bash">export PATH=&quot;$HOME/.local/bin:$PATH&quot;
+hermes --version
+</code></pre>
+<p>Per questo percorso locale non occorre acquistare un servizio LLM o inserire una chiave cloud.<a class="source-ref" href="#fonte-11" aria-label="Fonte 11">[11]</a></p>
+<h2 id="6-collegare-hermes-a-ollama">6. Collegare Hermes a Ollama</h2>
+<p>Usiamo un profilo dedicato, <strong><code>linuxday</code></strong>, senza cambiare il profilo predefinito. Se hai già un profilo con quel nome, scegline uno nuovo e sostituiscilo in TUTTI i comandi. Non usare <code>--clone</code>.<a class="source-ref" href="#fonte-12" aria-label="Fonte 12">[12]</a></p>
+<pre><code class="language-bash">hermes profile create linuxday --no-skills --no-alias
+hermes -p linuxday config unset model
+hermes -p linuxday config set providers '{}'
+hermes -p linuxday config unset custom_providers
+hermes -p linuxday config set model.provider custom
+hermes -p linuxday config set model.base_url http://localhost:11434/v1
+hermes -p linuxday config set model.default linuxday-qwen64k
+hermes -p linuxday config set model.api_key ollama
+hermes -p linuxday config set model.api_mode chat_completions
+hermes -p linuxday config set model.context_length 64000
+hermes -p linuxday config set model.ollama_num_ctx 64000
+hermes -p linuxday config set terminal.backend local
+hermes -p linuxday config set approvals.mode manual
+</code></pre>
+<p><code>custom</code> indica un endpoint compatibile; l'indirizzo punta al server <strong>sullo stesso computer</strong>, non a un servizio remoto. Il valore <code>ollama</code> della chiave è una stringa fittizia per l'endpoint locale, non una credenziale. I valori di contesto devono essere coerenti con il Modelfile.<a class="source-ref" href="#fonte-11" aria-label="Fonte 11">[11]</a></p>
+<p>Per evitare un ripiego involontario su altri modelli e mantenere locale anche la compressione del contesto, completa la configurazione:</p>
+<pre><code class="language-bash">hermes -p linuxday config set fallback_providers '[]'
+hermes -p linuxday config unset fallback_model
+hermes -p linuxday config set auxiliary.title_generation.enabled false
+hermes -p linuxday config set auxiliary.compression.provider custom
+hermes -p linuxday config set auxiliary.compression.base_url http://localhost:11434/v1
+hermes -p linuxday config set auxiliary.compression.model linuxday-qwen64k
+hermes -p linuxday config set auxiliary.compression.api_key ollama
+hermes -p linuxday config set curator.enabled false
+hermes -p linuxday config set security.allow_lazy_installs false
+</code></pre>
+<p>Un profilo separa configurazione e sessioni, <strong>non è una sandbox</strong> e non garantisce da solo l'assenza di credenziali condivise o di accesso ai tuoi file. I comandi qui configurano il percorso locale, ma non sono un firewall. La modalità <code>manual</code> riguarda le approvazioni dei comandi: non richiede una conferma per ogni lettura o scrittura di file.<a class="source-ref" href="#fonte-12" aria-label="Fonte 12">[12]</a><a class="source-ref" href="#fonte-13" aria-label="Fonte 13">[13]</a></p>
+<p>Controlla i valori senza mostrare chiavi o token personali:</p>
+<pre><code class="language-bash">hermes -p linuxday config get model.provider
+hermes -p linuxday config get model.base_url
+hermes -p linuxday config get model.default
+hermes -p linuxday config get model.context_length
+hermes -p linuxday fallback list
+</code></pre>
+<h2 id="7-scaricare-il-materiale-e-preparare-il-lettore">7. Scaricare il materiale e preparare il lettore</h2>
+<p>Lo ZIP contiene documenti fittizi, prompt e questa guida. Non contiene un risultato già compilato. Dalla cartella di lavoro:</p>
+<pre><code class="language-bash">cd &quot;$HOME/linuxday&quot;
+curl -fL https://mlaquatra.me/talks/2026-linux-day/materiali-linuxday-2026.zip -o materiali.zip
+unzip materiali.zip
+cd linuxday-2026
+</code></pre>
+<p>Non scegliere "sovrascrivi tutto" se stai ripetendo una prova e hai già modificato i file. La cartella <code>output/</code> del pacchetto parte vuota.</p>
+<p>Per evitare che la prima lettura PDF richieda una dipendenza imprevista, prepariamo il lettore locale incluso. Prima controlla:</p>
+<pre><code class="language-bash">uv --version
+</code></pre>
+<p>Se <code>uv</code> non è nel PATH, segui <a href="https://docs.astral.sh/uv/getting-started/installation/">l'installazione ufficiale di uv</a>. Su Linux/macOS l'installer ufficiale è:</p>
+<pre><code class="language-bash">curl -LsSf https://astral.sh/uv/install.sh | sh
+</code></pre>
+<p>Riapri il terminale se necessario, poi torna in <code>~/linuxday/linuxday-2026</code>. Anche questo comando esegue uno script scaricato: controllalo prima.<a class="source-ref" href="#fonte-16" aria-label="Fonte 16">[16]</a></p>
+<p>Prepara e prova l'estrazione, senza installare pacchetti nell'ambiente di Hermes:</p>
+<pre><code class="language-bash">uv run --no-project --with pymupdf python leggi-documenti.py
+</code></pre>
+<p>Devi vedere tre blocchi: <code>menu.pdf</code>, <code>ricette.docx</code>, <code>dispensa.csv</code>. Questo piccolo script legge il PDF con PyMuPDF e il DOCX/CSV con Python; non calcola la spesa e non invia il contenuto a un servizio. L'esecuzione iniziale può scaricare Python o dipendenze nell'ambiente/cache di uv.<a class="source-ref" href="#fonte-15" aria-label="Fonte 15">[15]</a></p>
+<p>Dopo la preparazione, verifica anche:</p>
+<pre><code class="language-bash">uv run --offline --no-project --with pymupdf python leggi-documenti.py
+</code></pre>
+<p>Se fallisce, prepara cio' che manca prima di disconnettere la rete. Questo lettore gestisce i documenti inclusi: non è un sistema OCR per qualsiasi PDF.<a class="source-ref" href="#fonte-15" aria-label="Fonte 15">[15]</a></p>
+<h2 id="8-prima-prova-tradurre-il-menu">8. Prima prova: tradurre il menu</h2>
+<p>Dalla cartella <code>linuxday-2026</code>, apri una nuova chat:</p>
+<pre><code class="language-bash">hermes -p linuxday chat -t file
+</code></pre>
+<p>Apri <code>esempio-traduzione.txt</code> con un editor e incolla il suo contenuto. Per questa richiesta non occorre usare strumenti: il menu è già nel prompt. L'opzione <code>-t file</code> lascia comunque disponibili gli strumenti per i file; non è una modalità tecnicamente "senza strumenti".</p>
+<p>Controlla traduzione, piatti e informazioni sugli allergeni. Non usare una risposta automatica come unica verifica per esigenze alimentari reali.</p>
+<h2 id="9-seconda-prova-leggere-i-file-e-scrivere-la-lista">9. Seconda prova: leggere i file e scrivere la lista</h2>
+<p>Chiudi la prima chat con <code>/exit</code>. Nella stessa cartella avvia una chat nuova con i soli gruppi di strumenti necessari:</p>
+<pre><code class="language-bash">hermes -p linuxday chat -t terminal,file
+</code></pre>
+<p>Incolla <code>esempio-analisi-file.txt</code>. Il prompt usa percorsi relativi: gli input sono in <code>cena/</code> e il risultato va in <code>output/lista-spesa.md</code>.</p>
+<p>Per un percorso di lettura riproducibile puoi aggiungere al messaggio:</p>
+<blockquote>
+<p>Per estrarre il testo dei tre documenti, puoi eseguire il lettore locale incluso con <code>uv run --offline --no-project --with pymupdf python leggi-documenti.py</code>. Usa i dati effettivamente letti e non modificare gli input.</p>
+</blockquote>
+<p>Leggi le eventuali richieste di esecuzione prima di approvarle. <strong>Non usare <code>--yolo</code>.</strong> Il terminale può eseguire codice e l'agente ha i permessi dell'utente del sistema operativo: un elenco ristretto di strumenti o una cartella dedicata non limita automaticamente il filesystem o la rete.<a class="source-ref" href="#fonte-13" aria-label="Fonte 13">[13]</a></p>
+<p>Alla fine, verifica davvero il file:</p>
+<pre><code class="language-bash">cat output/lista-spesa.md
+</code></pre>
+<p>Confrontalo con i documenti, non solo con l'ultima frase della chat:</p>
+<ul>
+<li>Ha letto tutti i tre input?</li>
+<li>Ha mantenuto le dosi per quattro persone?</li>
+<li>Ha sottratto le scorte, senza comprare tutto da zero?</li>
+<li>Ha escluso i prodotti presenti in dispensa ma estranei alle ricette?</li>
+<li>Ha segnalato le quantità non determinabili, invece di inventarle?</li>
+<li>Il file esiste ed è comprensibile?</li>
+</ul>
+<p>Modifica una copia della dispensa e ripeti in una nuova chat. Non è garantito che un modello capace di chiamare strumenti riesca correttamente al primo tentativo: questa verifica è parte dell'esercizio.</p>
+<h2 id="10-locale-offline-e-problemi-comuni">10. Locale, offline e problemi comuni</h2>
+<p><strong>Locale:</strong> l'endpoint usato per il modello è <code>localhost</code>. <strong>Offline:</strong> l'intero percorso deve riuscire senza connessioni esterne. Non sono la stessa cosa. Prima scarica software, dipendenze e pesi; poi ripeti l'esercizio disattivando la rete esterna e lasciando disponibile localhost.<a class="source-ref" href="#fonte-11" aria-label="Fonte 11">[11]</a><a class="source-ref" href="#fonte-14" aria-label="Fonte 14">[14]</a><a class="source-ref" href="#fonte-15" aria-label="Fonte 15">[15]</a></p>
+<p>Non aggiungere ricerca web, browser, modelli cloud, gateway o servizi remoti a questa prova. Per documenti personali usa un utente dedicato, una VM o un ambiente con accessi limitati. Anche cronologia, log e file salvati localmente meritano attenzione.<a class="source-ref" href="#fonte-13" aria-label="Fonte 13">[13]</a></p>
+<table>
+<thead>
+<tr>
+<th>Problema</th>
+<th>Cosa controllare</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Connection refused</code></td>
+<td>Ollama non è avviato. Apri l'app Mac o controlla il servizio Linux; riprova <code>/api/tags</code>.</td>
+</tr>
+<tr>
+<td>Modello non trovato</td>
+<td><code>ollama list</code>; verifica di aver creato <code>linuxday-qwen64k</code> e che Hermes usi esattamente quel nome.</td>
+</tr>
+<tr>
+<td>Errore sul contesto</td>
+<td>Modelfile a 64000, impostazioni Hermes coerenti, valore reale in <code>ollama ps</code>. Non confondere massimo del catalogo e contesto attivo.</td>
+</tr>
+<tr>
+<td>Memoria insufficiente o risposte molto lente</td>
+<td>Controlla GPU/driver, altri programmi e contesto. Prova un modello più piccolo compatibile; non promettere che la CPU abbia la stessa velocità della GPU.</td>
+</tr>
+<tr>
+<td>Il PDF non viene letto</td>
+<td>Prova <code>leggi-documenti.py</code> dalla cartella principale. Il PDF incluso ha testo; altri PDF possono richiedere OCR.</td>
+</tr>
+<tr>
+<td>La chat risponde ma il file non esiste</td>
+<td>Non considerare concluso il compito. Controlla strumenti abilitati, permessi, percorso e chiamate effettivamente eseguite.</td>
+</tr>
+<tr>
+<td>Una chiave di configurazione viene rifiutata</td>
+<td>Controlla <code>hermes --version</code>, <code>hermes config set --help</code> e la documentazione attuale. Non usare <code>--force</code> per nascondere una differenza di versione.</td>
+</tr>
+</tbody>
+</table>
+<p>Per approfondire torna alla <a href="https://mlaquatra.me/talks/2026-linux-day/risorse.html">pagina risorse</a>. Annota sistema, RAM/GPU, versioni, modello, contesto effettivo e limiti osservati: una prova riuscita su una macchina non è una garanzia per tutte le altre.</p>
+    <h2 id="fonti">Fonti ufficiali</h2><ol class="sources"><li id="fonte-1"><a href="https://ollama.com/download">Download Ollama</a></li><li id="fonte-2"><a href="https://ollama.com/search">Catalogo Ollama</a></li><li id="fonte-3"><a href="https://docs.ollama.com/linux">Ollama su Linux</a></li><li id="fonte-4"><a href="https://docs.ollama.com/macos">Ollama su macOS</a></li><li id="fonte-5"><a href="https://docs.ollama.com/gpu">GPU supportate</a></li><li id="fonte-6"><a href="https://ollama.com/library/qwen3.5:9b">Qwen3.5 9B in Ollama</a></li><li id="fonte-7"><a href="https://ollama.com/library/qwen3:4b">Qwen3 4B in Ollama</a></li><li id="fonte-8"><a href="https://docs.ollama.com/context-length">Contesto Ollama</a></li><li id="fonte-9"><a href="https://docs.ollama.com/modelfile">Modelfile</a></li><li id="fonte-10"><a href="https://hermes-agent.nousresearch.com/docs/getting-started/installation">Installare Hermes</a></li><li id="fonte-11"><a href="https://hermes-agent.nousresearch.com/docs/guides/local-ollama-setup">Hermes con Ollama</a></li><li id="fonte-12"><a href="https://hermes-agent.nousresearch.com/docs/user-guide/profiles">Profili Hermes</a></li><li id="fonte-13"><a href="https://hermes-agent.nousresearch.com/docs/user-guide/security">Sicurezza Hermes</a></li><li id="fonte-14"><a href="https://docs.ollama.com/faq">FAQ Ollama</a></li><li id="fonte-15"><a href="https://raw.githubusercontent.com/astral-sh/uv/main/docs/guides/scripts.md">Eseguire script con uv</a></li><li id="fonte-16"><a href="https://raw.githubusercontent.com/astral-sh/uv/main/docs/getting-started/installation.md">Installare uv</a></li></ol>
+    <p class="back-top"><a href="#inizio">Torna all'inizio ↑</a> · <a href="risorse.html">Tutte le risorse →</a></p>
+  </main>
+  <div data-include="footer-nested-2"></div>
+  <script src="../../script.js"></script>
+  <script src="risorse.js"></script>
+</body>
+</html>

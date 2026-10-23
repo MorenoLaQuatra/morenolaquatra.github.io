@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liberi di usare l'AI: risorse e materiali - Moreno La Quatra</title>
+  <meta name="description" content="Slide, file della demo, prompt, guida Linux e macOS e riferimenti per provare Hermes Agent e Ollama sul proprio computer. Linux Day Enna 2026.">
+  <meta property="og:title" content="Liberi di usare l'AI: risorse e materiali">
+  <meta property="og:description" content="Il materiale del talk e una guida per iniziare con l'AI locale su Linux e macOS.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mlaquatra.me/talks/2026-linux-day/risorse.html">
+  <meta property="og:image" content="https://mlaquatra.me/mlq-logo.png">
+  <link rel="canonical" href="https://mlaquatra.me/talks/2026-linux-day/risorse.html">
+  <link rel="icon" href="../../mlq-logo.png" type="image/png">
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="risorse.css">
+</head>
+<body>
+  <div data-include="header-nested-2"></div>
+  <main class="linuxday" id="inizio">
+    <div class="breadcrumb"><a href="../../talks.html">Talks</a><span aria-hidden="true">/</span><span>Linux Day 2026</span></div>
+    <p class="page-meta">24 ottobre 2026 · Università Kore di Enna · Moreno La Quatra</p>
+    <h1>Liberi di usare l'AI</h1>
+    <p class="page-lead">Risorse, materiali e una guida per continuare a sperimentare dopo il talk.</p>
+    <p>Modello, runtime di inferenza e applicazione sono tre scelte distinte. Qui trovi le slide, gli stessi documenti usati nella demo e un percorso per iniziare con <strong>Hermes Agent e Ollama</strong>, principalmente su Linux, anche su macOS.</p>
+
+    <div class="resource-grid" aria-label="Materiali principali">
+      <a class="resource-item" href="./">
+        <span class="resource-item-type">Presentazione · HTML</span>
+        <span class="resource-item-title">Le slide del talk</span>
+        <span class="resource-item-desc">La presentazione completa, consultabile dal browser.</span>
+        <span class="resource-item-arrow">Apri le slide →</span>
+      </a>
+      <a class="resource-item" href="guida.html">
+        <span class="resource-item-type">Guida · Linux e macOS</span>
+        <span class="resource-item-title">Una prima prova locale</span>
+        <span class="resource-item-desc">Installazione, scelta del modello, configurazione e due esercizi.</span>
+        <span class="resource-item-arrow">Segui la guida →</span>
+      </a>
+      <a class="resource-item" href="materiali-linuxday-2026.zip" download>
+        <span class="resource-item-type">Materiali · ZIP</span>
+        <span class="resource-item-title">Il pacchetto della demo</span>
+        <span class="resource-item-desc">PDF, DOCX, CSV, prompt, guida e un piccolo lettore locale dei documenti.</span>
+        <span class="resource-item-arrow">Scarica lo ZIP →</span>
+      </a>
+      <a class="resource-item" href="#riferimenti">
+        <span class="resource-item-type">Approfondimenti</span>
+        <span class="resource-item-title">Progetti e fonti ufficiali</span>
+        <span class="resource-item-desc">Dove trovare software, modelli, licenze e documentazione.</span>
+        <span class="resource-item-arrow">Vai ai riferimenti →</span>
+      </a>
+    </div>
+
+    <h2 id="demo">I file della demo</h2>
+    <p>Una cena d'autunno per quattro persone. Nel primo esercizio si traduce il menu mantenendo le informazioni sugli allergeni. Nel secondo, l'applicazione deve leggere tre documenti, confrontare le dosi con la dispensa e scrivere una lista della spesa con <em>solo ciò che manca</em>.</p>
+    <ul class="file-list">
+      <li><a href="materiali/cena/menu.pdf">menu.pdf</a><small>Il menu della cena, con le informazioni sugli allergeni.</small></li>
+      <li><a href="materiali/cena/ricette.docx" download>ricette.docx</a><small>Le ricette e le dosi per quattro persone.</small></li>
+      <li><a href="materiali/cena/dispensa.csv" download>dispensa.csv</a><small>Le scorte disponibili, comprese alcune cose che non servono al menu.</small></li>
+      <li><a href="materiali/esempio-traduzione.txt">esempio-traduzione.txt</a><small>Il prompt completo, da copiare nella chat per una prima prova senza strumenti.</small></li>
+      <li><a href="materiali/esempio-analisi-file.txt">esempio-analisi-file.txt</a><small>Il compito sui file, con percorsi relativi da usare dalla cartella del pacchetto.</small></li>
+    </ul>
+    <p>Lo ZIP contiene anche un <a href="materiali/README.md">README</a>, la <a href="materiali/GUIDA.md">guida in Markdown</a> e <a href="materiali/leggi-documenti.py">leggi-documenti.py</a>, un aiuto per estrarre localmente il testo dei documenti se serve. Non contiene software, pesi dei modelli o risultati già compilati.</p>
+    <div class="note"><p><strong>Non basta una risposta convincente.</strong> Controlla quali file sono stati letti, da dove vengono le quantità e se il file di output esiste davvero. Ripeti poi la prova cambiando una scorta: il risultato dovrebbe cambiare in modo coerente.</p></div>
+
+    <h2 id="riferimenti">Da dove iniziare</h2>
+    <ul>
+      <li><a href="https://ollama.com/download">Scaricare Ollama</a>: scegli il tuo sistema operativo.</li>
+      <li><a href="https://ollama.com/search">Catalogo dei modelli Ollama</a>: cerca il modello, apri la scheda e scegli un tag adatto al tuo hardware e al compito.</li>
+      <li><a href="https://docs.ollama.com/">Documentazione Ollama</a>: installazione, hardware, API e configurazione.</li>
+      <li><a href="https://hermes-agent.nousresearch.com/docs/">Documentazione Hermes Agent</a> e <a href="https://github.com/NousResearch/hermes-agent">codice sorgente</a>: installazione, modelli, strumenti e permessi.</li>
+    </ul>
+
+    <h2 id="software">Gli altri progetti citati</h2>
+    <p>Non sono programmi da installare tutti insieme. Sono alternative da esplorare in base al compito, all'hardware e a come vuoi usare il sistema.</p>
+    <h3>Applicazioni e agenti</h3>
+    <ul>
+      <li><a href="https://github.com/NousResearch/hermes-agent">Hermes Agent</a>, l'applicazione usata nella demo.</li>
+      <li><a href="https://github.com/earendil-works/pi/tree/main/packages/coding-agent">Pi</a>, un agente per lavorare sul codice.</li>
+      <li><a href="https://github.com/openai/codex">Codex CLI</a>, un'altra applicazione per lavorare sul codice.</li>
+    </ul>
+    <h3>Runtime di inferenza</h3>
+    <ul>
+      <li><a href="https://github.com/ollama/ollama">Ollama</a>, il runtime usato nella demo.</li>
+      <li><a href="https://github.com/ggml-org/llama.cpp">llama.cpp</a>.</li>
+      <li><a href="https://docs.vllm.ai/en/latest/">vLLM</a>.</li>
+      <li><a href="https://github.com/antirez/ds4">DwarfStar / ds4</a>. Controlla i modelli e l'hardware supportati dal progetto.</li>
+    </ul>
+
+    <h2 id="pesi-licenze">Pesi, licenze e dati</h2>
+    <ul>
+      <li><a href="https://huggingface.co/Qwen/Qwen3.5-9B">Qwen3.5-9B su Hugging Face</a>: la scheda dei pesi mostrata nel talk, non un requisito per ripetere la demo.</li>
+      <li><a href="https://huggingface.co/models">Catalogo Hugging Face</a>: schede, pesi, varianti e condizioni dei modelli. Verifica sempre il formato supportato dal runtime.</li>
+      <li><a href="https://opensource.org/ai/open-source-ai-definition">Open Source AI Definition, OSI</a>: per approfondire la distinzione tra pesi disponibili e open source AI.</li>
+      <li><a href="https://allenai.org/olmo">Olmo, Allen Institute for AI</a>: il progetto citato nella parte del talk dedicata all'apertura oltre i pesi.</li>
+      <li><a href="https://docs.ollama.com/faq">FAQ Ollama</a>: configurazione locale, rete e modelli cloud.</li>
+    </ul>
+    <div class="note"><p><strong>Locale non significa automaticamente isolato.</strong> I pesi possono essere eseguiti sul PC mentre altri strumenti contattano servizi esterni. La licenza dell'applicazione non decide quella del modello, né dove passano i tuoi dati. Prima di usare documenti personali, controlla l'intero percorso.</p></div>
+    <p class="back-top"><a href="#inizio">Torna all'inizio ↑</a> · <a href="guida.html">Passa alla guida →</a></p>
+  </main>
+  <div data-include="footer-nested-2"></div>
+  <script src="../../script.js"></script>
+  <script src="risorse.js"></script>
+</body>
+</html>

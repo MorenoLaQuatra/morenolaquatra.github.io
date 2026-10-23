@@ -1,0 +1,3 @@
+Per la cena di sabato, leggi menu.pdf, ricette.docx e dispensa.csv nella cartella cena/ della cartella di lavoro corrente. Prepara la lista della spesa con solo quello che manca, indicando le quantità; se qualcosa non è chiaro, segnalalo.
+
+Salva la lista in output/lista-spesa.md, senza modificare i tre documenti originali.

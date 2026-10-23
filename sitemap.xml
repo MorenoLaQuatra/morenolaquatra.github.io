@@ -91,6 +91,16 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://mlaquatra.me/talks/2026-linux-day/guida.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://mlaquatra.me/talks/2026-linux-day/risorse.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://mlaquatra.me/talks.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
