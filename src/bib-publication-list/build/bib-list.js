@@ -2532,8 +2532,8 @@ var bibtexify = (function($) {
                 entryData.entryType = type;
             }
             var itemStr = htmlify(bib2html[type](entryData));
-            itemStr += bib2html.links(entryData);
-            itemStr += bib2html.bibtex(entryData);
+            itemStr += '<span class="pub-actions">' + bib2html.bibtex(entryData) +
+                       bib2html.links(entryData) + '<\/span>';
             if (bib.options.tweet && entryData.url) {
                 itemStr += bib2html.tweet(entryData, bib);
             }
@@ -2556,21 +2556,33 @@ var bibtexify = (function($) {
         },
         // adds links to the PDF or url of the item
         links: function(entryData) {
+            // pdf: explicit pdf field, else a url that points to a pdf
+            // link: the DOI resolver when a DOI exists, else the url
             var itemStr = '';
-            if (entryData.url && entryData.url.match(/.*\.pdf/)) {
-                itemStr += ' (<a title="PDF-version of this article"  target="_blank" href="' +
-                            entryData.url + '">pdf<\/a>)';
-            } else if (entryData.url) {
-                itemStr += ' (<a title="This article online" target="_blank" href="' + entryData.url +
-                            '">link<\/a>)';
+            var url = entryData.url;
+            var pdf = entryData.pdf || ((url && url.match(/\.pdf($|\?)/i)) ? url : null);
+            var doi = entryData.doi || entryData.DOI;
+            var link = null;
+            if (doi) {
+                link = 'https://doi.org/' + doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '');
+            } else if (url && url !== pdf) {
+                link = url;
+            }
+            if (pdf) {
+                itemStr += ' <a class="pub-link" title="PDF" target="_blank" rel="noopener" href="' +
+                           pdf + '">pdf<\/a>';
+            }
+            if (link) {
+                itemStr += ' <a class="pub-link" title="' + (doi ? 'DOI: ' + doi : 'Publisher page') +
+                           '" target="_blank" rel="noopener" href="' + link + '">link<\/a>';
             }
             return itemStr;
         },
         // adds the bibtex link and the opening div with bibtex content
         bibtex: function(entryData) {
             var itemStr = '';
-            itemStr += ' (<a title="This article as BibTeX" href="#" class="biblink">' +
-                        'bib</a>)<div class="bibinfo hidden">';
+            itemStr += ' <a title="This article as BibTeX" href="#" class="biblink pub-link">' +
+                        'bib</a><div class="bibinfo hidden">';
             itemStr += '<a href="#" class="bibclose" title="Close">x</a><pre>';
             itemStr += '@' + entryData.entryType + "{" + entryData.cite + ",\n";
             $.each(entryData, function(key, value) {
@@ -2582,7 +2594,7 @@ var bibtexify = (function($) {
                         itemStr += value[index].last + ", " + value[index].first;
                     }
                     itemStr += ' },\n';
-                } else if (key != 'entryType' && key != 'cite') {
+                } else if (key != 'entryType' && key != 'cite' && key != 'pdf') {
                     itemStr += '  ' + key + " = { " + value + " },\n";
                 }
             });
@@ -2618,7 +2630,7 @@ var bibtexify = (function($) {
         inproceedings: function(entryData) {
             return this.authors2html(entryData.author) + " (" + entryData.year + "). " +
                 entryData.title + ". In <em>" + entryData.booktitle +
-                ", pp. " + entryData.pages +
+                ((entryData.pages)?", pp. " + entryData.pages:"") +
                 ((entryData.address)?", " + entryData.address:"") + ".<\/em>";
         },
         incollection: function(entryData) {
@@ -2631,9 +2643,10 @@ var bibtexify = (function($) {
         },
         article: function(entryData) {
             return this.authors2html(entryData.author) + " (" + entryData.year + "). " +
-                entryData.title + ". <em>" + entryData.journal + ", " + entryData.volume +
-                ((entryData.number)?"(" + entryData.number + ")":"")+ ", " +
-                "pp. " + entryData.pages + ". " +
+                entryData.title + ". <em>" + entryData.journal +
+                ((entryData.volume)?", " + entryData.volume:"") +
+                ((entryData.volume && entryData.number)?"(" + entryData.number + ")":"") +
+                ((entryData.pages)?", pp. " + entryData.pages:"") + ". " +
                 ((entryData.address)?entryData.address + ".":"") + "<\/em>";
         },
         misc: function(entryData) {
@@ -2644,8 +2657,9 @@ var bibtexify = (function($) {
         },
         mastersthesis: function(entryData) {
             return this.authors2html(entryData.author) + " (" + entryData.year + "). " +
-            entryData.title + ". " + entryData.type + ". " +
-            entryData.organization + ", " + entryData.school + ".";
+            entryData.title + ". " +
+            ((entryData.type)?entryData.type + ". ":"") +
+            [entryData.organization, entryData.school].filter(function(x){return x;}).join(", ") + ".";
         },
         techreport: function(entryData) {
             return this.authors2html(entryData.author) + " (" + entryData.year + "). " +
