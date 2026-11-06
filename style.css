@@ -510,7 +510,8 @@ li {
 }
 
 .news-sub-items {
-  margin-top: 0.3rem;
+  margin-top: 0.2rem;
+  margin-bottom: 0;
   margin-left: 1rem;
   list-style-type: disc;
   padding-left: 1rem;
@@ -521,7 +522,13 @@ li {
   font-size: 0.95rem;
 }
 
+.news-sub-items li:last-child {
+  margin-bottom: 0;
+}
+
 .news-location {
+  display: block;
+  margin-top: 0.15rem;
   font-style: italic;
   color: var(--ink-lighter);
   font-size: 0.9rem;
@@ -1423,4 +1430,30 @@ html {
   .cv-entry, .course-card, .blog-entry, .publication {
     break-inside: avoid;
   }
+}
+
+/* Publication links: bib, pdf, link */
+.pub-actions {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  margin-left: 0.4rem;
+  vertical-align: baseline;
+}
+
+.pub-actions .pub-link {
+  display: inline-block;
+  padding: 0 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.pub-actions .pub-link:hover {
+  background: var(--accent);
+  color: var(--paper, #fff);
 }
